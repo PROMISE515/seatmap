@@ -286,24 +286,13 @@ function HomePage() {
               Find a seated toilet nearby in China
             </p>
           </div>
-          <div className="mt-1 flex shrink-0 items-center gap-2">
-            <button
-              type="button"
-              onClick={handleShare}
-              className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-primary hover:border-primary/40 hover:bg-primary/10"
-              aria-label="Share SeatMap and give a friend one free search"
-            >
-              <Share2 className="size-3" aria-hidden />
-              Share +1
-            </button>
-            <Link
-              to="/saved"
-              className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:border-primary/40 hover:text-primary"
-            >
-              <Bookmark className="size-3" aria-hidden />
-              Saved
-            </Link>
-          </div>
+          <Link
+            to="/saved"
+            className="mt-1 inline-flex shrink-0 items-center gap-1 rounded-full border border-border px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:border-primary/40 hover:text-primary"
+          >
+            <Bookmark className="size-3" aria-hidden />
+            Saved
+          </Link>
         </div>
       </header>
 
@@ -499,6 +488,22 @@ function HomePage() {
                 </div>
               </button>
             ))}
+          </div>
+
+          <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-4">
+            <p className="text-sm font-extrabold text-brand-dark">Share one free search</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              Send SeatMap to a friend. When they open your link, their browser gets one extra free
+              search.
+            </p>
+            <button
+              type="button"
+              onClick={handleShare}
+              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-background px-4 py-3 text-sm font-bold text-primary hover:bg-primary/10"
+            >
+              <Share2 className="size-4" aria-hidden />
+              Share link
+            </button>
           </div>
 
           <DialogFooter className="flex-col gap-2 sm:flex-col">
