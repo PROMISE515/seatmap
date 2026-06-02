@@ -175,7 +175,7 @@ function HomePage() {
 
     if (!hasActivePass) {
       const count = Number(getStoredValue("seatmap.search.count") || "0");
-      if (count >= 1 && status === "ready") {
+      if (count >= 1) {
         setShowPaywall(true);
         return;
       }
