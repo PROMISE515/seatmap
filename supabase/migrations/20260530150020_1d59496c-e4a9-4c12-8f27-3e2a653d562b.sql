@@ -1,0 +1,1 @@
+ALTER TABLE public.toilets ADD COLUMN IF NOT EXISTS name_en text;

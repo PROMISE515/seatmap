@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="SeatMap icon">
+  <rect width="512" height="512" rx="112" fill="#059669"/>
+  <rect x="148" y="128" width="216" height="256" rx="48" fill="#ffffff"/>
+  <rect x="190" y="174" width="132" height="132" rx="24" fill="#059669"/>
+  <path d="M184 344h144" stroke="#059669" stroke-width="32" stroke-linecap="round"/>
+</svg>

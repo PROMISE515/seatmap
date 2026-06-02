@@ -1,0 +1,13 @@
+# SeatMap
+
+> SeatMap helps foreign travelers in China quickly find nearby clean Western-style (seated) toilets, with verified locations, walking time, and one-tap navigation.
+
+SeatMap is a mobile-first web app designed as a calm "safety button" for travelers caught short. Tap once to scan a 1 km radius and get a sorted list of verified Western toilets — malls, hotel lobbies, premium cafes — with floor, distance, walking time, and amenity tags (toilet paper, free, premium). One free emergency search is included; unlimited searches for the duration of a trip are available via a low-cost Travel Pass (7 / 14 / 30 days), delivered as a private magic link with no account required.
+
+## Pages
+
+- [Home](/): Tap to find verified Western toilets within 1 km, sorted by walking distance.
+
+## Optional
+
+- [Restore Travel Pass](/pass): Reactivate an existing Travel Pass on a new device using a private access link.

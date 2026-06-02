@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 512" role="img" aria-label="Restroom location placeholder">
+  <rect width="800" height="512" fill="#f4fbf8"/>
+  <path d="M0 360c120-52 225-62 332-30 139 41 236 31 468-80v262H0z" fill="#dff3ea"/>
+  <circle cx="400" cy="220" r="84" fill="#059669"/>
+  <path d="M400 124c-53 0-96 42-96 94 0 76 96 170 96 170s96-94 96-170c0-52-43-94-96-94zm0 136a42 42 0 1 1 0-84 42 42 0 0 1 0 84z" fill="#064e3b"/>
+  <circle cx="400" cy="218" r="32" fill="#ffffff"/>
+</svg>
