@@ -7,7 +7,7 @@ import { ToiletCard } from "@/components/ToiletCard";
 import { MapPreview } from "@/components/MapPreview";
 import { getCityBySlug } from "@/lib/cities";
 import { findNearbyToilets } from "@/lib/toilets.functions";
-import type { ToiletDTO } from "@/lib/amap";
+import { wgs84ToGcj02, type ToiletDTO } from "@/lib/amap";
 
 const SITE = "https://swift-restroom-finder.lovable.app";
 
@@ -17,6 +17,12 @@ function friendlySearchError(error: unknown) {
     return "Live toilet data is not configured yet.";
   }
   return message || "Failed to load toilets";
+}
+
+function distanceMeters(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  const dx = (a.lng - b.lng) * 111000 * Math.cos((a.lat * Math.PI) / 180);
+  const dy = (a.lat - b.lat) * 111000;
+  return Math.round(Math.sqrt(dx * dx + dy * dy));
 }
 
 export const Route = createFileRoute("/$city/public-toilets")({
@@ -96,14 +102,64 @@ function CityPage() {
   const [toilets, setToilets] = useState<ToiletDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [usingCurrentLocation, setUsingCurrentLocation] = useState(false);
+  const [mapCenter, setMapCenter] = useState({
+    lat: city.centerLat,
+    lng: city.centerLng,
+    label: city.name,
+  });
   const findNearby = useServerFn(findNearbyToilets);
 
   useEffect(() => {
     let cancelled = false;
+    const cityCenter = { lat: city.centerLat, lng: city.centerLng };
+
+    const loadCityPreview = () => {
+      setUsingCurrentLocation(false);
+      setMapCenter({ ...cityCenter, label: city.name });
+      return findNearby({
+        data: { lat: city.centerLat, lng: city.centerLng, radius: city.radius, gcj: true },
+      });
+    };
+
     setLoading(true);
     setErrorMsg(null);
-    findNearby({
-      data: { lat: city.centerLat, lng: city.centerLng, radius: city.radius, gcj: true },
+
+    new Promise<Awaited<ReturnType<typeof findNearby>>>((resolve, reject) => {
+      if (!navigator.geolocation) {
+        loadCityPreview().then(resolve).catch(reject);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const currentGcj = wgs84ToGcj02(pos.coords.latitude, pos.coords.longitude);
+          const currentToCity = distanceMeters(currentGcj, cityCenter);
+          const isInCity = currentToCity <= Math.max(city.radius + 2000, 15000);
+
+          if (!isInCity) {
+            loadCityPreview().then(resolve).catch(reject);
+            return;
+          }
+
+          setUsingCurrentLocation(true);
+          setMapCenter({ lat: currentGcj.lat, lng: currentGcj.lng, label: "You" });
+          findNearby({
+            data: {
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude,
+              radius: 1000,
+              gcj: false,
+            },
+          })
+            .then(resolve)
+            .catch(reject);
+        },
+        () => {
+          loadCityPreview().then(resolve).catch(reject);
+        },
+        { enableHighAccuracy: false, maximumAge: 60_000, timeout: 6000 },
+      );
     })
       .then((res) => {
         if (!cancelled) {
@@ -120,7 +176,7 @@ function CityPage() {
     return () => {
       cancelled = true;
     };
-  }, [city.slug, city.centerLat, city.centerLng, city.radius, findNearby]);
+  }, [city.slug, city.name, city.centerLat, city.centerLng, city.radius, findNearby]);
 
   return (
     <AppShell>
@@ -149,14 +205,30 @@ function CityPage() {
 
       <section className="px-6 mt-6">
         <MapPreview
-          lat={city.centerLat}
-          lng={city.centerLng}
-          label={city.name}
-          eyebrow="Live search area"
-          title={`${city.name} map preview`}
-          subtitle={`${city.radius / 1000} km around the main traveler area`}
+          lat={mapCenter.lat}
+          lng={mapCenter.lng}
+          label={mapCenter.label}
+          eyebrow={usingCurrentLocation ? "Current search area" : "City preview"}
+          title={usingCurrentLocation ? `${city.name} results near you` : `${city.name} preview`}
+          subtitle={
+            usingCurrentLocation
+              ? "Distances and navigation use your current location."
+              : "Open the green search button on the home page for current-location navigation."
+          }
         />
       </section>
+
+      {!usingCurrentLocation && (
+        <section className="px-6 mt-4">
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <p className="text-sm font-bold text-card-foreground">Preview mode</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              These are {city.name} city-area results, not distances from your current location.
+              Navigation is disabled here to avoid sending you to the wrong city.
+            </p>
+          </div>
+        </section>
+      )}
 
       <section className="px-6 mt-6">
         <div className="rounded-2xl bg-primary/5 border border-primary/20 p-4">
@@ -200,7 +272,14 @@ function CityPage() {
             <Loader2 className="size-5 animate-spin mx-auto text-primary" />
           </div>
         ) : toilets.length > 0 ? (
-          toilets.map((t) => <ToiletCard key={t.id} toilet={t} />)
+          toilets.map((t) => (
+            <ToiletCard
+              key={t.id}
+              toilet={t}
+              showDistance={usingCurrentLocation}
+              allowNavigation={usingCurrentLocation && t.canNavigate}
+            />
+          ))
         ) : (
           <div className="rounded-2xl border border-dashed border-border p-6 text-center bg-card">
             <p className="text-sm text-muted-foreground">

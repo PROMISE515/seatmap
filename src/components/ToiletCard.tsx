@@ -14,7 +14,15 @@ const KIND_META: Record<ToiletKind, { label: string; Icon: typeof Toilet; tone: 
   public: { label: "Public", Icon: Toilet, tone: "bg-muted text-muted-foreground" },
 };
 
-export function ToiletCard({ toilet }: { toilet: CardToilet }) {
+export function ToiletCard({
+  toilet,
+  showDistance = true,
+  allowNavigation = toilet.canNavigate,
+}: {
+  toilet: CardToilet;
+  showDistance?: boolean;
+  allowNavigation?: boolean;
+}) {
   const meta = KIND_META[toilet.kind];
   const Icon = meta.Icon;
   const [saved, setSaved] = useState(false);
@@ -44,15 +52,26 @@ export function ToiletCard({ toilet }: { toilet: CardToilet }) {
       <div className="flex items-start gap-4">
         {/* Distance hero */}
         <div className="shrink-0 w-16 text-center">
-          <div className="text-2xl font-extrabold leading-none text-brand-dark tabular-nums">
-            {toilet.walkMin}
-          </div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">
-            min walk
-          </div>
-          <div className="text-[11px] text-muted-foreground mt-0.5 tabular-nums">
-            {toilet.distanceM}m
-          </div>
+          {showDistance ? (
+            <>
+              <div className="text-2xl font-extrabold leading-none text-brand-dark tabular-nums">
+                {toilet.walkMin}
+              </div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">
+                min walk
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-0.5 tabular-nums">
+                {toilet.distanceM}m
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="text-2xl font-extrabold leading-none text-brand-dark">City</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">
+                preview
+              </div>
+            </>
+          )}
         </div>
 
         <div className="flex-1 min-w-0">
@@ -89,13 +108,15 @@ export function ToiletCard({ toilet }: { toilet: CardToilet }) {
 
           <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
             <MapPin className="size-3 shrink-0" aria-hidden />
-            <span className="leading-snug">{toilet.distanceM}m away</span>
+            <span className="leading-snug">
+              {showDistance ? `${toilet.distanceM}m away` : toilet.address || toilet.city}
+            </span>
           </p>
         </div>
       </div>
 
       <div className="mt-3 grid grid-cols-[1fr_auto] gap-2">
-        {toilet.canNavigate ? (
+        {allowNavigation ? (
           <MapNavigationSheet
             toilet={toilet}
             triggerClassName="w-full inline-flex items-center justify-center gap-2 py-3 bg-brand-dark text-primary-foreground rounded-xl text-xs font-bold uppercase tracking-widest hover:opacity-90 active:scale-[0.99] transition"
@@ -106,7 +127,7 @@ export function ToiletCard({ toilet }: { toilet: CardToilet }) {
             disabled
             className="w-full inline-flex items-center justify-center gap-2 py-3 bg-muted text-muted-foreground rounded-xl text-xs font-bold uppercase tracking-widest cursor-not-allowed"
           >
-            Needs seated confirmation
+            {showDistance ? "Needs seated confirmation" : "Use current location to navigate"}
           </button>
         )}
         <button

@@ -164,6 +164,24 @@ function getOrCreateStoredToken(key: string) {
   return token;
 }
 
+async function copyShareLink(text: string) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "true");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  const copied = document.execCommand("copy");
+  document.body.removeChild(textarea);
+  if (!copied) throw new Error("Copy failed");
+}
+
 function HomePage() {
   const [status, setStatus] = useState<Status>("idle");
   const [showPaywall, setShowPaywall] = useState(false);
@@ -174,6 +192,7 @@ function HomePage() {
     null,
   );
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [shareBusy, setShareBusy] = useState(false);
   const [supportedRegions, setSupportedRegions] = useState("Shanghai, Beijing and Qingdao");
   const findNearby = useServerFn(findNearbyToilets);
   const ensureReferral = useServerFn(ensureShareReferral);
@@ -226,7 +245,8 @@ function HomePage() {
   }, [claimReferral, getReferralCredits]);
 
   const handleShare = async () => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || shareBusy) return;
+    setShareBusy(true);
 
     const code = getOrCreateStoredToken(SHARE_REFERRAL_CODE_KEY);
     try {
@@ -249,18 +269,29 @@ function HomePage() {
     try {
       if (navigator.share) {
         await navigator.share(shareData);
+        toast("Share sent", {
+          description: "You get one extra free search after a friend opens it.",
+        });
       } else {
-        await navigator.clipboard.writeText(shareData.url);
+        await copyShareLink(shareData.url);
         toast("Share link copied", {
           description: "You get one extra free search after a friend opens it.",
         });
       }
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
-      await navigator.clipboard.writeText(shareData.url);
-      toast("Share link copied", {
-        description: "You get one extra free search after a friend opens it.",
-      });
+      try {
+        await copyShareLink(shareData.url);
+        toast("Share link copied", {
+          description: "You get one extra free search after a friend opens it.",
+        });
+      } catch {
+        toast("Share failed", {
+          description: "Copy the page URL and try again.",
+        });
+      }
+    } finally {
+      setShareBusy(false);
     }
   };
 
@@ -559,10 +590,15 @@ function HomePage() {
             <button
               type="button"
               onClick={handleShare}
-              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-background px-4 py-3 text-sm font-bold text-primary hover:bg-primary/10"
+              disabled={shareBusy}
+              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-background px-4 py-3 text-sm font-bold text-primary hover:bg-primary/10 disabled:opacity-70"
             >
-              <Share2 className="size-4" aria-hidden />
-              Share to earn 1 search
+              {shareBusy ? (
+                <Loader2 className="size-4 animate-spin" aria-hidden />
+              ) : (
+                <Share2 className="size-4" aria-hidden />
+              )}
+              {shareBusy ? "Preparing link..." : "Share to earn 1 search"}
             </button>
           </div>
 
