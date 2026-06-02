@@ -4,14 +4,22 @@ import { Accessibility, Baby, Bookmark, Building2, MapPin, Toilet } from "lucide
 import type { ToiletDTO, ToiletKind } from "@/lib/amap";
 import { MapNavigationSheet } from "@/components/MapNavigationSheet";
 import { isToiletSaved, saveToilet } from "@/lib/saved-toilets";
+import { type TranslationKey, useT } from "@/lib/i18n";
 
 type CardToilet = ToiletDTO & { topRated?: boolean };
 
-const KIND_META: Record<ToiletKind, { label: string; Icon: typeof Toilet; tone: string }> = {
-  indoor: { label: "Indoor", Icon: Building2, tone: "bg-primary/10 text-primary" },
-  accessible: { label: "Accessible", Icon: Accessibility, tone: "bg-sky-500/10 text-sky-600" },
-  nursery: { label: "Nursery", Icon: Baby, tone: "bg-pink-500/10 text-pink-600" },
-  public: { label: "Public", Icon: Toilet, tone: "bg-muted text-muted-foreground" },
+const KIND_META: Record<
+  ToiletKind,
+  { labelKey: TranslationKey; Icon: typeof Toilet; tone: string }
+> = {
+  indoor: { labelKey: "card.indoor", Icon: Building2, tone: "bg-primary/10 text-primary" },
+  accessible: {
+    labelKey: "card.accessible",
+    Icon: Accessibility,
+    tone: "bg-sky-500/10 text-sky-600",
+  },
+  nursery: { labelKey: "card.nursery", Icon: Baby, tone: "bg-pink-500/10 text-pink-600" },
+  public: { labelKey: "card.public", Icon: Toilet, tone: "bg-muted text-muted-foreground" },
 };
 
 export function ToiletCard({
@@ -23,6 +31,7 @@ export function ToiletCard({
   showDistance?: boolean;
   allowNavigation?: boolean;
 }) {
+  const { t } = useT();
   const meta = KIND_META[toilet.kind];
   const Icon = meta.Icon;
   const [saved, setSaved] = useState(false);
@@ -34,12 +43,12 @@ export function ToiletCard({
   const handleSave = () => {
     const result = saveToilet(toilet);
     setSaved(true);
-    toast(result.alreadySaved ? "Already saved" : "Saved on this device", {
+    toast(result.alreadySaved ? t("card.alreadySaved") : t("card.saved"), {
       description: result.alreadySaved
-        ? "This place is already in your saved list."
-        : "Saved places stay in this browser only.",
+        ? t("card.alreadySavedDescription")
+        : t("card.savedDescription"),
       action: {
-        label: "View",
+        label: t("card.view"),
         onClick: () => {
           window.location.href = "/saved";
         },
@@ -58,7 +67,7 @@ export function ToiletCard({
                 {toilet.walkMin}
               </div>
               <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">
-                min walk
+                {t("card.minWalk")}
               </div>
               <div className="text-[11px] text-muted-foreground mt-0.5 tabular-nums">
                 {toilet.distanceM}m
@@ -66,9 +75,11 @@ export function ToiletCard({
             </>
           ) : (
             <>
-              <div className="text-2xl font-extrabold leading-none text-brand-dark">City</div>
+              <div className="text-2xl font-extrabold leading-none text-brand-dark">
+                {t("card.city")}
+              </div>
               <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">
-                preview
+                {t("card.preview")}
               </div>
             </>
           )}
@@ -80,7 +91,7 @@ export function ToiletCard({
               className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${meta.tone}`}
             >
               <Icon className="size-3" aria-hidden />
-              {meta.label}
+              {t(meta.labelKey)}
             </span>
             {toilet.floor && (
               <span className="px-2 py-0.5 rounded-md bg-surface border border-border text-[10px] font-bold text-muted-foreground tabular-nums">
@@ -89,17 +100,17 @@ export function ToiletCard({
             )}
             {toilet.topRated && (
               <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
-                Top Rated
+                {t("card.topRated")}
               </span>
             )}
             {toilet.duplicateCount && (
               <span className="px-2 py-0.5 rounded-md bg-secondary text-secondary-foreground text-[10px] font-bold uppercase tracking-wider">
-                {toilet.duplicateCount} entries
+                {t("card.entries", toilet.duplicateCount)}
               </span>
             )}
             {toilet.seatedConfidence !== "confirmed" && (
               <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-700 text-[10px] font-bold uppercase tracking-wider">
-                Needs confirmation
+                {t("card.needsConfirmation")}
               </span>
             )}
           </div>
@@ -109,7 +120,7 @@ export function ToiletCard({
           <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
             <MapPin className="size-3 shrink-0" aria-hidden />
             <span className="leading-snug">
-              {showDistance ? `${toilet.distanceM}m away` : toilet.address || toilet.city}
+              {showDistance ? t("card.away", toilet.distanceM) : toilet.address || toilet.city}
             </span>
           </p>
         </div>
@@ -119,6 +130,7 @@ export function ToiletCard({
         {allowNavigation ? (
           <MapNavigationSheet
             toilet={toilet}
+            triggerLabel={t("card.navigate")}
             triggerClassName="w-full inline-flex items-center justify-center gap-2 py-3 bg-brand-dark text-primary-foreground rounded-xl text-xs font-bold uppercase tracking-widest hover:opacity-90 active:scale-[0.99] transition"
           />
         ) : (
@@ -127,7 +139,7 @@ export function ToiletCard({
             disabled
             className="w-full inline-flex items-center justify-center gap-2 py-3 bg-muted text-muted-foreground rounded-xl text-xs font-bold uppercase tracking-widest cursor-not-allowed"
           >
-            {showDistance ? "Needs seated confirmation" : "Use current location to navigate"}
+            {showDistance ? t("card.needsSeated") : t("card.useLocation")}
           </button>
         )}
         <button
@@ -138,7 +150,7 @@ export function ToiletCard({
               ? "border-primary/30 bg-primary/10 text-primary"
               : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-primary"
           }`}
-          aria-label={saved ? "Saved toilet" : "Save toilet"}
+          aria-label={saved ? t("card.savedToilet") : t("card.saveToilet")}
           aria-pressed={saved}
         >
           <Bookmark className={`size-4 ${saved ? "fill-current" : ""}`} aria-hidden />

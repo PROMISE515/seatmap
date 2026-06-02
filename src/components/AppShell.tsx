@@ -1,9 +1,11 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { MapPin, Flag } from "lucide-react";
 import type { ReactNode } from "react";
+import { useT } from "@/lib/i18n";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
+  const { t } = useT();
   const isHome = pathname === "/";
   const isReport = pathname === "/report";
 
@@ -14,10 +16,15 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[420px] bg-background/85 backdrop-blur-xl border-t border-border">
           <ul className="flex justify-around py-3">
-            <NavItem to="/" label="Nearby" icon={<MapPin className="size-4" />} active={isHome} />
+            <NavItem
+              to="/"
+              label={t("nav.nearby")}
+              icon={<MapPin className="size-4" />}
+              active={isHome}
+            />
             <NavItem
               to="/report"
-              label="Report"
+              label={t("nav.report")}
               icon={<Flag className="size-4" />}
               active={isReport}
             />

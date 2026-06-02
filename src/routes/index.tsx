@@ -18,6 +18,7 @@ import { SeatMapLogo } from "@/components/SeatMapLogo";
 import { StripeEmbeddedCheckout, PaymentTestModeBanner } from "@/components/StripeEmbeddedCheckout";
 import { getStoredValue, setStoredValue } from "@/lib/client-storage";
 import { cities } from "@/lib/cities";
+import { useT } from "@/lib/i18n";
 import {
   Dialog,
   DialogContent,
@@ -85,21 +86,18 @@ const PASS_PLANS = [
     days: 7,
     price: "$0.99",
     priceId: "travel_pass_7_price",
-    cadence: "Renews every 7 days",
   },
   {
     days: 15,
     price: "$1.69",
     priceId: "travel_pass_15_price",
-    cadence: "Renews every 15 days",
-    savings: "Save about 20%",
+    savingsPercent: 20,
   },
   {
     days: 30,
     price: "$2.99",
     priceId: "travel_pass_30_price",
-    cadence: "Renews every 30 days",
-    savings: "Save about 30%",
+    savingsPercent: 30,
     best: true,
   },
 ];
@@ -183,6 +181,7 @@ async function copyShareLink(text: string) {
 }
 
 function HomePage() {
+  const { t } = useT();
   const [status, setStatus] = useState<Status>("idle");
   const [showPaywall, setShowPaywall] = useState(false);
   const [checkoutPriceId, setCheckoutPriceId] = useState<string | null>(null);
@@ -214,14 +213,14 @@ function HomePage() {
         void claimReferral({ data: { code: referralCode, visitorId } })
           .then((result) => {
             if (result.claimed) {
-              toast("Thanks for opening SeatMap", {
-                description: "Your friend earned one extra free search.",
+              toast(t("home.openedSeatMap"), {
+                description: t("home.friendEarned"),
               });
             }
           })
           .catch(() => {
-            toast("Share reward could not be saved", {
-              description: "SeatMap still works, but the referral was not recorded.",
+            toast(t("home.rewardSaveFailed"), {
+              description: t("home.rewardSaveFailedDescription"),
             });
           });
       }
@@ -233,16 +232,14 @@ function HomePage() {
           const currentCredits = Math.max(0, Number(getStoredValue(SHARE_BONUS_KEY) || "0"));
           if (result.credits > currentCredits) {
             setStoredValue(SHARE_BONUS_KEY, String(result.credits));
-            toast("Free search earned", {
-              description: `You have ${result.credits} shared free ${
-                result.credits === 1 ? "search" : "searches"
-              }.`,
+            toast(t("home.freeSearchEarned"), {
+              description: t("home.sharedSearches", result.credits),
             });
           }
         })
         .catch(() => undefined);
     }
-  }, [claimReferral, getReferralCredits]);
+  }, [claimReferral, getReferralCredits, t]);
 
   const handleShare = async () => {
     if (typeof window === "undefined" || shareBusy) return;
@@ -252,8 +249,8 @@ function HomePage() {
     try {
       await ensureReferral({ data: { code } });
     } catch {
-      toast("Share link unavailable", {
-        description: "The referral database may not be ready yet. Try again after deployment.",
+      toast(t("home.shareUnavailable"), {
+        description: t("home.shareUnavailableDescription"),
       });
       return;
     }
@@ -269,25 +266,25 @@ function HomePage() {
     try {
       if (navigator.share) {
         await navigator.share(shareData);
-        toast("Share sent", {
-          description: "You get one extra free search after a friend opens it.",
+        toast(t("home.shareSent"), {
+          description: t("home.shareEarnDescription"),
         });
       } else {
         await copyShareLink(shareData.url);
-        toast("Share link copied", {
-          description: "You get one extra free search after a friend opens it.",
+        toast(t("home.shareCopied"), {
+          description: t("home.shareEarnDescription"),
         });
       }
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       try {
         await copyShareLink(shareData.url);
-        toast("Share link copied", {
-          description: "You get one extra free search after a friend opens it.",
+        toast(t("home.shareCopied"), {
+          description: t("home.shareEarnDescription"),
         });
       } catch {
-        toast("Share failed", {
-          description: "Copy the page URL and try again.",
+        toast(t("home.shareFailed"), {
+          description: t("home.shareFailedDescription"),
         });
       }
     } finally {
@@ -374,16 +371,14 @@ function HomePage() {
                 SeatMap <span className="sr-only">— Find seated toilets nearby in China</span>
               </h1>
             </div>
-            <p className="text-sm text-muted-foreground font-medium">
-              Find a seated toilet nearby in China
-            </p>
+            <p className="text-sm text-muted-foreground font-medium">{t("home.subtitle")}</p>
           </div>
           <Link
             to="/saved"
             className="mt-1 inline-flex shrink-0 items-center gap-1 rounded-full border border-border px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:border-primary/40 hover:text-primary"
           >
             <Bookmark className="size-3" aria-hidden />
-            Saved
+            {t("home.saved")}
           </Link>
         </div>
       </header>
@@ -399,9 +394,9 @@ function HomePage() {
           {status === "locating" ? (
             <>
               <Loader2 className="size-5 animate-spin" aria-hidden />
-              <span className="text-lg font-bold tracking-tight">Locating you…</span>
+              <span className="text-lg font-bold tracking-tight">{t("home.locatingTitle")}</span>
               <span className="text-xs font-medium text-primary-foreground/80 uppercase tracking-widest">
-                You are safe now
+                {t("home.locatingCaption")}
               </span>
             </>
           ) : (
@@ -412,12 +407,10 @@ function HomePage() {
                 ) : (
                   <Search className="size-5" aria-hidden />
                 )}
-                {status === "location_error"
-                  ? "Try Current Location Again"
-                  : "Find Nearby Seated Toilet"}
+                {status === "location_error" ? t("home.tryLocation") : t("home.findNearby")}
               </span>
               <span className="text-xs font-medium text-primary-foreground/80 uppercase tracking-widest">
-                {status === "location_error" ? "Request browser location" : "Search 1 km radius"}
+                {status === "location_error" ? t("home.requestLocation") : t("home.searchRadius")}
               </span>
             </>
           )}
@@ -428,37 +421,37 @@ function HomePage() {
       <section className="px-6 mt-8">
         <div className="flex justify-between items-end mb-3">
           <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-            Map check
+            {t("home.mapCheck")}
           </h2>
           <span className="text-[10px] bg-secondary px-2 py-1 rounded text-secondary-foreground font-bold tracking-wider uppercase">
             {region
               ? `${region} · CN`
               : status === "idle"
-                ? "Tap to locate"
+                ? t("home.tapToLocate")
                 : status === "locating"
-                  ? "Checking"
+                  ? t("home.checking")
                   : status === "location_error"
-                    ? "Location needed"
-                    : "Opened cities"}
+                    ? t("home.locationNeeded")
+                    : t("home.openedCities")}
           </span>
         </div>
         {mapCenter ? (
           <MapPreview
             lat={mapCenter.lat}
             lng={mapCenter.lng}
-            label={mapCenter.label}
-            eyebrow={region ? `${region} · CN` : "Current search area"}
+            label={mapCenter.label === "You" ? t("home.you") : mapCenter.label}
+            eyebrow={region ? `${region} · CN` : t("home.currentSearchArea")}
             title={
               status === "ready"
-                ? `${toilets.length} opened-city results near you`
+                ? t("home.openedResultsNearYou", toilets.length)
                 : status === "unsupported"
-                  ? `${region ?? "This area"} is not open yet`
-                  : "Checking your current city"
+                  ? t("home.areaNotOpen", region ?? t("home.thisArea"))
+                  : t("home.checkingCity")
             }
             subtitle={
               status === "unsupported"
                 ? `Opened cities: ${supportedRegions}`
-                : "Map preview uses your current search area."
+                : t("home.mapPreviewCurrent")
             }
           />
         ) : (
@@ -469,12 +462,14 @@ function HomePage() {
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-bold text-card-foreground">
-                  {status === "location_error" ? "Location unavailable" : "No map before location"}
+                  {status === "location_error"
+                    ? t("home.locationUnavailable")
+                    : t("home.noMapBeforeLocation")}
                 </p>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                   {status === "location_error"
-                    ? (errorMsg ?? "Turn on browser location, or choose an opened city below.")
-                    : "Tap the green button to show a real map of your current search area."}
+                    ? (errorMsg ?? t("home.turnOnLocation"))
+                    : t("home.noMapHint")}
                 </p>
               </div>
             </div>
@@ -488,14 +483,14 @@ function HomePage() {
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               {status === "ready"
-                ? "Nearest Options"
+                ? t("home.nearestOptions")
                 : status === "unsupported"
-                  ? "Service not open here"
-                  : "Ready when you are"}
+                  ? t("home.serviceNotOpen")
+                  : t("home.readyWhen")}
             </h2>
             {status === "ready" && (
               <span className="text-[10px] font-medium text-muted-foreground">
-                Sorted by distance
+                {t("home.sortedByDistance")}
               </span>
             )}
           </div>
@@ -505,29 +500,27 @@ function HomePage() {
               toilets.map((t) => <ToiletCard key={t.id} toilet={t} />)
             ) : (
               <div className="rounded-2xl border border-dashed border-border p-6 text-center bg-card">
-                <p className="text-sm text-muted-foreground">
-                  {errorMsg ?? "No toilets found within 1 km. Try moving and searching again."}
-                </p>
+                <p className="text-sm text-muted-foreground">{errorMsg ?? t("home.noToilets")}</p>
               </div>
             )
           ) : status === "unsupported" ? (
             <div className="rounded-2xl border border-dashed border-border p-6 text-center bg-card">
               <p className="text-sm text-muted-foreground">
-                {region ?? "This area"} is not open yet. Current opened cities: {supportedRegions}.
+                {t("home.unsupported", region ?? "This area", supportedRegions)}
               </p>
               <Link
                 to="/report"
                 className="mt-4 inline-flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground"
               >
-                Report a seated toilet
+                {t("home.reportSeated")}
               </Link>
             </div>
           ) : (
             <div className="rounded-2xl border border-dashed border-border p-6 text-center bg-card">
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Tap the green button above.
+                {t("home.readyCopy").split("\n")[0]}
                 <br />
-                We'll show traveler-friendly seated options near you in seconds.
+                {t("home.readyCopy").split("\n")[1]}
               </p>
             </div>
           )}
@@ -538,12 +531,9 @@ function HomePage() {
         <DialogContent className="max-w-[360px] rounded-3xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-extrabold tracking-tight text-brand-dark">
-              SeatMap Travel Pass
+              {t("home.paywallTitle")}
             </DialogTitle>
-            <DialogDescription>
-              Your free emergency search is used. Unlock unlimited live toilet searches for your
-              trip.
-            </DialogDescription>
+            <DialogDescription>{t("home.paywallDescription")}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-2 my-2">
@@ -563,10 +553,12 @@ function HomePage() {
               >
                 <div>
                   <p className="font-bold">{p.days} days</p>
-                  <p className="text-xs text-muted-foreground">Unlimited searches · {p.cadence}</p>
-                  {p.savings && (
+                  <p className="text-xs text-muted-foreground">
+                    {t("home.unlimited")} · {t("home.days", p.days)}
+                  </p>
+                  {p.savingsPercent && (
                     <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
-                      {p.savings}
+                      {t("home.saveAbout", p.savingsPercent)}
                     </p>
                   )}
                 </div>
@@ -574,7 +566,7 @@ function HomePage() {
                   <p className="font-extrabold text-brand-dark">{p.price}</p>
                   {p.best && (
                     <p className="text-[10px] font-bold uppercase tracking-wider text-primary">
-                      Best
+                      {t("home.best")}
                     </p>
                   )}
                 </div>
@@ -583,9 +575,9 @@ function HomePage() {
           </div>
 
           <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-4">
-            <p className="text-sm font-extrabold text-brand-dark">Earn one free search</p>
+            <p className="text-sm font-extrabold text-brand-dark">{t("home.earnSearch")}</p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              Send SeatMap to a friend. When they open your link, you get one extra free search.
+              {t("home.shareExplain")}
             </p>
             <button
               type="button"
@@ -598,14 +590,12 @@ function HomePage() {
               ) : (
                 <Share2 className="size-4" aria-hidden />
               )}
-              {shareBusy ? "Preparing link..." : "Share to earn 1 search"}
+              {shareBusy ? t("home.preparingLink") : t("home.shareButton")}
             </button>
           </div>
 
           <DialogFooter className="flex-col gap-2 sm:flex-col">
-            <p className="text-[10px] text-center text-muted-foreground">
-              No account needed · Apple Pay / Google Pay supported
-            </p>
+            <p className="text-[10px] text-center text-muted-foreground">{t("home.noAccount")}</p>
           </DialogFooter>
         </DialogContent>
       </Dialog>

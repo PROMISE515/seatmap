@@ -8,6 +8,7 @@ import { MapPreview } from "@/components/MapPreview";
 import { getCityBySlug } from "@/lib/cities";
 import { findNearbyToilets } from "@/lib/toilets.functions";
 import { wgs84ToGcj02, type ToiletDTO } from "@/lib/amap";
+import { useT } from "@/lib/i18n";
 
 const SITE = "https://swift-restroom-finder.lovable.app";
 
@@ -98,6 +99,7 @@ function CityErrorComponent({ reset }: { reset: () => void }) {
 }
 
 function CityPage() {
+  const { t } = useT();
   const { city } = Route.useLoaderData();
   const [toilets, setToilets] = useState<ToiletDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -143,7 +145,7 @@ function CityPage() {
           }
 
           setUsingCurrentLocation(true);
-          setMapCenter({ lat: currentGcj.lat, lng: currentGcj.lng, label: "You" });
+          setMapCenter({ lat: currentGcj.lat, lng: currentGcj.lng, label: t("home.you") });
           findNearby({
             data: {
               lat: pos.coords.latitude,
@@ -176,7 +178,7 @@ function CityPage() {
     return () => {
       cancelled = true;
     };
-  }, [city.slug, city.name, city.centerLat, city.centerLng, city.radius, findNearby]);
+  }, [city.slug, city.name, city.centerLat, city.centerLng, city.radius, findNearby, t]);
 
   return (
     <AppShell>
@@ -186,7 +188,7 @@ function CityPage() {
           className="inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" aria-hidden />
-          Back
+          {t("city.back")}
         </Link>
       </header>
 
@@ -195,11 +197,9 @@ function CityPage() {
           {city.country.toUpperCase()} · {city.nameLocal}
         </span>
         <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-brand-dark leading-tight">
-          Public Toilets in {city.name}
+          {t("city.publicToilets", city.name)}
         </h1>
-        <p className="mt-1 text-sm font-semibold text-primary">
-          Clean Western (seated) restrooms for travelers
-        </p>
+        <p className="mt-1 text-sm font-semibold text-primary">{t("city.tagline")}</p>
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">{city.intro}</p>
       </section>
 
@@ -208,12 +208,14 @@ function CityPage() {
           lat={mapCenter.lat}
           lng={mapCenter.lng}
           label={mapCenter.label}
-          eyebrow={usingCurrentLocation ? "Current search area" : "City preview"}
-          title={usingCurrentLocation ? `${city.name} results near you` : `${city.name} preview`}
-          subtitle={
+          eyebrow={usingCurrentLocation ? t("city.currentArea") : t("city.cityPreview")}
+          title={
             usingCurrentLocation
-              ? "Distances and navigation use your current location."
-              : "Open the green search button on the home page for current-location navigation."
+              ? t("city.resultsNearYou", city.name)
+              : t("city.previewTitle", city.name)
+          }
+          subtitle={
+            usingCurrentLocation ? t("city.distanceUsesLocation") : t("city.homeNavigationHint")
           }
         />
       </section>
@@ -221,10 +223,9 @@ function CityPage() {
       {!usingCurrentLocation && (
         <section className="px-6 mt-4">
           <div className="rounded-2xl border border-border bg-card p-4">
-            <p className="text-sm font-bold text-card-foreground">Preview mode</p>
+            <p className="text-sm font-bold text-card-foreground">{t("city.previewMode")}</p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              These are {city.name} city-area results, not distances from your current location.
-              Navigation is disabled here to avoid sending you to the wrong city.
+              {t("city.previewExplain", city.name)}
             </p>
           </div>
         </section>
@@ -235,7 +236,7 @@ function CityPage() {
           <div className="flex items-center gap-2 mb-1.5">
             <Sparkles className="size-4 text-primary" aria-hidden />
             <h2 className="text-xs font-bold uppercase tracking-widest text-primary">
-              Traveler tip
+              {t("city.travelerTip")}
             </h2>
           </div>
           <p className="text-sm text-foreground leading-relaxed">{city.travelerTip}</p>
@@ -244,7 +245,7 @@ function CityPage() {
 
       <section className="px-6 mt-8">
         <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
-          Best neighborhoods to find one
+          {t("city.neighborhoods")}
         </h2>
         <ul className="flex flex-wrap gap-2">
           {city.neighborhoods.map((n: string) => (
@@ -262,9 +263,11 @@ function CityPage() {
       <section className="px-6 mt-8 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-            {loading ? "Loading…" : `${toilets.length} live locations`}
+            {loading ? t("city.loading") : t("city.liveLocations", toilets.length)}
           </h2>
-          <span className="text-[10px] font-medium text-muted-foreground">Live from AMap</span>
+          <span className="text-[10px] font-medium text-muted-foreground">
+            {t("city.liveFromAmap")}
+          </span>
         </div>
 
         {loading ? (
@@ -283,7 +286,7 @@ function CityPage() {
         ) : (
           <div className="rounded-2xl border border-dashed border-border p-6 text-center bg-card">
             <p className="text-sm text-muted-foreground">
-              {errorMsg ?? `No public toilets found in ${city.name}.`}
+              {errorMsg ?? t("city.noPublic", city.name)}
             </p>
           </div>
         )}
@@ -291,25 +294,22 @@ function CityPage() {
 
       <section className="px-6 mt-10">
         <h2 className="text-base font-extrabold text-brand-dark mb-3">
-          Why use SeatMap in {city.name}?
+          {t("city.whyUse", city.name)}
         </h2>
         <ul className="space-y-2.5">
-          {[
-            "Live listings are screened for seated-toilet likelihood",
-            "Prioritizes malls, hotels, and traveler-friendly indoor venues",
-            "Free-entry options are highlighted when available",
-            "Live AMap results are cached for fast repeat searches",
-          ].map((line) => (
-            <li key={line} className="flex gap-2 text-sm text-foreground">
-              <Check className="size-4 text-primary shrink-0 mt-0.5" aria-hidden />
-              <span>{line}</span>
-            </li>
-          ))}
+          {[t("city.reason1"), t("city.reason2"), t("city.reason3"), t("city.reason4")].map(
+            (line) => (
+              <li key={line} className="flex gap-2 text-sm text-foreground">
+                <Check className="size-4 text-primary shrink-0 mt-0.5" aria-hidden />
+                <span>{line}</span>
+              </li>
+            ),
+          )}
         </ul>
       </section>
 
       <footer className="px-6 mt-10 pb-4 text-[11px] text-muted-foreground">
-        SeatMap · Find a seated toilet in {city.name} in under 10 seconds.
+        {t("city.footer", city.name)}
       </footer>
     </AppShell>
   );

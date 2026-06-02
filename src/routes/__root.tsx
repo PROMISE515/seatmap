@@ -7,7 +7,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { useLocale } from "@/lib/i18n";
 
 import appCss from "../styles.css?url";
 
@@ -139,6 +141,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const locale = useLocale();
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   return (
     <QueryClientProvider client={queryClient}>

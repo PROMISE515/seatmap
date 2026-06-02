@@ -8,6 +8,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { useT } from "@/lib/i18n";
 
 type MapNavigationSheetProps = {
   toilet: Pick<ToiletDTO, "name" | "address" | "lat" | "lng">;
@@ -29,6 +30,7 @@ export function MapNavigationSheet({
   triggerClassName,
   triggerLabel = "Navigate",
 }: MapNavigationSheetProps) {
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const urls = buildMapUrls(toilet);
 
@@ -42,8 +44,8 @@ export function MapNavigationSheet({
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="bottom" className="rounded-t-3xl">
           <SheetHeader>
-            <SheetTitle>Open in maps</SheetTitle>
-            <SheetDescription>Choose your preferred navigation app.</SheetDescription>
+            <SheetTitle>{t("map.openInMaps")}</SheetTitle>
+            <SheetDescription>{t("map.chooseApp")}</SheetDescription>
           </SheetHeader>
           <div className="space-y-2 mt-4">
             <a
