@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
-import { Bookmark, Loader2, MapPin, Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bookmark, Loader2, MapPin, Search, Share2 } from "lucide-react";
+import { toast } from "sonner";
 import { findNearbyToilets } from "@/lib/toilets.functions";
 import type { ToiletDTO } from "@/lib/amap";
 import { wgs84ToGcj02 } from "@/lib/amap";
@@ -68,6 +69,11 @@ export const Route = createFileRoute("/")({
 
 type Status = "idle" | "locating" | "ready" | "unsupported" | "location_error";
 
+const SEARCH_COUNT_KEY = "seatmap.search.count";
+const SHARE_BONUS_KEY = "seatmap.share.freeCredits";
+const SHARE_CLAIMED_KEY = "seatmap.share.claimed";
+const SHARE_PARAM = "seatmap_share";
+
 const PASS_PLANS = [
   {
     days: 7,
@@ -133,6 +139,10 @@ function OpenedCityLinks() {
   );
 }
 
+function freeSearchLimit() {
+  return 1 + Math.max(0, Number(getStoredValue(SHARE_BONUS_KEY) || "0"));
+}
+
 function HomePage() {
   const [status, setStatus] = useState<Status>("idle");
   const [showPaywall, setShowPaywall] = useState(false);
@@ -145,6 +155,53 @@ function HomePage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [supportedRegions, setSupportedRegions] = useState("Shanghai, Beijing and Qingdao");
   const findNearby = useServerFn(findNearbyToilets);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get(SHARE_PARAM) !== "1") return;
+
+    if (getStoredValue(SHARE_CLAIMED_KEY) !== "1") {
+      const credits = Math.max(0, Number(getStoredValue(SHARE_BONUS_KEY) || "0"));
+      setStoredValue(SHARE_BONUS_KEY, String(credits + 1));
+      setStoredValue(SHARE_CLAIMED_KEY, "1");
+      toast("Free search unlocked", {
+        description: "Thanks for opening a shared SeatMap link.",
+      });
+    }
+
+    url.searchParams.delete(SHARE_PARAM);
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+  }, []);
+
+  const handleShare = async () => {
+    if (typeof window === "undefined") return;
+
+    const url = new URL(window.location.origin);
+    url.searchParams.set(SHARE_PARAM, "1");
+    const shareData = {
+      title: "SeatMap",
+      text: "Find a seated toilet nearby in China. Open this link to get a free search.",
+      url: url.toString(),
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(shareData.url);
+        toast("Share link copied", {
+          description: "Anyone opening it gets one free SeatMap search.",
+        });
+      }
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      await navigator.clipboard.writeText(shareData.url);
+      toast("Share link copied", {
+        description: "Anyone opening it gets one free SeatMap search.",
+      });
+    }
+  };
 
   const runSearch = async (coords: { lat: number; lng: number; gcj: boolean }) => {
     setErrorMsg(null);
@@ -174,8 +231,8 @@ function HomePage() {
     const hasActivePass = passExpiresAt > Date.now();
 
     if (!hasActivePass) {
-      const count = Number(getStoredValue("seatmap.search.count") || "0");
-      if (count >= 1) {
+      const count = Number(getStoredValue(SEARCH_COUNT_KEY) || "0");
+      if (count >= freeSearchLimit()) {
         setShowPaywall(true);
         return;
       }
@@ -188,8 +245,8 @@ function HomePage() {
     setErrorMsg(null);
     const bump = () => {
       if (!hasActivePass) {
-        const count = Number(getStoredValue("seatmap.search.count") || "0");
-        setStoredValue("seatmap.search.count", String(count + 1));
+        const count = Number(getStoredValue(SEARCH_COUNT_KEY) || "0");
+        setStoredValue(SEARCH_COUNT_KEY, String(count + 1));
       }
     };
 
@@ -229,13 +286,23 @@ function HomePage() {
               Find a seated toilet nearby in China
             </p>
           </div>
-          <Link
-            to="/saved"
-            className="mt-1 inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:border-primary/40 hover:text-primary"
-          >
-            <Bookmark className="size-3" aria-hidden />
-            Saved
-          </Link>
+          <div className="mt-1 flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={handleShare}
+              className="inline-flex size-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
+              aria-label="Share SeatMap"
+            >
+              <Share2 className="size-3.5" aria-hidden />
+            </button>
+            <Link
+              to="/saved"
+              className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:border-primary/40 hover:text-primary"
+            >
+              <Bookmark className="size-3" aria-hidden />
+              Saved
+            </Link>
+          </div>
         </div>
       </header>
 
