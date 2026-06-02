@@ -191,14 +191,14 @@ function HomePage() {
       } else {
         await navigator.clipboard.writeText(shareData.url);
         toast("Share link copied", {
-          description: "Anyone opening it gets one free SeatMap search.",
+          description: "Your friend gets one extra free SeatMap search.",
         });
       }
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       await navigator.clipboard.writeText(shareData.url);
       toast("Share link copied", {
-        description: "Anyone opening it gets one free SeatMap search.",
+        description: "Your friend gets one extra free SeatMap search.",
       });
     }
   };
@@ -290,10 +290,11 @@ function HomePage() {
             <button
               type="button"
               onClick={handleShare}
-              className="inline-flex size-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
-              aria-label="Share SeatMap"
+              className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-primary hover:border-primary/40 hover:bg-primary/10"
+              aria-label="Share SeatMap and give a friend one free search"
             >
-              <Share2 className="size-3.5" aria-hidden />
+              <Share2 className="size-3" aria-hidden />
+              Share +1
             </button>
             <Link
               to="/saved"
