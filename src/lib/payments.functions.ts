@@ -222,10 +222,6 @@ export const verifyPassSession = createServerFn({ method: "POST" })
       };
     }
 
-    if (session.payment_status !== "paid") {
-      return { valid: false as const, reason: "Payment not completed" };
-    }
-
     const lookupKey = session.metadata?.plan_lookup_key as string | undefined;
     const days = lookupKey ? PLANS[lookupKey]?.days : undefined;
     if (!days) {
@@ -257,6 +253,10 @@ export const verifyPassSession = createServerFn({ method: "POST" })
         expiresAtMs,
         expired: Date.now() > expiresAtMs,
       };
+    }
+
+    if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") {
+      return { valid: false as const, reason: "Payment not completed" };
     }
 
     const createdAtMs = session.created * 1000;

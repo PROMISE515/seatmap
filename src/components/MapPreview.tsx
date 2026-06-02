@@ -1,4 +1,5 @@
 import { MapPin } from "lucide-react";
+import { useLocale } from "@/lib/i18n";
 
 type MapPreviewProps = {
   lat: number;
@@ -10,6 +11,8 @@ type MapPreviewProps = {
 };
 
 export function MapPreview({ lat, lng, label, eyebrow, title, subtitle }: MapPreviewProps) {
+  const locale = useLocale();
+  const mapLang = locale === "en" || locale === "es" ? "en" : "zh_cn";
   const zoom = 15;
   const tileSize = 256;
   const n = 2 ** zoom;
@@ -29,7 +32,7 @@ export function MapPreview({ lat, lng, label, eyebrow, title, subtitle }: MapPre
         key: `${x}:${y}`,
         x: (dx + 1) * tileSize,
         y: (dy + 1) * tileSize,
-        src: `https://webrd0${server}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=2&style=8&x=${x}&y=${y}&z=${zoom}`,
+        src: `https://webrd0${server}.is.autonavi.com/appmaptile?lang=${mapLang}&size=1&scale=2&style=8&x=${x}&y=${y}&z=${zoom}`,
       };
     }),
   );

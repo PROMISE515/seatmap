@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Bookmark, Loader2, MapPin, Search, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { findNearbyToilets } from "@/lib/toilets.functions";
+import { verifyPassSession } from "@/lib/payments.functions";
 import {
   claimShareReferral,
   ensureShareReferral,
@@ -19,6 +20,7 @@ import { StripeEmbeddedCheckout, PaymentTestModeBanner } from "@/components/Stri
 import { getStoredValue, setStoredValue } from "@/lib/client-storage";
 import { cities } from "@/lib/cities";
 import { useT } from "@/lib/i18n";
+import { getStripeEnvironment } from "@/lib/stripe";
 import {
   Dialog,
   DialogContent,
@@ -76,6 +78,8 @@ export const Route = createFileRoute("/")({
 type Status = "idle" | "locating" | "ready" | "unsupported" | "location_error";
 
 const SEARCH_COUNT_KEY = "seatmap.search.count";
+const PASS_EXPIRES_AT_KEY = "seatmap.pass.expiresAt";
+const PASS_SESSION_KEY = "seatmap.pass.sid";
 const SHARE_BONUS_KEY = "seatmap.share.freeCredits";
 const SHARE_REFERRAL_CODE_KEY = "seatmap.share.referralCode";
 const SHARE_VISITOR_ID_KEY = "seatmap.share.visitorId";
@@ -222,6 +226,7 @@ function HomePage() {
   const ensureReferral = useServerFn(ensureShareReferral);
   const claimReferral = useServerFn(claimShareReferral);
   const getReferralCredits = useServerFn(getShareReferralCredits);
+  const verifyPass = useServerFn(verifyPassSession);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -265,6 +270,26 @@ function HomePage() {
         .catch(() => undefined);
     }
   }, [claimReferral, getReferralCredits, t]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const passExpiresAt = Number(getStoredValue(PASS_EXPIRES_AT_KEY) || "0");
+    if (passExpiresAt > Date.now()) return;
+
+    const sessionId = getStoredValue(PASS_SESSION_KEY);
+    if (!sessionId) return;
+
+    void verifyPass({
+      data: { sessionId, environment: getStripeEnvironment() },
+    })
+      .then((res) => {
+        if (!res.valid || res.expired) return;
+        setStoredValue(PASS_EXPIRES_AT_KEY, String(res.expiresAtMs));
+        setStoredValue(PASS_SESSION_KEY, sessionId);
+        setStoredValue(SEARCH_COUNT_KEY, "0");
+      })
+      .catch(() => undefined);
+  }, [verifyPass]);
 
   const handleShare = async () => {
     if (typeof window === "undefined" || shareBusy) return;
@@ -341,7 +366,7 @@ function HomePage() {
   const handleFind = () => {
     if (typeof window === "undefined") return;
 
-    const passExpiresAt = Number(getStoredValue("seatmap.pass.expiresAt") || "0");
+    const passExpiresAt = Number(getStoredValue(PASS_EXPIRES_AT_KEY) || "0");
     const hasActivePass = passExpiresAt > Date.now();
 
     if (!hasActivePass) {

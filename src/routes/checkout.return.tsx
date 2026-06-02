@@ -46,6 +46,7 @@ function CheckoutReturn() {
   // Auto-activate locally so they can keep using current device immediately.
   useEffect(() => {
     if (!session_id) return;
+    setStoredValue("seatmap.pass.sid", session_id);
     (async () => {
       try {
         const res = await verifyPassSession({

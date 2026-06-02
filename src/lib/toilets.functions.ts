@@ -78,12 +78,6 @@ function venueKeyForToilet(toilet: ToiletDTO) {
   return `${Math.round(toilet.lat * 1000)}:${Math.round(toilet.lng * 1000)}`;
 }
 
-function displayNameForVenueGroup(toilet: ToiletDTO) {
-  const rawName = toilet.rawName ?? toilet.name;
-  const venueMatch = rawName.match(/[（(]([^）)]+)[）)]/);
-  return venueMatch?.[1] ?? toilet.name;
-}
-
 function dedupeVenueResults(toilets: ToiletDTO[]) {
   const groups = new Map<string, ToiletDTO[]>();
   for (const toilet of toilets) {
@@ -106,7 +100,7 @@ function dedupeVenueResults(toilets: ToiletDTO[]) {
       });
       return {
         ...best,
-        name: group.length > 1 ? displayNameForVenueGroup(best) : best.name,
+        name: best.name,
         floor: group.length > 1 ? undefined : best.floor,
         seatedConfidence: group.some((item) => item.seatedConfidence === "confirmed")
           ? "confirmed"
@@ -340,7 +334,7 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
             tags:
               seatedConfidence === "confirmed"
                 ? ["Western Toilet", "Free"]
-                : ["Likely Western", "Indoor", "Traveler-friendly"],
+                : ["Likely Western", "Traveler-friendly"],
             address,
             city: r.city ?? "",
             lat: r.lat,
@@ -420,7 +414,7 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
         tags:
           seatedConfidence === "confirmed"
             ? ["Western Toilet", "Free"]
-            : ["Likely Western", "Indoor", "Traveler-friendly"],
+            : ["Likely Western", "Traveler-friendly"],
         address,
         city: s(p.cityname),
         lat: Number(latStr),
@@ -474,7 +468,7 @@ export const getToiletByAmapId = createServerFn({ method: "POST" })
         seatedConfidence === "confirmed"
           ? ["Western Toilet", "Free"]
           : seatedConfidence === "likely"
-            ? ["Likely Western", "Indoor", "Traveler-friendly"]
+            ? ["Likely Western", "Traveler-friendly"]
             : ["Needs confirmation"],
       address,
       city: row.city ?? "",
