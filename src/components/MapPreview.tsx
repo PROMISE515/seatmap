@@ -33,6 +33,7 @@ declare global {
         },
       ) => {
         destroy: () => void;
+        on: (event: "complete", callback: () => void) => void;
         setCenter: (center: [number, number]) => void;
         setZoom: (zoom: number) => void;
       };
@@ -123,7 +124,9 @@ function RasterFallbackMap({ lat, lng }: { lat: number; lng: number }) {
 function AmapEnglishMap({ lat, lng }: { lat: number; lng: number }) {
   const mapNodeRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<InstanceType<NonNullable<typeof window.AMap>["Map"]> | null>(null);
-  const key = import.meta.env.VITE_AMAP_JS_KEY as string | undefined;
+  const key =
+    (import.meta.env.VITE_AMAP_JS_KEY as string | undefined) ?? "bb9ac16266e705cc541f6c42232e143e";
+  const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -152,6 +155,9 @@ function AmapEnglishMap({ lat, lng }: { lat: number; lng: number }) {
           scrollWheel: false,
           touchZoom: false,
         });
+        map.on("complete", () => {
+          if (!cancelled) setReady(true);
+        });
         mapRef.current = map;
       })
       .catch(() => {
@@ -162,6 +168,7 @@ function AmapEnglishMap({ lat, lng }: { lat: number; lng: number }) {
       cancelled = true;
       mapRef.current?.destroy();
       mapRef.current = null;
+      setReady(false);
     };
   }, [key, lat, lng]);
 
@@ -170,9 +177,20 @@ function AmapEnglishMap({ lat, lng }: { lat: number; lng: number }) {
     mapRef.current?.setZoom(15);
   }, [lat, lng]);
 
-  if (failed) return <RasterFallbackMap lat={lat} lng={lng} />;
-
-  return <div ref={mapNodeRef} aria-hidden className="absolute inset-0" />;
+  return (
+    <>
+      <RasterFallbackMap lat={lat} lng={lng} />
+      {!failed && (
+        <div
+          ref={mapNodeRef}
+          aria-hidden
+          className={`absolute inset-0 transition-opacity duration-300 ${
+            ready ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      )}
+    </>
+  );
 }
 
 export function MapPreview({ lat, lng, label, eyebrow, title, subtitle }: MapPreviewProps) {
