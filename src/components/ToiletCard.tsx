@@ -130,7 +130,9 @@ export function ToiletCard({
           <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
             <MapPin className="size-3 shrink-0" aria-hidden />
             <span className="leading-snug">
-              {showDistance ? t("card.away", toilet.distanceM) : toilet.address || toilet.city}
+              {showDistance
+                ? t("card.away", toilet.distanceM)
+                : toilet.city || t("card.previewVenue")}
             </span>
           </p>
         </div>

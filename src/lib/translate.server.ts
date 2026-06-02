@@ -12,9 +12,81 @@ Rules:
 - Keep it short. No quotes, no explanations.
 Return ONLY a JSON array of strings, in the same order as the input, same length.`;
 
+const LOCAL_REPLACEMENTS: Array<[RegExp, string]> = [
+  [/上海/g, "Shanghai"],
+  [/北京/g, "Beijing"],
+  [/成都/g, "Chengdu"],
+  [/重庆/g, "Chongqing"],
+  [/深圳/g, "Shenzhen"],
+  [/广州/g, "Guangzhou"],
+  [/杭州/g, "Hangzhou"],
+  [/西安/g, "Xi'an"],
+  [/张家界/g, "Zhangjiajie"],
+  [/香港/g, "Hong Kong"],
+  [/朗庭智能酒店/g, "Langting Smart Hotel"],
+  [/智能酒店/g, "Smart Hotel"],
+  [/万豪酒店/g, "Marriott Hotel"],
+  [/希尔顿酒店/g, "Hilton Hotel"],
+  [/香格里拉/g, "Shangri-La"],
+  [/洲际酒店/g, "InterContinental Hotel"],
+  [/凯悦酒店/g, "Hyatt Hotel"],
+  [/酒店/g, "Hotel"],
+  [/来福士/g, "Raffles City"],
+  [/国金中心/g, "IFC Mall"],
+  [/太古里/g, "Taikoo Li"],
+  [/万象城/g, "MixC"],
+  [/恒隆广场/g, "Plaza 66"],
+  [/购物中心/g, "Shopping Mall"],
+  [/商城/g, "Mall"],
+  [/商场/g, "Mall"],
+  [/广场/g, "Plaza"],
+  [/星巴克/g, "Starbucks"],
+  [/瑞幸咖啡/g, "Luckin Coffee"],
+  [/咖啡/g, "Coffee"],
+  [/行政中心/g, "Administrative Center"],
+  [/地铁站/g, "Metro Station"],
+  [/地铁/g, "Metro"],
+  [/机场/g, "Airport"],
+  [/火车站/g, "Railway Station"],
+  [/高铁站/g, "High-Speed Rail Station"],
+  [/卫生间|洗手间|厕所/g, "Restroom"],
+  [/男/g, "Men's"],
+  [/女/g, "Women's"],
+  [/无障碍/g, "Accessible"],
+  [/母婴室/g, "Nursery Room"],
+  [/楼|层/g, "F"],
+  [/小区/g, "Community"],
+];
+
+function hasChinese(text: string) {
+  return /[\u3400-\u9fff]/.test(text);
+}
+
+function localTranslateName(name: string) {
+  let translated = name.replace(/[（]/g, " (").replace(/[）]/g, ")").replace(/\s+/g, " ").trim();
+
+  for (const [pattern, replacement] of LOCAL_REPLACEMENTS) {
+    translated = translated.replace(pattern, replacement);
+  }
+
+  translated = translated
+    .replace(/[\u3400-\u9fff]+/g, " ")
+    .replace(/\s*-\s*/g, " - ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (translated && translated !== name && !hasChinese(translated)) return translated;
+  if (/酒店/.test(name)) return "Traveler-Friendly Hotel";
+  if (/购物|商场|商城|广场/.test(name)) return "Traveler-Friendly Mall";
+  if (/咖啡|星巴克|瑞幸/.test(name)) return "Traveler-Friendly Cafe";
+  if (/地铁|机场|火车站|高铁站/.test(name)) return "Traveler-Friendly Transit Venue";
+  return "Traveler-Friendly Venue";
+}
+
 export async function translateNames(names: string[]): Promise<string[]> {
   const apiKey = process.env.LOVABLE_API_KEY;
-  if (!apiKey || names.length === 0) return names;
+  if (names.length === 0) return names;
+  if (!apiKey) return names.map(localTranslateName);
 
   try {
     const res = await fetch(ENDPOINT, {
@@ -31,7 +103,7 @@ export async function translateNames(names: string[]): Promise<string[]> {
         ],
       }),
     });
-    if (!res.ok) return names;
+    if (!res.ok) return names.map(localTranslateName);
     const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
     const raw = json.choices?.[0]?.message?.content?.trim() ?? "";
     const cleaned = raw
@@ -39,9 +111,14 @@ export async function translateNames(names: string[]): Promise<string[]> {
       .replace(/```$/i, "")
       .trim();
     const parsed = JSON.parse(cleaned);
-    if (!Array.isArray(parsed) || parsed.length !== names.length) return names;
-    return parsed.map((v, i) => (typeof v === "string" && v.trim() ? v.trim() : names[i]));
+    if (!Array.isArray(parsed) || parsed.length !== names.length) {
+      return names.map(localTranslateName);
+    }
+    return parsed.map((v, i) => {
+      const translated = typeof v === "string" && v.trim() ? v.trim() : "";
+      return translated && !hasChinese(translated) ? translated : localTranslateName(names[i]);
+    });
   } catch {
-    return names;
+    return names.map(localTranslateName);
   }
 }

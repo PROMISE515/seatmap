@@ -1,5 +1,4 @@
 import { MapPin } from "lucide-react";
-import { useLocale } from "@/lib/i18n";
 
 type MapPreviewProps = {
   lat: number;
@@ -11,54 +10,23 @@ type MapPreviewProps = {
 };
 
 export function MapPreview({ lat, lng, label, eyebrow, title, subtitle }: MapPreviewProps) {
-  const locale = useLocale();
-  const mapLang = locale === "en" || locale === "es" ? "en" : "zh_cn";
-  const zoom = 15;
-  const tileSize = 256;
-  const n = 2 ** zoom;
-  const latRad = (lat * Math.PI) / 180;
-  const xFloat = ((lng + 180) / 360) * n;
-  const yFloat = ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n;
-  const tileX = Math.floor(xFloat);
-  const tileY = Math.floor(yFloat);
-  const offsetX = (xFloat - tileX) * tileSize;
-  const offsetY = (yFloat - tileY) * tileSize;
-  const tiles = [-1, 0, 1].flatMap((dy) =>
-    [-1, 0, 1].map((dx) => {
-      const x = tileX + dx;
-      const y = tileY + dy;
-      const server = ((Math.abs(x + y) % 4) + 1).toString();
-      return {
-        key: `${x}:${y}`,
-        x: (dx + 1) * tileSize,
-        y: (dy + 1) * tileSize,
-        src: `https://webrd0${server}.is.autonavi.com/appmaptile?lang=${mapLang}&size=1&scale=2&style=8&x=${x}&y=${y}&z=${zoom}`,
-      };
-    }),
-  );
+  const routeOffset = Math.abs(Math.round((lat + lng) * 10)) % 36;
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
       <div className="relative aspect-[16/7] min-h-36 overflow-hidden bg-[#dce7df]">
-        <div
-          aria-hidden
-          className="absolute h-[768px] w-[768px]"
-          style={{
-            left: `calc(50% - ${tileSize + offsetX}px)`,
-            top: `calc(50% - ${tileSize + offsetY}px)`,
-          }}
-        >
-          {tiles.map((tile) => (
-            <img
-              key={tile.key}
-              src={tile.src}
-              alt=""
-              className="absolute size-64 max-w-none select-none"
-              style={{ left: tile.x, top: tile.y }}
-              loading="lazy"
-              draggable={false}
-            />
-          ))}
+        <div aria-hidden className="absolute inset-0">
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(17,24,39,0.12)_1px,transparent_1px),linear-gradient(0deg,rgba(17,24,39,0.12)_1px,transparent_1px)] bg-[length:42px_42px] opacity-45" />
+          <div className="absolute -left-12 top-7 h-8 w-[120%] rotate-[-8deg] rounded-full bg-[#f8f3e7]/90 shadow-[0_0_0_1px_rgba(15,23,42,0.08)]" />
+          <div className="absolute -left-8 bottom-10 h-7 w-[115%] rotate-[10deg] rounded-full bg-[#f8f3e7]/90 shadow-[0_0_0_1px_rgba(15,23,42,0.08)]" />
+          <div className="absolute left-1/3 -top-10 h-[160%] w-9 rotate-[18deg] rounded-full bg-[#f8f3e7]/90 shadow-[0_0_0_1px_rgba(15,23,42,0.08)]" />
+          <div className="absolute right-12 -top-16 h-[170%] w-7 rotate-[-20deg] rounded-full bg-[#f8f3e7]/80 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]" />
+          <div
+            className="absolute left-8 top-7 h-20 w-24 rounded-[2rem] bg-primary/15"
+            style={{ transform: `translateX(${routeOffset}px)` }}
+          />
+          <div className="absolute right-10 top-8 h-16 w-28 rounded-[2rem] bg-sky-300/25" />
+          <div className="absolute bottom-8 left-1/2 h-16 w-24 rounded-[2rem] bg-emerald-200/45" />
         </div>
         <div className="absolute left-1/2 top-1/2 grid size-11 -translate-x-1/2 -translate-y-full place-items-center rounded-full bg-primary text-primary-foreground shadow-brand ring-4 ring-background/80">
           <MapPin className="size-5" aria-hidden />

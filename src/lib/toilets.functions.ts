@@ -210,7 +210,11 @@ async function ensureTranslations(
   if (pairs.length === 0) return out;
 
   const ids = pairs.map((p) => p.amapId);
-  const fallback = () => new Map(pairs.map((p) => [p.amapId, p.name]));
+  const hasChinese = (text: string) => /[\u3400-\u9fff]/.test(text);
+  const fallback = async () => {
+    const translated = await translateNames(pairs.map((p) => p.name));
+    return new Map(pairs.map((p, i) => [p.amapId, translated[i] ?? p.name]));
+  };
 
   const { data: existing, error } = await supabaseAdmin
     .from("toilets")
@@ -221,7 +225,7 @@ async function ensureTranslations(
 
   const cached = new Map<string, string>();
   for (const r of existing ?? []) {
-    if (r.name_en) cached.set(r.amap_id, r.name_en);
+    if (r.name_en && !hasChinese(r.name_en)) cached.set(r.amap_id, r.name_en);
   }
 
   const missing = pairs.filter((p) => !cached.get(p.amapId));
@@ -334,7 +338,7 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
             tags:
               seatedConfidence === "confirmed"
                 ? ["Western Toilet", "Free"]
-                : ["Likely Western", "Traveler-friendly"],
+                : ["Western Toilet", "Traveler-friendly"],
             address,
             city: r.city ?? "",
             lat: r.lat,
@@ -414,7 +418,7 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
         tags:
           seatedConfidence === "confirmed"
             ? ["Western Toilet", "Free"]
-            : ["Likely Western", "Traveler-friendly"],
+            : ["Western Toilet", "Traveler-friendly"],
         address,
         city: s(p.cityname),
         lat: Number(latStr),
@@ -468,7 +472,7 @@ export const getToiletByAmapId = createServerFn({ method: "POST" })
         seatedConfidence === "confirmed"
           ? ["Western Toilet", "Free"]
           : seatedConfidence === "likely"
-            ? ["Likely Western", "Traveler-friendly"]
+            ? ["Western Toilet", "Traveler-friendly"]
             : ["Needs confirmation"],
       address,
       city: row.city ?? "",

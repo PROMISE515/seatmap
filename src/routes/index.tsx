@@ -75,7 +75,7 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-type Status = "idle" | "locating" | "ready" | "unsupported" | "location_error";
+type Status = "idle" | "checking" | "locating" | "ready" | "unsupported" | "location_error";
 
 const SEARCH_COUNT_KEY = "seatmap.search.count";
 const PASS_EXPIRES_AT_KEY = "seatmap.pass.expiresAt";
@@ -363,11 +363,36 @@ function HomePage() {
     }
   };
 
-  const handleFind = () => {
+  const restorePassFromCheckout = async () => {
+    const passExpiresAt = Number(getStoredValue(PASS_EXPIRES_AT_KEY) || "0");
+    if (passExpiresAt > Date.now()) return true;
+
+    const sessionId = getStoredValue(PASS_SESSION_KEY);
+    if (!sessionId) return false;
+
+    try {
+      const res = await verifyPass({
+        data: { sessionId, environment: getStripeEnvironment() },
+      });
+      if (!res.valid || res.expired) return false;
+      setStoredValue(PASS_EXPIRES_AT_KEY, String(res.expiresAtMs));
+      setStoredValue(PASS_SESSION_KEY, sessionId);
+      setStoredValue(SEARCH_COUNT_KEY, "0");
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleFind = async () => {
     if (typeof window === "undefined") return;
 
     const passExpiresAt = Number(getStoredValue(PASS_EXPIRES_AT_KEY) || "0");
-    const hasActivePass = passExpiresAt > Date.now();
+    let hasActivePass = passExpiresAt > Date.now();
+    if (!hasActivePass) {
+      setStatus("checking");
+      hasActivePass = await restorePassFromCheckout();
+    }
 
     if (!hasActivePass) {
       const count = Number(getStoredValue(SEARCH_COUNT_KEY) || "0");
