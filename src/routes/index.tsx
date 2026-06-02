@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { Bookmark, Loader2, MapPin, Search, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { findNearbyToilets } from "@/lib/toilets.functions";
+import {
+  claimShareReferral,
+  ensureShareReferral,
+  getShareReferralCredits,
+} from "@/lib/share.functions";
 import type { ToiletDTO } from "@/lib/amap";
 import { wgs84ToGcj02 } from "@/lib/amap";
 import { AppShell } from "@/components/AppShell";
@@ -71,8 +76,9 @@ type Status = "idle" | "locating" | "ready" | "unsupported" | "location_error";
 
 const SEARCH_COUNT_KEY = "seatmap.search.count";
 const SHARE_BONUS_KEY = "seatmap.share.freeCredits";
-const SHARE_CLAIMED_KEY = "seatmap.share.claimed";
-const SHARE_PARAM = "seatmap_share";
+const SHARE_REFERRAL_CODE_KEY = "seatmap.share.referralCode";
+const SHARE_VISITOR_ID_KEY = "seatmap.share.visitorId";
+const SHARE_PARAM = "seatmap_ref";
 
 const PASS_PLANS = [
   {
@@ -143,6 +149,21 @@ function freeSearchLimit() {
   return 1 + Math.max(0, Number(getStoredValue(SHARE_BONUS_KEY) || "0"));
 }
 
+function createShareToken() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID().replaceAll("-", "");
+  }
+  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`.padEnd(16, "0");
+}
+
+function getOrCreateStoredToken(key: string) {
+  const existing = getStoredValue(key);
+  if (existing) return existing;
+  const token = createShareToken();
+  setStoredValue(key, token);
+  return token;
+}
+
 function HomePage() {
   const [status, setStatus] = useState<Status>("idle");
   const [showPaywall, setShowPaywall] = useState(false);
@@ -155,33 +176,73 @@ function HomePage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [supportedRegions, setSupportedRegions] = useState("Shanghai, Beijing and Qingdao");
   const findNearby = useServerFn(findNearbyToilets);
+  const ensureReferral = useServerFn(ensureShareReferral);
+  const claimReferral = useServerFn(claimShareReferral);
+  const getReferralCredits = useServerFn(getShareReferralCredits);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const url = new URL(window.location.href);
-    if (url.searchParams.get(SHARE_PARAM) !== "1") return;
+    const referralCode = url.searchParams.get(SHARE_PARAM);
+    const ownCode = getStoredValue(SHARE_REFERRAL_CODE_KEY);
 
-    if (getStoredValue(SHARE_CLAIMED_KEY) !== "1") {
-      const credits = Math.max(0, Number(getStoredValue(SHARE_BONUS_KEY) || "0"));
-      setStoredValue(SHARE_BONUS_KEY, String(credits + 1));
-      setStoredValue(SHARE_CLAIMED_KEY, "1");
-      toast("Free search unlocked", {
-        description: "Thanks for opening a shared SeatMap link.",
-      });
+    if (referralCode) {
+      url.searchParams.delete(SHARE_PARAM);
+      window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+
+      if (referralCode !== ownCode) {
+        const visitorId = getOrCreateStoredToken(SHARE_VISITOR_ID_KEY);
+        void claimReferral({ data: { code: referralCode, visitorId } })
+          .then((result) => {
+            if (result.claimed) {
+              toast("Thanks for opening SeatMap", {
+                description: "Your friend earned one extra free search.",
+              });
+            }
+          })
+          .catch(() => {
+            toast("Share reward could not be saved", {
+              description: "SeatMap still works, but the referral was not recorded.",
+            });
+          });
+      }
     }
 
-    url.searchParams.delete(SHARE_PARAM);
-    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
-  }, []);
+    if (ownCode) {
+      void getReferralCredits({ data: { code: ownCode } })
+        .then((result) => {
+          const currentCredits = Math.max(0, Number(getStoredValue(SHARE_BONUS_KEY) || "0"));
+          if (result.credits > currentCredits) {
+            setStoredValue(SHARE_BONUS_KEY, String(result.credits));
+            toast("Free search earned", {
+              description: `You have ${result.credits} shared free ${
+                result.credits === 1 ? "search" : "searches"
+              }.`,
+            });
+          }
+        })
+        .catch(() => undefined);
+    }
+  }, [claimReferral, getReferralCredits]);
 
   const handleShare = async () => {
     if (typeof window === "undefined") return;
 
+    const code = getOrCreateStoredToken(SHARE_REFERRAL_CODE_KEY);
+    try {
+      await ensureReferral({ data: { code } });
+    } catch {
+      toast("Share link unavailable", {
+        description: "The referral database may not be ready yet. Try again after deployment.",
+      });
+      return;
+    }
+
     const url = new URL(window.location.origin);
-    url.searchParams.set(SHARE_PARAM, "1");
+    url.searchParams.set(SHARE_PARAM, code);
     const shareData = {
       title: "SeatMap",
-      text: "Find a seated toilet nearby in China. Open this link to get a free search.",
+      text: "Open my SeatMap invite link.",
       url: url.toString(),
     };
 
@@ -191,14 +252,14 @@ function HomePage() {
       } else {
         await navigator.clipboard.writeText(shareData.url);
         toast("Share link copied", {
-          description: "Your friend gets one extra free SeatMap search.",
+          description: "You get one extra free search after a friend opens it.",
         });
       }
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       await navigator.clipboard.writeText(shareData.url);
       toast("Share link copied", {
-        description: "Your friend gets one extra free SeatMap search.",
+        description: "You get one extra free search after a friend opens it.",
       });
     }
   };
@@ -491,10 +552,9 @@ function HomePage() {
           </div>
 
           <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-4">
-            <p className="text-sm font-extrabold text-brand-dark">Share one free search</p>
+            <p className="text-sm font-extrabold text-brand-dark">Earn one free search</p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              Send SeatMap to a friend. When they open your link, their browser gets one extra free
-              search.
+              Send SeatMap to a friend. When they open your link, you get one extra free search.
             </p>
             <button
               type="button"
@@ -502,7 +562,7 @@ function HomePage() {
               className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-background px-4 py-3 text-sm font-bold text-primary hover:bg-primary/10"
             >
               <Share2 className="size-4" aria-hidden />
-              Share link
+              Share to earn 1 search
             </button>
           </div>
 

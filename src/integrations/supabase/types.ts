@@ -8,6 +8,53 @@ export type Database = {
   };
   public: {
     Tables: {
+      share_referral_claims: {
+        Row: {
+          created_at: string;
+          referral_code: string;
+          visitor_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          referral_code: string;
+          visitor_id: string;
+        };
+        Update: {
+          created_at?: string;
+          referral_code?: string;
+          visitor_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "share_referral_claims_referral_code_fkey";
+            columns: ["referral_code"];
+            isOneToOne: false;
+            referencedRelation: "share_referrals";
+            referencedColumns: ["code"];
+          },
+        ];
+      };
+      share_referrals: {
+        Row: {
+          code: string;
+          created_at: string;
+          granted_count: number;
+          updated_at: string;
+        };
+        Insert: {
+          code: string;
+          created_at?: string;
+          granted_count?: number;
+          updated_at?: string;
+        };
+        Update: {
+          code?: string;
+          created_at?: string;
+          granted_count?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       stripe_passes: {
         Row: {
           checkout_session_id: string | null;
@@ -154,7 +201,13 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      claim_share_referral: {
+        Args: {
+          p_referral_code: string;
+          p_visitor_id: string;
+        };
+        Returns: boolean;
+      };
     };
     Enums: {
       [_ in never]: never;
