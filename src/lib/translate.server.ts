@@ -62,18 +62,50 @@ function hasChinese(text: string) {
   return /[\u3400-\u9fff]/.test(text);
 }
 
+export function cleanTranslatedName(value: string) {
+  let cleaned = value
+    .replace(/[（]/g, " (")
+    .replace(/[）]/g, ")")
+    .replace(/peet'?s\s*coffee/gi, "Peet's Coffee")
+    .replace(/luckin\s*coffee/gi, "Luckin Coffee")
+    .replace(/starbucks/gi, "Starbucks")
+    .replace(/\(\s*\)/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  for (const brand of ["Luckin Coffee", "Peet's Coffee", "Starbucks"]) {
+    const escaped = brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    cleaned = cleaned.replace(new RegExp(`(?:${escaped}\\s*){2,}`, "gi"), brand);
+  }
+
+  cleaned = cleaned.replace(/^(.+?)\s+\1$/i, "$1").trim();
+
+  const duplicateParenthetical = cleaned.match(/^(.+?)\s*\((.+)\)$/);
+  if (duplicateParenthetical) {
+    const outside = duplicateParenthetical[1].trim();
+    const inside = duplicateParenthetical[2].trim();
+    if (outside.localeCompare(inside, undefined, { sensitivity: "accent" }) === 0) {
+      cleaned = outside;
+    }
+  }
+
+  return cleaned;
+}
+
 function localTranslateName(name: string) {
-  let translated = name.replace(/[（]/g, " (").replace(/[）]/g, ")").replace(/\s+/g, " ").trim();
+  let translated = cleanTranslatedName(name);
 
   for (const [pattern, replacement] of LOCAL_REPLACEMENTS) {
     translated = translated.replace(pattern, replacement);
   }
 
-  translated = translated
-    .replace(/[\u3400-\u9fff]+/g, " ")
-    .replace(/\s*-\s*/g, " - ")
-    .replace(/\s+/g, " ")
-    .trim();
+  translated = cleanTranslatedName(
+    translated
+      .replace(/[\u3400-\u9fff]+/g, " ")
+      .replace(/\s*-\s*/g, " - ")
+      .replace(/\s+/g, " ")
+      .trim(),
+  );
 
   if (translated && translated !== name && !hasChinese(translated)) return translated;
   if (/酒店/.test(name)) return "Traveler-Friendly Hotel";
@@ -116,7 +148,8 @@ export async function translateNames(names: string[]): Promise<string[]> {
     }
     return parsed.map((v, i) => {
       const translated = typeof v === "string" && v.trim() ? v.trim() : "";
-      return translated && !hasChinese(translated) ? translated : localTranslateName(names[i]);
+      const cleaned = cleanTranslatedName(translated);
+      return cleaned && !hasChinese(cleaned) ? cleaned : localTranslateName(names[i]);
     });
   } catch {
     return names.map(localTranslateName);

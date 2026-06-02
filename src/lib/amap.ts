@@ -227,6 +227,12 @@ export function wgs84ToGcj02(lat: number, lng: number): { lat: number; lng: numb
   return { lat: lat + dLat, lng: lng + dLng };
 }
 
+export function gcj02ToWgs84(lat: number, lng: number): { lat: number; lng: number } {
+  if (outOfChina(lat, lng)) return { lat, lng };
+  const gcj = wgs84ToGcj02(lat, lng);
+  return { lat: lat * 2 - gcj.lat, lng: lng * 2 - gcj.lng };
+}
+
 export function walkMinFromMeters(m: number) {
   return Math.max(1, Math.round(m / 80));
 }

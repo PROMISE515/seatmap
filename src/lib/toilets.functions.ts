@@ -13,7 +13,7 @@ import {
   provinceNameToEnglish,
   type ToiletDTO,
 } from "./amap";
-import { translateNames } from "./translate.server";
+import { cleanTranslatedName, translateNames } from "./translate.server";
 
 const FALLBACK_PHOTO = "/placeholder.svg";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -225,7 +225,10 @@ async function ensureTranslations(
 
   const cached = new Map<string, string>();
   for (const r of existing ?? []) {
-    if (r.name_en && !hasChinese(r.name_en)) cached.set(r.amap_id, r.name_en);
+    if (r.name_en) {
+      const cleanedName = cleanTranslatedName(r.name_en);
+      if (cleanedName && !hasChinese(cleanedName)) cached.set(r.amap_id, cleanedName);
+    }
   }
 
   const missing = pairs.filter((p) => !cached.get(p.amapId));
