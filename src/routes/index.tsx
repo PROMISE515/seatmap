@@ -127,19 +127,44 @@ function geolocationErrorMessage(error: GeolocationPositionError) {
 }
 
 function OpenedCityLinks() {
+  const { t } = useT();
+  const [open, setOpen] = useState(false);
+
   return (
-    <div className="mt-4 flex flex-wrap gap-2">
-      {cities.map((city) => (
-        <Link
-          key={city.slug}
-          to="/$city/public-toilets"
-          params={{ city: city.slug }}
-          className="inline-flex items-center justify-center rounded-full border border-border bg-background px-3 py-1.5 text-xs font-bold text-foreground hover:border-primary/40 hover:text-primary"
-        >
-          {city.name}
-        </Link>
-      ))}
-    </div>
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="mt-4 inline-flex w-full items-center justify-center rounded-2xl border border-border bg-background px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40 hover:text-primary"
+      >
+        {t("home.viewOpenedCities")}
+      </button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-[360px] rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-extrabold tracking-tight text-brand-dark">
+              {t("home.openedCities")}
+            </DialogTitle>
+            <DialogDescription>{t("home.openedCitiesDescription")}</DialogDescription>
+          </DialogHeader>
+
+          <div className="grid grid-cols-2 gap-2">
+            {cities.map((city) => (
+              <Link
+                key={city.slug}
+                to="/$city/public-toilets"
+                params={{ city: city.slug }}
+                onClick={() => setOpen(false)}
+                className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border bg-card px-3 py-2 text-sm font-bold text-foreground hover:border-primary/40 hover:text-primary"
+              >
+                {city.name}
+              </Link>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

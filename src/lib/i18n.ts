@@ -41,6 +41,8 @@ const translations = {
     "home.checking": "Checking",
     "home.locationNeeded": "Location needed",
     "home.openedCities": "Opened cities",
+    "home.viewOpenedCities": "View opened cities",
+    "home.openedCitiesDescription": "Manual city previews are available in these destinations.",
     "home.currentSearchArea": "Current search area",
     "home.openedResultsNearYou": (count) => `${count} opened-city results near you`,
     "home.areaNotOpen": (region) => `${region} is not open yet`,
@@ -157,6 +159,9 @@ const translations = {
     "home.checking": "Comprobando",
     "home.locationNeeded": "Ubicación necesaria",
     "home.openedCities": "Ciudades abiertas",
+    "home.viewOpenedCities": "Ver ciudades abiertas",
+    "home.openedCitiesDescription":
+      "Las vistas previas manuales están disponibles en estos destinos.",
     "home.currentSearchArea": "Zona actual de búsqueda",
     "home.openedResultsNearYou": (count) => `${count} resultados en ciudades abiertas cerca de ti`,
     "home.areaNotOpen": (region) => `${region} todavía no está abierto`,
