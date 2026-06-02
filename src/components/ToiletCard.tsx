@@ -109,8 +109,16 @@ export function ToiletCard({
               </span>
             )}
             {toilet.seatedConfidence !== "confirmed" && (
-              <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-700 text-[10px] font-bold uppercase tracking-wider">
-                {t("card.needsConfirmation")}
+              <span
+                className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                  toilet.seatedConfidence === "likely"
+                    ? "bg-primary/10 text-primary"
+                    : "bg-amber-500/10 text-amber-700"
+                }`}
+              >
+                {toilet.seatedConfidence === "likely"
+                  ? t("card.likelyWestern")
+                  : t("card.needsConfirmation")}
               </span>
             )}
           </div>

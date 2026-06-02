@@ -18,6 +18,13 @@ import { translateNames } from "./translate.server";
 const FALLBACK_PHOTO = "/placeholder.svg";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const AMAP_TOILET_TYPE = "200300";
+const SEARCH_STRATEGY_VERSION = "venues-v1";
+const RELIABLE_VENUE_SEARCHES = [
+  { types: "060100|060101|060102|060400" },
+  { types: "100000|100100" },
+  { types: "050500|050501" },
+  { types: "150000|150200|150300" },
+];
 
 type AmapPhoto = { title?: string; url?: string };
 
@@ -34,6 +41,8 @@ type AmapPoi = {
   distance?: string;
   photos?: AmapPhoto[];
 };
+
+type SeatMapPoi = AmapPoi & { seatmapSource: "toilet" | "venue" };
 
 function s(v: string | string[] | undefined): string {
   if (Array.isArray(v)) return v.join("");
@@ -87,7 +96,13 @@ function dedupeVenueResults(toilets: ToiletDTO[]) {
       const [best] = group.sort((a, b) => {
         const kindScore = (t: ToiletDTO) =>
           t.kind === "indoor" ? 0 : t.kind === "accessible" ? 1 : t.kind === "nursery" ? 2 : 3;
-        return kindScore(a) - kindScore(b) || a.distanceM - b.distanceM;
+        const confidenceScore = (t: ToiletDTO) =>
+          t.seatedConfidence === "confirmed" ? 0 : t.seatedConfidence === "likely" ? 1 : 2;
+        return (
+          confidenceScore(a) - confidenceScore(b) ||
+          kindScore(a) - kindScore(b) ||
+          a.distanceM - b.distanceM
+        );
       });
       return {
         ...best,
@@ -95,22 +110,34 @@ function dedupeVenueResults(toilets: ToiletDTO[]) {
         floor: group.length > 1 ? undefined : best.floor,
         seatedConfidence: group.some((item) => item.seatedConfidence === "confirmed")
           ? "confirmed"
-          : "needs_confirmation",
+          : group.some((item) => item.seatedConfidence === "likely")
+            ? "likely"
+            : "needs_confirmation",
         canNavigate: group.some((item) => item.canNavigate),
         duplicateCount: group.length > 1 ? group.length : undefined,
       };
     })
-    .sort((a, b) => a.distanceM - b.distanceM);
+    .sort((a, b) => {
+      const confidenceScore = (t: ToiletDTO) =>
+        t.seatedConfidence === "confirmed" ? 0 : t.seatedConfidence === "likely" ? 1 : 2;
+      return confidenceScore(a) - confidenceScore(b) || a.distanceM - b.distanceM;
+    });
 }
 
-async function fetchFromAmap(gcjLat: number, gcjLng: number, radius: number) {
+async function fetchFromAmap(
+  gcjLat: number,
+  gcjLng: number,
+  radius: number,
+  options: { types?: string; keywords?: string } = {},
+) {
   const key = process.env.AMAP_WEB_SERVICE_KEY;
   if (!key) throw new Error("AMAP_WEB_SERVICE_KEY is not configured");
 
   const url = new URL("https://restapi.amap.com/v3/place/around");
   url.searchParams.set("key", key);
   url.searchParams.set("location", `${gcjLng.toFixed(6)},${gcjLat.toFixed(6)}`);
-  url.searchParams.set("types", AMAP_TOILET_TYPE);
+  if (options.types) url.searchParams.set("types", options.types);
+  if (options.keywords) url.searchParams.set("keywords", options.keywords);
   url.searchParams.set("radius", String(radius));
   url.searchParams.set("sortrule", "distance");
   url.searchParams.set("offset", "25");
@@ -127,6 +154,30 @@ async function fetchFromAmap(gcjLat: number, gcjLng: number, radius: number) {
   const json = (await res.json()) as { status: string; info?: string; pois?: AmapPoi[] };
   if (json.status !== "1") throw new Error(`AMap error: ${json.info ?? "unknown"}`);
   return json.pois ?? [];
+}
+
+async function fetchSeatMapCandidates(gcjLat: number, gcjLng: number, radius: number) {
+  const searches = [
+    fetchFromAmap(gcjLat, gcjLng, radius, { types: AMAP_TOILET_TYPE }).then((pois) =>
+      pois.map((p) => ({ ...p, seatmapSource: "toilet" as const })),
+    ),
+    ...RELIABLE_VENUE_SEARCHES.map((search) =>
+      fetchFromAmap(gcjLat, gcjLng, radius, search)
+        .then((pois) => pois.map((p) => ({ ...p, seatmapSource: "venue" as const })))
+        .catch(() => [] as SeatMapPoi[]),
+    ),
+  ];
+
+  const groups = await Promise.all(searches);
+  const byId = new Map<string, SeatMapPoi>();
+  for (const poi of groups.flat()) {
+    if (!poi.id || !poi.location) continue;
+    const existing = byId.get(poi.id);
+    if (!existing || existing.seatmapSource === "venue") {
+      byId.set(poi.id, poi);
+    }
+  }
+  return [...byId.values()];
 }
 
 async function reverseGeocodeRegion(gcjLat: number, gcjLng: number) {
@@ -216,7 +267,7 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
     const { lat: rawLat, lng: rawLng, radius, gcj } = data;
     const { lat, lng } = gcj ? { lat: rawLat, lng: rawLng } : wgs84ToGcj02(rawLat, rawLng);
 
-    const cacheKey = `${lat.toFixed(3)},${lng.toFixed(3)},${radius}`;
+    const cacheKey = `${SEARCH_STRATEGY_VERSION}:${lat.toFixed(3)},${lng.toFixed(3)},${radius}`;
 
     const geocodedRegion = await reverseGeocodeRegion(lat, lng);
 
@@ -286,7 +337,10 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
             rawName: r.name,
             walkMin: walkMinFromMeters(dist),
             distanceM: dist,
-            tags: ["Seated Toilet", "Free"],
+            tags:
+              seatedConfidence === "confirmed"
+                ? ["Western Toilet", "Free"]
+                : ["Likely Western", "Indoor", "Traveler-friendly"],
             address,
             city: r.city ?? "",
             lat: r.lat,
@@ -295,7 +349,7 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
             kind,
             floor: parseFloor(address),
             seatedConfidence,
-            canNavigate: seatedConfidence === "confirmed",
+            canNavigate: seatedConfidence === "confirmed" || seatedConfidence === "likely",
           };
         });
         const first = filtered[0];
@@ -304,7 +358,7 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
       }
     }
 
-    const allPois = await fetchFromAmap(lat, lng, radius);
+    const allPois = await fetchSeatMapCandidates(lat, lng, radius);
     const pois = allPois.filter((p) => isLikelyWestern(p.name ?? "", s(p.address)));
 
     if (pois.length > 0) {
@@ -363,7 +417,10 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
         rawName: p.name,
         walkMin: walkMinFromMeters(distanceM),
         distanceM,
-        tags: ["Seated Toilet", "Free"],
+        tags:
+          seatedConfidence === "confirmed"
+            ? ["Western Toilet", "Free"]
+            : ["Likely Western", "Indoor", "Traveler-friendly"],
         address,
         city: s(p.cityname),
         lat: Number(latStr),
@@ -372,7 +429,7 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
         kind,
         floor: parseFloor(address),
         seatedConfidence,
-        canNavigate: seatedConfidence === "confirmed",
+        canNavigate: seatedConfidence === "confirmed" || seatedConfidence === "likely",
       };
     });
 
@@ -413,7 +470,12 @@ export const getToiletByAmapId = createServerFn({ method: "POST" })
       rawName: row.name,
       walkMin: 0,
       distanceM: 0,
-      tags: ["Seated Toilet", "Free"],
+      tags:
+        seatedConfidence === "confirmed"
+          ? ["Western Toilet", "Free"]
+          : seatedConfidence === "likely"
+            ? ["Likely Western", "Indoor", "Traveler-friendly"]
+            : ["Needs confirmation"],
       address,
       city: row.city ?? "",
       lat: row.lat,
@@ -422,7 +484,7 @@ export const getToiletByAmapId = createServerFn({ method: "POST" })
       kind,
       floor: parseFloor(address),
       seatedConfidence,
-      canNavigate: seatedConfidence === "confirmed",
+      canNavigate: seatedConfidence === "confirmed" || seatedConfidence === "likely",
     };
     return { toilet: dto };
   });
