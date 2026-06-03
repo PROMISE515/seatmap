@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { verifyPassSession } from "@/lib/payments.functions";
@@ -38,7 +38,6 @@ type State =
 
 function PassPage() {
   const { sid } = Route.useSearch();
-  const navigate = useNavigate();
   const [state, setState] = useState<State>({ kind: "loading" });
 
   useEffect(() => {
@@ -63,13 +62,12 @@ function PassPage() {
         setStoredValue("seatmap.pass.sid", sid);
         removeStoredValue("seatmap.search.count");
         setState({ kind: "ok", expiresAtMs: res.expiresAtMs, days: res.days });
-        setTimeout(() => navigate({ to: "/" }), 1500);
       } catch (e) {
         console.error("verify failed", e);
         setState({ kind: "invalid", reason: "Could not verify link" });
       }
     })();
-  }, [sid, navigate]);
+  }, [sid]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-background">
@@ -91,10 +89,15 @@ function PassPage() {
           </p>
           {sid && (
             <div className="mt-5 w-full max-w-xs">
-              <ManageSubscriptionButton sessionId={sid} />
+              <ManageSubscriptionButton sessionId={sid} label="Manage or cancel subscription" />
             </div>
           )}
-          <p className="text-xs text-muted-foreground">Redirecting…</p>
+          <Link
+            to="/"
+            className="mt-3 inline-flex w-full max-w-xs items-center justify-center rounded-xl bg-primary px-6 py-3 text-sm font-bold uppercase tracking-widest text-primary-foreground"
+          >
+            Continue to SeatMap
+          </Link>
         </>
       )}
 

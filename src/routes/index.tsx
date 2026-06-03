@@ -18,6 +18,7 @@ import { MapPreview } from "@/components/MapPreview";
 import { SeatMapLogo } from "@/components/SeatMapLogo";
 import { StripeEmbeddedCheckout, PaymentTestModeBanner } from "@/components/StripeEmbeddedCheckout";
 import { getStoredValue, setStoredValue } from "@/lib/client-storage";
+import { ManageSubscriptionButton } from "@/components/ManageSubscriptionButton";
 import { cities } from "@/lib/cities";
 import { useT } from "@/lib/i18n";
 import { getStripeEnvironment } from "@/lib/stripe";
@@ -218,6 +219,7 @@ function HomePage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [shareBusy, setShareBusy] = useState(false);
   const [hasActivePass, setHasActivePass] = useState(false);
+  const [passSessionId, setPassSessionId] = useState<string | null>(null);
   const [supportedRegions, setSupportedRegions] = useState("Shanghai, Beijing and Qingdao");
   const findNearby = useServerFn(findNearbyToilets);
   const ensureReferral = useServerFn(ensureShareReferral);
@@ -271,12 +273,14 @@ function HomePage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const passExpiresAt = Number(getStoredValue(PASS_EXPIRES_AT_KEY) || "0");
+    const storedSessionId = getStoredValue(PASS_SESSION_KEY);
+    setPassSessionId(storedSessionId);
     if (passExpiresAt > Date.now()) {
       setHasActivePass(true);
       return;
     }
 
-    const sessionId = getStoredValue(PASS_SESSION_KEY);
+    const sessionId = storedSessionId;
     if (!sessionId) return;
 
     void verifyPass({
@@ -290,6 +294,7 @@ function HomePage() {
         setStoredValue(PASS_EXPIRES_AT_KEY, String(res.expiresAtMs));
         setStoredValue(PASS_SESSION_KEY, sessionId);
         setStoredValue(SEARCH_COUNT_KEY, "0");
+        setPassSessionId(sessionId);
         setHasActivePass(true);
       })
       .catch(() => undefined);
@@ -388,6 +393,7 @@ function HomePage() {
       setStoredValue(PASS_EXPIRES_AT_KEY, String(res.expiresAtMs));
       setStoredValue(PASS_SESSION_KEY, sessionId);
       setStoredValue(SEARCH_COUNT_KEY, "0");
+      setPassSessionId(sessionId);
       setHasActivePass(true);
       return true;
     } catch {
@@ -453,6 +459,18 @@ function HomePage() {
             {t("home.saved")}
           </Link>
         </div>
+        {hasActivePass && passSessionId && (
+          <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-3">
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-primary">
+              Travel Pass Active
+            </p>
+            <ManageSubscriptionButton
+              sessionId={passSessionId}
+              label="Manage or cancel subscription"
+              className="w-full rounded-xl border border-primary/20 bg-background px-4 py-3 text-xs font-bold uppercase tracking-widest text-brand-dark transition hover:border-primary/50"
+            />
+          </div>
+        )}
       </header>
 
       {/* Hero CTA */}

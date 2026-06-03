@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Copy, Check, Star } from "lucide-react";
+import { Copy, Check, Star, AlertTriangle } from "lucide-react";
 import { verifyPassSession } from "@/lib/payments.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { removeStoredValue, setStoredValue } from "@/lib/client-storage";
@@ -129,17 +129,22 @@ function CheckoutReturn() {
           </p>
         </div>
 
+        <div className="mb-4 flex items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-left">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-700" aria-hidden />
+          <p className="text-xs leading-relaxed text-amber-900">
+            No login is used. This private link is your pass. Save it before leaving this page.
+          </p>
+        </div>
+
         <Link
           to="/"
           className="block w-full text-center px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm uppercase tracking-widest"
         >
           Back to SeatMap
         </Link>
-        {activated && (
-          <div className="mt-3">
-            <ManageSubscriptionButton sessionId={session_id} />
-          </div>
-        )}
+        <div className="mt-3">
+          <ManageSubscriptionButton sessionId={session_id} label="Manage or cancel subscription" />
+        </div>
       </div>
     </div>
   );
