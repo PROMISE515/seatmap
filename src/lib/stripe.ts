@@ -18,3 +18,9 @@ export function getStripe(): Promise<Stripe | null> {
 export function getStripeEnvironment(): StripeEnv {
   return environment;
 }
+
+export function getStripeEnvironmentForSessionId(sessionId: string): StripeEnv {
+  if (sessionId.startsWith("cs_test_")) return "sandbox";
+  if (sessionId.startsWith("cs_live_")) return "live";
+  return getStripeEnvironment();
+}

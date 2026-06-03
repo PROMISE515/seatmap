@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Copy, Check, Star, AlertTriangle } from "lucide-react";
 import { verifyPassSession } from "@/lib/payments.functions";
-import { getStripeEnvironment } from "@/lib/stripe";
+import { getStripeEnvironmentForSessionId } from "@/lib/stripe";
 import { removeStoredValue, setStoredValue } from "@/lib/client-storage";
 import { ManageSubscriptionButton } from "@/components/ManageSubscriptionButton";
 
@@ -50,7 +50,10 @@ function CheckoutReturn() {
     (async () => {
       try {
         const res = await verifyPassSession({
-          data: { sessionId: session_id, environment: getStripeEnvironment() },
+          data: {
+            sessionId: session_id,
+            environment: getStripeEnvironmentForSessionId(session_id),
+          },
         });
         if (res.valid) {
           setStoredValue("seatmap.pass.expiresAt", String(res.expiresAtMs));

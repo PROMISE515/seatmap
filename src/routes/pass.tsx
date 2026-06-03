@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { verifyPassSession } from "@/lib/payments.functions";
-import { getStripeEnvironment } from "@/lib/stripe";
+import { getStripeEnvironmentForSessionId } from "@/lib/stripe";
 import { removeStoredValue, setStoredValue } from "@/lib/client-storage";
 import { ManageSubscriptionButton } from "@/components/ManageSubscriptionButton";
 
@@ -48,7 +48,7 @@ function PassPage() {
     (async () => {
       try {
         const res = await verifyPassSession({
-          data: { sessionId: sid, environment: getStripeEnvironment() },
+          data: { sessionId: sid, environment: getStripeEnvironmentForSessionId(sid) },
         });
         if (!res.valid) {
           setState({ kind: "invalid", reason: res.reason });

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { createCustomerPortalSession } from "@/lib/payments.functions";
-import { getStripeEnvironment } from "@/lib/stripe";
+import { getStripeEnvironmentForSessionId } from "@/lib/stripe";
 
 export function ManageSubscriptionButton({
   sessionId,
@@ -21,7 +21,7 @@ export function ManageSubscriptionButton({
         data: {
           sessionId,
           returnUrl: window.location.href,
-          environment: getStripeEnvironment(),
+          environment: getStripeEnvironmentForSessionId(sessionId),
         },
       });
       window.location.assign(portalUrl);

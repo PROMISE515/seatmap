@@ -21,7 +21,7 @@ import { getStoredValue, setStoredValue } from "@/lib/client-storage";
 import { ManageSubscriptionButton } from "@/components/ManageSubscriptionButton";
 import { cities } from "@/lib/cities";
 import { useT } from "@/lib/i18n";
-import { getStripeEnvironment } from "@/lib/stripe";
+import { getStripeEnvironmentForSessionId } from "@/lib/stripe";
 import {
   Dialog,
   DialogContent,
@@ -284,7 +284,7 @@ function HomePage() {
     if (!sessionId) return;
 
     void verifyPass({
-      data: { sessionId, environment: getStripeEnvironment() },
+      data: { sessionId, environment: getStripeEnvironmentForSessionId(sessionId) },
     })
       .then((res) => {
         if (!res.valid || res.expired) {
@@ -384,7 +384,7 @@ function HomePage() {
 
     try {
       const res = await verifyPass({
-        data: { sessionId, environment: getStripeEnvironment() },
+        data: { sessionId, environment: getStripeEnvironmentForSessionId(sessionId) },
       });
       if (!res.valid || res.expired) {
         setHasActivePass(false);
