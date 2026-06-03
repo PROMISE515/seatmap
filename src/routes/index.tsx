@@ -19,7 +19,6 @@ import { SeatMapLogo } from "@/components/SeatMapLogo";
 import { StripeEmbeddedCheckout, PaymentTestModeBanner } from "@/components/StripeEmbeddedCheckout";
 import { getStoredValue, setStoredValue } from "@/lib/client-storage";
 import { ManageSubscriptionButton } from "@/components/ManageSubscriptionButton";
-import { cities } from "@/lib/cities";
 import { useT } from "@/lib/i18n";
 import { getStripeEnvironmentForSessionId } from "@/lib/stripe";
 import {
@@ -84,7 +83,9 @@ const PASS_SESSION_KEY = "seatmap.pass.sid";
 const SHARE_BONUS_KEY = "seatmap.share.freeCredits";
 const SHARE_REFERRAL_CODE_KEY = "seatmap.share.referralCode";
 const SHARE_VISITOR_ID_KEY = "seatmap.share.visitorId";
+const LAST_SEARCH_STATE_KEY = "seatmap.lastSearchState";
 const SHARE_PARAM = "seatmap_ref";
+const LAST_SEARCH_MAX_AGE_MS = 30 * 60 * 1000;
 
 const PASS_PLANS = [
   {
@@ -126,51 +127,9 @@ function geolocationErrorMessage(error: GeolocationPositionError) {
     return "Your current location is unavailable. Check network/location services, then try again.";
   }
   if (error.code === error.TIMEOUT) {
-    return "Location timed out. Try again, or choose an opened city for testing.";
+    return "Location timed out. Please try again.";
   }
-  return "Location failed. Try again, or choose an opened city for testing.";
-}
-
-function OpenedCityLinks() {
-  const { t } = useT();
-  const [open, setOpen] = useState(false);
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="mt-4 inline-flex w-full items-center justify-center rounded-2xl border border-border bg-background px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40 hover:text-primary"
-      >
-        {t("home.viewOpenedCities")}
-      </button>
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-[360px] rounded-3xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-extrabold tracking-tight text-brand-dark">
-              {t("home.openedCities")}
-            </DialogTitle>
-            <DialogDescription>{t("home.openedCitiesDescription")}</DialogDescription>
-          </DialogHeader>
-
-          <div className="grid grid-cols-2 gap-2">
-            {cities.map((city) => (
-              <Link
-                key={city.slug}
-                to="/$city/public-toilets"
-                params={{ city: city.slug }}
-                onClick={() => setOpen(false)}
-                className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border bg-card px-3 py-2 text-sm font-bold text-foreground hover:border-primary/40 hover:text-primary"
-              >
-                {city.name}
-              </Link>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
+  return "Location failed. Please try again.";
 }
 
 function createShareToken() {
@@ -206,6 +165,44 @@ async function copyShareLink(text: string) {
   if (!copied) throw new Error("Copy failed");
 }
 
+type LastSearchState = {
+  savedAt: number;
+  status: Extract<Status, "ready" | "unsupported" | "location_error">;
+  toilets: ToiletDTO[];
+  region: string | null;
+  mapCenter: { lat: number; lng: number; label: string } | null;
+  errorMsg: string | null;
+  supportedRegions: string;
+};
+
+function readLastSearchState(): LastSearchState | null {
+  const raw = getStoredValue(LAST_SEARCH_STATE_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as Partial<LastSearchState>;
+    if (!parsed.savedAt || Date.now() - parsed.savedAt > LAST_SEARCH_MAX_AGE_MS) return null;
+    if (!Array.isArray(parsed.toilets)) return null;
+    return {
+      savedAt: parsed.savedAt,
+      status:
+        parsed.status === "unsupported" || parsed.status === "location_error"
+          ? parsed.status
+          : "ready",
+      toilets: parsed.toilets,
+      region: parsed.region ?? null,
+      mapCenter: parsed.mapCenter ?? null,
+      errorMsg: parsed.errorMsg ?? null,
+      supportedRegions: parsed.supportedRegions ?? "Shanghai, Beijing and Qingdao",
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeLastSearchState(state: Omit<LastSearchState, "savedAt">) {
+  setStoredValue(LAST_SEARCH_STATE_KEY, JSON.stringify({ ...state, savedAt: Date.now() }));
+}
+
 function HomePage() {
   const { t } = useT();
   const [status, setStatus] = useState<Status>("idle");
@@ -226,6 +223,17 @@ function HomePage() {
   const claimReferral = useServerFn(claimShareReferral);
   const getReferralCredits = useServerFn(getShareReferralCredits);
   const verifyPass = useServerFn(verifyPassSession);
+
+  useEffect(() => {
+    const lastSearch = readLastSearchState();
+    if (!lastSearch) return;
+    setStatus(lastSearch.status);
+    setToilets(lastSearch.toilets);
+    setRegion(lastSearch.region);
+    setMapCenter(lastSearch.mapCenter);
+    setErrorMsg(lastSearch.errorMsg);
+    setSupportedRegions(lastSearch.supportedRegions);
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -363,13 +371,38 @@ function HomePage() {
         setSupportedRegions(res.supportedRegions ?? "");
         setErrorMsg(t("home.noToilets"));
         setStatus("ready");
+        writeLastSearchState({
+          status: "ready",
+          toilets: [],
+          region: res.region ?? null,
+          mapCenter: center ? { lat: center.lat, lng: center.lng, label: "You" } : null,
+          errorMsg: t("home.noToilets"),
+          supportedRegions: res.supportedRegions ?? "",
+        });
         return;
       }
       setToilets(res.toilets);
       setStatus("ready");
+      writeLastSearchState({
+        status: "ready",
+        toilets: res.toilets,
+        region: res.region ?? null,
+        mapCenter: { lat: center.lat, lng: center.lng, label: "You" },
+        errorMsg: null,
+        supportedRegions,
+      });
     } catch (e) {
-      setErrorMsg(friendlySearchError(e));
+      const message = friendlySearchError(e);
+      setErrorMsg(message);
       setStatus("ready");
+      writeLastSearchState({
+        status: "ready",
+        toilets: [],
+        region: null,
+        mapCenter: { lat: center.lat, lng: center.lng, label: "You" },
+        errorMsg: message,
+        supportedRegions,
+      });
     }
   };
 
@@ -420,9 +453,7 @@ function HomePage() {
     setMapCenter(null);
     setErrorMsg(null);
     if (!navigator.geolocation) {
-      setErrorMsg(
-        "This browser does not support location. Search is only available in opened cities.",
-      );
+      setErrorMsg("This browser does not support location.");
       setStatus("location_error");
       return;
     }
@@ -529,7 +560,7 @@ function HomePage() {
                   ? t("home.checking")
                   : status === "location_error"
                     ? t("home.locationNeeded")
-                    : t("home.openedCities")}
+                    : t("home.currentSearchArea")}
           </span>
         </div>
         {mapCenter ? (
@@ -572,7 +603,6 @@ function HomePage() {
             </div>
           </div>
         )}
-        {(status === "idle" || status === "location_error") && <OpenedCityLinks />}
       </section>
 
       {status !== "location_error" && (

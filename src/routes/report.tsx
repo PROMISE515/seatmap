@@ -1,12 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Flag } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { ArrowLeft, Flag, Loader2, Star } from "lucide-react";
+import type { FormEvent } from "react";
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
-import { saveReport } from "@/lib/reports";
+import { submitToiletReport } from "@/lib/reports.functions";
 
 export const Route = createFileRoute("/report")({
-  validateSearch: (search: Record<string, unknown>): { place?: string } => ({
+  validateSearch: (search: Record<string, unknown>): { place?: string; amapId?: string } => ({
     place: typeof search.place === "string" ? search.place : undefined,
+    amapId: typeof search.amapId === "string" ? search.amapId : undefined,
   }),
   head: () => ({
     meta: [{ title: "Report a Toilet — SeatMap" }, { name: "robots", content: "noindex" }],
@@ -15,28 +18,70 @@ export const Route = createFileRoute("/report")({
 });
 
 function ReportPage() {
-  const { place } = Route.useSearch();
+  const { place, amapId } = Route.useSearch();
+  const submitReport = useServerFn(submitToiletReport);
   const [placeName, setPlaceName] = useState(place ?? "");
   const [type, setType] = useState<"confirmed_seated" | "wrong_listing" | "closed" | "other">(
     "confirmed_seated",
   );
+  const [rating, setRating] = useState(5);
   const [notes, setNotes] = useState("");
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const submit = (event: React.FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault();
-    saveReport({ placeName, type, notes });
-    setPlaceName("");
-    setNotes("");
-    setType("confirmed_seated");
-    setSaved(true);
+    setSaving(true);
+    setError(null);
+    setSaved(false);
+
+    try {
+      await submitReport({
+        data: {
+          amapId,
+          placeName,
+          type,
+          rating,
+          notes,
+        },
+      });
+      setNotes("");
+      setType("confirmed_seated");
+      setRating(5);
+      setSaved(true);
+    } catch {
+      setError("Could not save this report. Please check Supabase setup and try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <AppShell>
-      <header className="px-6 pt-8 pb-2">
+      <header className="px-6 pt-6 pb-2">
+        <div className="mb-5 flex items-center justify-between">
+          {amapId ? (
+            <Link
+              to="/toilet/$id"
+              params={{ id: amapId }}
+              className="inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="size-4" aria-hidden />
+              Back
+            </Link>
+          ) : (
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="size-4" aria-hidden />
+              Back
+            </Link>
+          )}
+        </div>
         <div className="flex items-center gap-2">
-          <div className="size-9 rounded-xl bg-primary/10 text-primary grid place-items-center">
+          <div className="size-9 rounded-lg bg-primary/10 text-primary grid place-items-center">
             <Flag className="size-4" aria-hidden />
           </div>
           <div>
@@ -58,7 +103,7 @@ function ReportPage() {
             onChange={(event) => setPlaceName(event.target.value)}
             required
             placeholder="Mall, hotel, accessible restroom, or address"
-            className="mt-2 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
+            className="mt-2 w-full rounded-lg border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
           />
         </label>
 
@@ -69,7 +114,7 @@ function ReportPage() {
           <select
             value={type}
             onChange={(event) => setType(event.target.value as typeof type)}
-            className="mt-2 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
+            className="mt-2 w-full rounded-lg border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
           >
             <option value="confirmed_seated">Has seated toilet</option>
             <option value="wrong_listing">No seated toilet</option>
@@ -77,6 +122,32 @@ function ReportPage() {
             <option value="other">Other</option>
           </select>
         </label>
+
+        <fieldset className="block">
+          <legend className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            Rating
+          </legend>
+          <div className="mt-2 flex gap-2">
+            {Array.from({ length: 5 }).map((_, index) => {
+              const value = index + 1;
+              const active = value <= rating;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setRating(value)}
+                  className={`grid size-10 place-items-center rounded-md transition ${
+                    active ? "text-amber-400" : "text-muted-foreground/40 hover:text-amber-300"
+                  }`}
+                  aria-label={`${value} out of 5`}
+                  aria-pressed={rating === value}
+                >
+                  <Star className={`size-5 ${active ? "fill-current" : ""}`} aria-hidden />
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
 
         <label className="block">
           <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -86,21 +157,29 @@ function ReportPage() {
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
             placeholder="Floor, nearby landmark, entry notes, cleanliness, paper availability..."
-            className="mt-2 min-h-28 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
+            className="mt-2 min-h-28 w-full rounded-lg border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
           />
         </label>
 
         {saved && (
-          <p className="rounded-xl bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
-            Saved locally. We can sync these to Supabase review later.
+          <p className="rounded-lg bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
+            Report saved. Thank you for helping other travelers.
+          </p>
+        )}
+
+        {error && (
+          <p className="rounded-lg bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive">
+            {error}
           </p>
         )}
 
         <button
           type="submit"
-          className="w-full rounded-2xl bg-primary py-4 text-sm font-extrabold uppercase tracking-widest text-primary-foreground shadow-brand"
+          disabled={saving}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-4 text-sm font-extrabold uppercase tracking-widest text-primary-foreground shadow-brand disabled:opacity-70"
         >
-          Save report
+          {saving && <Loader2 className="size-4 animate-spin" aria-hidden />}
+          {saving ? "Saving" : "Save report"}
         </button>
       </form>
     </AppShell>

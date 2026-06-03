@@ -180,3 +180,18 @@ export function getCuratedCityToilets(citySlug: string, cityName: string): Toile
     photo: toilet.photo ?? FALLBACK_PHOTO,
   }));
 }
+
+export function getCuratedToiletById(id: string): ToiletDTO | null {
+  for (const [citySlug, toilets] of Object.entries(curatedCityToilets)) {
+    const toilet = toilets.find((item) => item.id === id);
+    if (!toilet) continue;
+    return {
+      ...toilet,
+      city: citySlug,
+      walkMin: 0,
+      distanceM: 0,
+      photo: toilet.photo ?? FALLBACK_PHOTO,
+    };
+  }
+  return null;
+}

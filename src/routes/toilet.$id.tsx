@@ -1,25 +1,14 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import {
-  Accessibility,
-  ArrowLeft,
-  Baby,
-  Bookmark,
-  Building2,
-  Check,
-  Flag,
-  Loader2,
-  MapPin,
-  Toilet,
-} from "lucide-react";
+import { ArrowLeft, Bookmark, Check, Flag, Loader2, MapPin, Star } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { MapNavigationSheet } from "@/components/MapNavigationSheet";
 
 import { getToiletByAmapId } from "@/lib/toilets.functions";
 import type { ToiletDTO } from "@/lib/amap";
-import { getStoredReports } from "@/lib/reports";
+import { getToiletReports, type ToiletReportDTO } from "@/lib/reports.functions";
 import { isToiletSaved, saveToilet } from "@/lib/saved-toilets";
 
 export const Route = createFileRoute("/toilet/$id")({
@@ -96,9 +85,11 @@ function ToiletNotFound() {
 function ToiletDetail() {
   const { id } = Route.useParams();
   const fetchToilet = useServerFn(getToiletByAmapId);
+  const fetchReports = useServerFn(getToiletReports);
   const [toilet, setToilet] = useState<ToiletDTO | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "missing" | "error">("loading");
   const [saved, setSaved] = useState(false);
+  const [reports, setReports] = useState<ToiletReportDTO[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -112,13 +103,20 @@ function ToiletDetail() {
           setToilet(res.toilet);
           setSaved(isToiletSaved(res.toilet.id));
           setStatus("ready");
+          void fetchReports({ data: { amapId: res.toilet.id } })
+            .then((reportRes) => {
+              if (!cancelled) setReports(reportRes.reports);
+            })
+            .catch(() => {
+              if (!cancelled) setReports([]);
+            });
         }
       })
       .catch(() => !cancelled && setStatus("error"));
     return () => {
       cancelled = true;
     };
-  }, [id, fetchToilet]);
+  }, [id, fetchReports, fetchToilet]);
 
   if (status === "loading") {
     return (
@@ -147,10 +145,6 @@ function ToiletDetail() {
     );
   }
 
-  const reports = getStoredReports().filter((report) =>
-    report.placeName.toLowerCase().includes(toilet.name.toLowerCase()),
-  );
-
   const handleSave = () => {
     const result = saveToilet(toilet);
     setSaved(true);
@@ -169,7 +163,7 @@ function ToiletDetail() {
         </Link>
         <Link
           to="/report"
-          search={{ place: toilet.name }}
+          search={{ place: toilet.name, amapId: toilet.id }}
           className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-2 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:border-primary/40 hover:text-primary"
         >
           <Flag className="size-3.5" aria-hidden />
@@ -177,42 +171,8 @@ function ToiletDetail() {
         </Link>
       </header>
 
-      <section className="px-6 mt-4">
-        {(() => {
-          const KIND = {
-            indoor: { label: "Indoor venue", Icon: Building2 },
-            accessible: { label: "Accessible", Icon: Accessibility },
-            nursery: { label: "Nursery room", Icon: Baby },
-            public: { label: "Public toilet", Icon: Toilet },
-          } as const;
-          const k = KIND[toilet.kind];
-          const KIcon = k.Icon;
-          return (
-            <div className="rounded-2xl border border-border bg-gradient-to-br from-primary/5 via-secondary to-card p-6 flex items-center gap-5">
-              <div className="size-20 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                <KIcon className="size-10" aria-hidden />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
-                  {k.label}
-                </p>
-                <p className="mt-1 text-3xl font-extrabold leading-none text-brand-dark tabular-nums">
-                  {toilet.distanceM}
-                  <span className="text-base font-bold text-muted-foreground ml-1">m</span>
-                </p>
-                {toilet.floor && (
-                  <p className="mt-2 text-xs font-semibold text-muted-foreground">
-                    Floor · {toilet.floor}
-                  </p>
-                )}
-              </div>
-            </div>
-          );
-        })()}
-
-        <h1 className="mt-5 text-2xl font-extrabold tracking-tight text-brand-dark">
-          {toilet.name}
-        </h1>
+      <section className="px-6 mt-6">
+        <h1 className="text-2xl font-extrabold tracking-tight text-brand-dark">{toilet.name}</h1>
         <p className="mt-1 text-sm text-muted-foreground flex items-center gap-1.5">
           <MapPin className="size-3.5" aria-hidden />
           {toilet.distanceM > 0 ? `${toilet.distanceM}m away` : "Nearby"}
@@ -233,11 +193,11 @@ function ToiletDetail() {
       </section>
 
       <section className="px-6 mt-8">
-        <div className="mb-3 grid grid-cols-[auto_1fr] gap-2">
+        <div className="grid grid-cols-[auto_1fr] gap-2">
           <button
             type="button"
             onClick={handleSave}
-            className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-xs font-bold uppercase tracking-widest transition ${
+            className={`inline-flex min-w-24 items-center justify-center gap-2 rounded-lg border px-4 py-3 text-xs font-bold uppercase tracking-widest transition ${
               saved
                 ? "border-primary/30 bg-primary/10 text-primary"
                 : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-primary"
@@ -247,28 +207,22 @@ function ToiletDetail() {
             <Bookmark className={`size-4 ${saved ? "fill-current" : ""}`} aria-hidden />
             {saved ? "Saved" : "Save"}
           </button>
-          <Link
-            to="/saved"
-            className="inline-flex items-center justify-center rounded-xl border border-border bg-card px-4 py-3 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:border-primary/40 hover:text-primary"
-          >
-            Saved places
-          </Link>
+          {toilet.canNavigate ? (
+            <MapNavigationSheet
+              toilet={toilet}
+              triggerLabel="Start Navigation"
+              triggerClassName="w-full bg-primary text-primary-foreground px-4 py-3 rounded-lg shadow-brand active:scale-[0.98] transition inline-flex items-center justify-center gap-2 font-bold tracking-tight text-sm"
+            />
+          ) : (
+            <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-4 text-sm font-semibold text-amber-800">
+              Navigation is locked until this place has a seated-toilet signal.
+            </div>
+          )}
         </div>
-        {toilet.canNavigate ? (
-          <MapNavigationSheet
-            toilet={toilet}
-            triggerLabel="Start Navigation"
-            triggerClassName="w-full bg-primary text-primary-foreground py-5 rounded-2xl shadow-brand active:scale-[0.98] transition inline-flex items-center justify-center gap-2 font-bold tracking-tight text-lg"
-          />
-        ) : (
-          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm font-semibold text-amber-800">
-            Navigation is locked until this place has a seated-toilet signal.
-          </div>
-        )}
       </section>
 
       <section className="px-6 mt-8">
-        <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="rounded-lg border border-border bg-card p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-sm font-extrabold text-brand-dark">Community reports</h2>
@@ -284,10 +238,28 @@ function ToiletDetail() {
           {reports.length > 0 ? (
             <ul className="mt-4 space-y-3">
               {reports.map((report) => (
-                <li key={report.id} className="rounded-xl bg-surface p-3 text-left">
-                  <p className="text-xs font-bold uppercase tracking-widest text-primary">
-                    {report.type.replace(/_/g, " ")}
-                  </p>
+                <li key={report.id} className="rounded-md bg-surface p-3 text-left">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-xs font-bold uppercase tracking-widest text-primary">
+                      {report.type.replace(/_/g, " ")}
+                    </p>
+                    {report.rating ? (
+                      <span
+                        className="inline-flex items-center gap-0.5 text-primary"
+                        aria-label={`${report.rating} out of 5`}
+                      >
+                        {Array.from({ length: 5 }).map((_, index) => (
+                          <Star
+                            key={index}
+                            className={`size-3 ${
+                              index < report.rating! ? "fill-current" : "text-muted-foreground/30"
+                            }`}
+                            aria-hidden
+                          />
+                        ))}
+                      </span>
+                    ) : null}
+                  </div>
                   {report.notes && (
                     <p className="mt-1 text-sm leading-relaxed text-foreground">{report.notes}</p>
                   )}
@@ -295,7 +267,7 @@ function ToiletDetail() {
               ))}
             </ul>
           ) : (
-            <p className="mt-4 rounded-xl border border-dashed border-border p-4 text-sm leading-relaxed text-muted-foreground">
+            <p className="mt-4 rounded-lg border border-dashed border-border p-4 text-sm leading-relaxed text-muted-foreground">
               No reports yet. If you visit this restroom, report whether it has a seated toilet,
               paper, or access issues.
             </p>

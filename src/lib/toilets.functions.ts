@@ -10,6 +10,7 @@ import {
   getSeatedConfidence,
   type ToiletDTO,
 } from "./amap";
+import { getCuratedToiletById } from "./curated-city-toilets";
 import { cleanTranslatedName, translateNames } from "./translate.server";
 
 const FALLBACK_PHOTO = "/placeholder.svg";
@@ -186,7 +187,7 @@ async function fetchSeatMapCandidates(gcjLat: number, gcjLng: number, radius: nu
 
 // Ensure English names exist for the given (amap_id, chinese_name) pairs.
 // Looks up cached translations from `toilets.name_en`; missing ones are
-// translated via Lovable AI and persisted. Returns a Map<amap_id, name_en>.
+// translated via Youdao/local fallbacks and persisted. Returns a Map<amap_id, name_en>.
 async function ensureTranslations(
   pairs: Array<{ amapId: string; name: string }>,
 ): Promise<Map<string, string>> {
@@ -195,6 +196,21 @@ async function ensureTranslations(
 
   const ids = pairs.map((p) => p.amapId);
   const hasChinese = (text: string) => /[\u3400-\u9fff]/.test(text);
+  const isUsableTranslatedName = (value: string) => {
+    const cleaned = cleanTranslatedName(value);
+    if (!cleaned || hasChinese(cleaned)) return false;
+    if (/^[-_.()\s]+$/.test(cleaned)) return false;
+    if (/^\([^)]*\)$/.test(cleaned)) return false;
+    if (/\(\s*\)$/.test(cleaned)) return false;
+    if (
+      /^(hotel|mall|restroom|toilet|public toilet|traveler-friendly venue|traveler-friendly hotel|traveler-friendly mall)$/i.test(
+        cleaned,
+      )
+    ) {
+      return false;
+    }
+    return true;
+  };
   const fallback = async () => {
     const translated = await translateNames(pairs.map((p) => p.name));
     return new Map(pairs.map((p, i) => [p.amapId, translated[i] ?? p.name]));
@@ -211,7 +227,7 @@ async function ensureTranslations(
   for (const r of existing ?? []) {
     if (r.name_en) {
       const cleanedName = cleanTranslatedName(r.name_en);
-      if (cleanedName && !hasChinese(cleanedName)) cached.set(r.amap_id, cleanedName);
+      if (isUsableTranslatedName(cleanedName)) cached.set(r.amap_id, cleanedName);
     }
   }
 
@@ -220,7 +236,7 @@ async function ensureTranslations(
     const translated = await translateNames(missing.map((m) => m.name));
     const updates = missing.map((m, i) => ({
       amapId: m.amapId,
-      nameEn: translated[i] ?? m.name,
+      nameEn: cleanTranslatedName(translated[i] ?? m.name),
     }));
     // Persist translations
     await Promise.all(
@@ -421,7 +437,12 @@ export const getToiletByAmapId = createServerFn({ method: "POST" })
       .eq("amap_id", data.amapId)
       .maybeSingle();
 
-    if (!row) return { toilet: null };
+    if (!row) {
+      if (data.amapId.startsWith("curated-")) {
+        return { toilet: getCuratedToiletById(data.amapId) };
+      }
+      return { toilet: null };
+    }
 
     const nameMap = await ensureTranslations([{ amapId: row.amap_id, name: row.name }]);
     const address = row.address ?? "";

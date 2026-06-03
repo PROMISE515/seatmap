@@ -112,6 +112,47 @@ export type Database = {
         };
         Relationships: [];
       };
+      toilet_reports: {
+        Row: {
+          amap_id: string | null;
+          created_at: string;
+          id: string;
+          notes: string | null;
+          place_name: string;
+          rating: number | null;
+          report_type: string;
+          toilet_id: string | null;
+        };
+        Insert: {
+          amap_id?: string | null;
+          created_at?: string;
+          id?: string;
+          notes?: string | null;
+          place_name: string;
+          rating?: number | null;
+          report_type: string;
+          toilet_id?: string | null;
+        };
+        Update: {
+          amap_id?: string | null;
+          created_at?: string;
+          id?: string;
+          notes?: string | null;
+          place_name?: string;
+          rating?: number | null;
+          report_type?: string;
+          toilet_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "toilet_reports_toilet_id_fkey";
+            columns: ["toilet_id"];
+            isOneToOne: false;
+            referencedRelation: "toilets";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       toilet_search_cache: {
         Row: {
           amap_ids: string[];
