@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader2, MapPin, Search, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { findNearbyToilets } from "@/lib/toilets.functions";
@@ -84,8 +84,10 @@ const SHARE_BONUS_KEY = "seatmap.share.freeCredits";
 const SHARE_REFERRAL_CODE_KEY = "seatmap.share.referralCode";
 const SHARE_VISITOR_ID_KEY = "seatmap.share.visitorId";
 const LAST_SEARCH_STATE_KEY = "seatmap.lastSearchState";
+const HOME_SCROLL_STATE_KEY = "seatmap.homeScrollState";
 const SHARE_PARAM = "seatmap_ref";
 const LAST_SEARCH_MAX_AGE_MS = 30 * 60 * 1000;
+const HOME_SCROLL_MAX_AGE_MS = 30 * 60 * 1000;
 
 const PASS_PLANS = [
   {
@@ -203,6 +205,25 @@ function writeLastSearchState(state: Omit<LastSearchState, "savedAt">) {
   setStoredValue(LAST_SEARCH_STATE_KEY, JSON.stringify({ ...state, savedAt: Date.now() }));
 }
 
+function readHomeScrollY() {
+  const raw = getStoredValue(HOME_SCROLL_STATE_KEY);
+  if (!raw) return 0;
+  try {
+    const parsed = JSON.parse(raw) as { savedAt?: number; scrollY?: number };
+    if (!parsed.savedAt || Date.now() - parsed.savedAt > HOME_SCROLL_MAX_AGE_MS) return 0;
+    return Math.max(0, Number(parsed.scrollY) || 0);
+  } catch {
+    return 0;
+  }
+}
+
+function writeHomeScrollY(scrollY: number) {
+  setStoredValue(
+    HOME_SCROLL_STATE_KEY,
+    JSON.stringify({ savedAt: Date.now(), scrollY: Math.max(0, Math.round(scrollY)) }),
+  );
+}
+
 function HomePage() {
   const { t } = useT();
   const [status, setStatus] = useState<Status>("idle");
@@ -223,10 +244,13 @@ function HomePage() {
   const claimReferral = useServerFn(claimShareReferral);
   const getReferralCredits = useServerFn(getShareReferralCredits);
   const verifyPass = useServerFn(verifyPassSession);
+  const shouldRestoreScrollRef = useRef(false);
+  const restoredScrollRef = useRef(false);
 
   useEffect(() => {
     const lastSearch = readLastSearchState();
     if (!lastSearch) return;
+    shouldRestoreScrollRef.current = true;
     setStatus(lastSearch.status);
     setToilets(lastSearch.toilets);
     setRegion(lastSearch.region);
@@ -234,6 +258,42 @@ function HomePage() {
     setErrorMsg(lastSearch.errorMsg);
     setSupportedRegions(lastSearch.supportedRegions);
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let pending = false;
+
+    const saveScroll = () => {
+      if (pending) return;
+      pending = true;
+      window.requestAnimationFrame(() => {
+        writeHomeScrollY(window.scrollY);
+        pending = false;
+      });
+    };
+
+    window.addEventListener("scroll", saveScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", saveScroll);
+      writeHomeScrollY(window.scrollY);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!shouldRestoreScrollRef.current || restoredScrollRef.current) return;
+    if (status === "idle" || status === "checking" || status === "locating") return;
+
+    const scrollY = readHomeScrollY();
+    if (scrollY <= 0) return;
+    restoredScrollRef.current = true;
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: scrollY, behavior: "auto" });
+      });
+    });
+  }, [mapCenter, status, toilets.length]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
