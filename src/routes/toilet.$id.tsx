@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Bookmark, Check, Flag, Loader2, MapPin, Star } from "lucide-react";
+import { ArrowLeft, Bookmark, Check, Flag, Loader2, MapPin, Share2, Star } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { MapNavigationSheet } from "@/components/MapNavigationSheet";
@@ -222,37 +222,42 @@ function ToiletDetail() {
       </section>
 
       <section className="px-6 mt-8">
-        <div className="rounded-lg border border-border bg-card p-5">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-sm font-extrabold text-brand-dark">Community reports</h2>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Traveler feedback for this place.
-              </p>
-            </div>
-            <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
-              {reports.length}
-            </span>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-extrabold text-brand-dark">Community reports</h2>
+            <p className="mt-1 text-xs text-muted-foreground">Traveler feedback for this place.</p>
           </div>
+          <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+            {reports.length}
+          </span>
+        </div>
 
-          {reports.length > 0 ? (
-            <ul className="mt-4 space-y-3">
-              {reports.map((report) => (
-                <li key={report.id} className="rounded-md bg-surface p-3 text-left">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-xs font-bold uppercase tracking-widest text-primary">
-                      {report.type.replace(/_/g, " ")}
-                    </p>
+        {reports.length > 0 ? (
+          <ul className="mt-4 divide-y divide-border">
+            {reports.map((report) => (
+              <li key={report.id} className="py-4 text-left">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-xs font-bold uppercase tracking-widest text-primary">
+                        {report.type.replace(/_/g, " ")}
+                      </p>
+                      {report.isComplaint && (
+                        <span className="rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                          Complaint
+                        </span>
+                      )}
+                    </div>
                     {report.rating ? (
                       <span
-                        className="inline-flex items-center gap-0.5 text-primary"
+                        className="mt-2 inline-flex items-center gap-0.5 text-amber-400"
                         aria-label={`${report.rating} out of 5`}
                       >
                         {Array.from({ length: 5 }).map((_, index) => (
                           <Star
                             key={index}
                             className={`size-3 ${
-                              index < report.rating! ? "fill-current" : "text-muted-foreground/30"
+                              index < report.rating! ? "fill-current" : "text-muted-foreground/25"
                             }`}
                             aria-hidden
                           />
@@ -260,19 +265,35 @@ function ToiletDetail() {
                       </span>
                     ) : null}
                   </div>
-                  {report.notes && (
-                    <p className="mt-1 text-sm leading-relaxed text-foreground">{report.notes}</p>
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-4 rounded-lg border border-dashed border-border p-4 text-sm leading-relaxed text-muted-foreground">
-              No reports yet. If you visit this restroom, report whether it has a seated toilet,
-              paper, or access issues.
-            </p>
-          )}
-        </div>
+                  <button
+                    type="button"
+                    className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-surface text-muted-foreground transition hover:text-primary"
+                    aria-label="Share this report"
+                  >
+                    <Share2 className="size-4" aria-hidden />
+                  </button>
+                </div>
+                {report.notes && (
+                  <p className="mt-2 text-sm leading-relaxed text-foreground">{report.notes}</p>
+                )}
+                {report.photoUrls.length > 0 && (
+                  <ul className="mt-3 grid grid-cols-3 gap-2">
+                    {report.photoUrls.map((url) => (
+                      <li key={url} className="overflow-hidden rounded-md bg-surface">
+                        <img src={url} alt="" className="aspect-square w-full object-cover" />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-4 rounded-lg border border-dashed border-border p-4 text-sm leading-relaxed text-muted-foreground">
+            No reports yet. If you visit this restroom, report whether it has a seated toilet,
+            paper, or access issues.
+          </p>
+        )}
       </section>
     </AppShell>
   );

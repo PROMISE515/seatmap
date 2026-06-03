@@ -1,10 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Flag, Loader2, Star } from "lucide-react";
-import type { FormEvent } from "react";
+import { ArrowLeft, Flag, ImagePlus, Loader2, Siren, Star, X } from "lucide-react";
+import type { ChangeEvent, FormEvent } from "react";
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { submitToiletReport } from "@/lib/reports.functions";
+
+type PendingPhoto = {
+  name: string;
+  dataUrl: string;
+};
 
 export const Route = createFileRoute("/report")({
   validateSearch: (search: Record<string, unknown>): { place?: string; amapId?: string } => ({
@@ -28,10 +33,11 @@ function ReportPage() {
   const [notes, setNotes] = useState("");
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savingComplaint, setSavingComplaint] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<PendingPhoto[]>([]);
 
-  const submit = async (event: FormEvent) => {
-    event.preventDefault();
+  const saveReport = async (options: { isComplaint: boolean }) => {
     setSaving(true);
     setError(null);
     setSaved(false);
@@ -44,17 +50,94 @@ function ReportPage() {
           type,
           rating,
           notes,
+          isComplaint: options.isComplaint,
+          photoDataUrls: photos.map((photo) => photo.dataUrl),
         },
       });
       setNotes("");
       setType("confirmed_seated");
       setRating(5);
+      setPhotos([]);
       setSaved(true);
     } catch {
       setError("Could not save this report. Please check Supabase setup and try again.");
     } finally {
       setSaving(false);
     }
+  };
+
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    await saveReport({ isComplaint: false });
+  };
+
+  const submitComplaint = async () => {
+    if (!placeName.trim()) {
+      setError("Add a place name before filing a complaint.");
+      return;
+    }
+    setSavingComplaint(true);
+    const originalType = type;
+    const originalRating = rating;
+    setType("wrong_listing");
+    setRating(1);
+    try {
+      await submitReport({
+        data: {
+          amapId,
+          placeName,
+          type: "wrong_listing",
+          rating: 1,
+          notes: notes || "Complaint: this place does not have a seated toilet.",
+          isComplaint: true,
+          photoDataUrls: photos.map((photo) => photo.dataUrl),
+        },
+      });
+      setNotes("");
+      setPhotos([]);
+      setSaved(true);
+      setError(null);
+    } catch {
+      setType(originalType);
+      setRating(originalRating);
+      setError("Could not file this complaint. Please check Supabase setup and try again.");
+    } finally {
+      setSavingComplaint(false);
+    }
+  };
+
+  const handlePhotoChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = [...(event.target.files ?? [])].slice(0, Math.max(0, 3 - photos.length));
+    if (files.length === 0) return;
+
+    const nextPhotos = await Promise.all(
+      files.map(
+        (file) =>
+          new Promise<PendingPhoto | null>((resolve) => {
+            if (!file.type.startsWith("image/") || file.size > 3_000_000) {
+              resolve(null);
+              return;
+            }
+            const reader = new FileReader();
+            reader.onload = () =>
+              resolve(
+                typeof reader.result === "string"
+                  ? { name: file.name, dataUrl: reader.result }
+                  : null,
+              );
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(file);
+          }),
+      ),
+    );
+
+    setPhotos((current) =>
+      [...current, ...nextPhotos.filter((photo): photo is PendingPhoto => Boolean(photo))].slice(
+        0,
+        3,
+      ),
+    );
+    event.target.value = "";
   };
 
   return (
@@ -79,6 +162,19 @@ function ReportPage() {
               Back
             </Link>
           )}
+          <button
+            type="button"
+            onClick={submitComplaint}
+            disabled={savingComplaint}
+            className="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-2 text-xs font-bold uppercase tracking-widest text-white disabled:opacity-70"
+          >
+            {savingComplaint ? (
+              <Loader2 className="size-3.5 animate-spin" aria-hidden />
+            ) : (
+              <Siren className="size-3.5" aria-hidden />
+            )}
+            Complaint
+          </button>
         </div>
         <div className="flex items-center gap-2">
           <div className="size-9 rounded-lg bg-primary/10 text-primary grid place-items-center">
@@ -160,6 +256,46 @@ function ReportPage() {
             className="mt-2 min-h-28 w-full rounded-lg border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
           />
         </label>
+
+        <div className="block">
+          <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            Photos
+          </span>
+          <label className="mt-2 flex min-h-20 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-card px-4 py-3 text-sm font-semibold text-muted-foreground hover:border-primary/40 hover:text-primary">
+            <ImagePlus className="size-4" aria-hidden />
+            Add photos
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              multiple
+              className="sr-only"
+              onChange={handlePhotoChange}
+              disabled={photos.length >= 3}
+            />
+          </label>
+          {photos.length > 0 && (
+            <ul className="mt-2 grid grid-cols-3 gap-2">
+              {photos.map((photo, index) => (
+                <li
+                  key={`${photo.name}-${index}`}
+                  className="relative overflow-hidden rounded-md bg-surface"
+                >
+                  <img src={photo.dataUrl} alt="" className="aspect-square w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPhotos((current) => current.filter((_, itemIndex) => itemIndex !== index))
+                    }
+                    className="absolute right-1 top-1 grid size-6 place-items-center rounded-full bg-black/60 text-white"
+                    aria-label="Remove photo"
+                  >
+                    <X className="size-3" aria-hidden />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
         {saved && (
           <p className="rounded-lg bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">

@@ -117,7 +117,9 @@ export type Database = {
           amap_id: string | null;
           created_at: string;
           id: string;
+          is_complaint: boolean;
           notes: string | null;
+          photo_urls: string[];
           place_name: string;
           rating: number | null;
           report_type: string;
@@ -127,7 +129,9 @@ export type Database = {
           amap_id?: string | null;
           created_at?: string;
           id?: string;
+          is_complaint?: boolean;
           notes?: string | null;
+          photo_urls?: string[];
           place_name: string;
           rating?: number | null;
           report_type: string;
@@ -137,7 +141,9 @@ export type Database = {
           amap_id?: string | null;
           created_at?: string;
           id?: string;
+          is_complaint?: boolean;
           notes?: string | null;
+          photo_urls?: string[];
           place_name?: string;
           rating?: number | null;
           report_type?: string;
