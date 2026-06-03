@@ -360,8 +360,9 @@ function HomePage() {
       setRegion(res.region ?? null);
       if (res.unsupported) {
         setToilets([]);
-        setSupportedRegions(res.supportedRegions ?? "Shanghai, Beijing and Qingdao");
-        setStatus("unsupported");
+        setSupportedRegions(res.supportedRegions ?? "");
+        setErrorMsg(t("home.noToilets"));
+        setStatus("ready");
         return;
       }
       setToilets(res.toilets);

@@ -176,13 +176,3 @@ export const cities: City[] = [
 export function getCityBySlug(slug: string): City | undefined {
   return cities.find((c) => c.slug === slug);
 }
-
-const SUPPORTED_SEARCH_REGIONS = new Set(cities.flatMap((city) => [city.name, city.nameLocal]));
-
-export function isSupportedSearchRegion(region: string | null | undefined) {
-  return Boolean(region && SUPPORTED_SEARCH_REGIONS.has(region));
-}
-
-export function supportedSearchRegionLabel() {
-  return cities.map((city) => city.name).join(", ");
-}

@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { isSupportedSearchRegion, supportedSearchRegionLabel } from "@/lib/cities";
 import {
   wgs84ToGcj02,
   walkMinFromMeters,
@@ -278,17 +277,6 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
       if (fromProv) return fromProv;
       const fromCity = cityCn ? cityNameToEnglish(cityCn) : null;
       return fromCity ?? null;
-    }
-
-    const currentRegion = await resolveRegion();
-    if (currentRegion && !isSupportedSearchRegion(currentRegion)) {
-      return {
-        cached: false,
-        toilets: [],
-        region: currentRegion,
-        unsupported: true,
-        supportedRegions: supportedSearchRegionLabel(),
-      };
     }
 
     let cached: { amap_ids: string[]; created_at: string } | null = null;
