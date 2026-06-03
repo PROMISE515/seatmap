@@ -21,7 +21,9 @@ import { getStoredValue, setStoredValue } from "@/lib/client-storage";
 import {
   consumeHomeScrollRestoreRequest,
   getCurrentPageScrollY,
+  getHomeScrollRoot,
   readHomeScrollY,
+  restoreHomeScrollY,
   writeHomeScrollY,
 } from "@/lib/home-scroll";
 import { ManageSubscriptionButton } from "@/components/ManageSubscriptionButton";
@@ -271,6 +273,7 @@ function HomePage() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const scrollRoot = getHomeScrollRoot() ?? window;
     let pending = false;
 
     const saveScroll = () => {
@@ -284,9 +287,9 @@ function HomePage() {
       });
     };
 
-    window.addEventListener("scroll", saveScroll, { passive: true });
+    scrollRoot.addEventListener("scroll", saveScroll, { passive: true });
     return () => {
-      window.removeEventListener("scroll", saveScroll);
+      scrollRoot.removeEventListener("scroll", saveScroll);
       if (!isRestoringScrollRef.current) {
         writeHomeScrollY(getCurrentPageScrollY());
       }
@@ -302,7 +305,7 @@ function HomePage() {
     if (scrollY <= 0) return;
     restoredScrollRef.current = true;
 
-    const restore = () => window.scrollTo({ top: scrollY, behavior: "auto" });
+    const restore = () => restoreHomeScrollY(scrollY);
     window.requestAnimationFrame(() => window.requestAnimationFrame(restore));
     const firstTimer = window.setTimeout(restore, 50);
     const secondTimer = window.setTimeout(restore, 150);

@@ -3,6 +3,12 @@ import { getStoredValue, setStoredValue } from "@/lib/client-storage";
 const HOME_SCROLL_STATE_KEY = "seatmap.homeScrollState";
 const HOME_SCROLL_RESTORE_KEY = "seatmap.restoreHomeScroll";
 const HOME_SCROLL_MAX_AGE_MS = 30 * 60 * 1000;
+export const HOME_SCROLL_ROOT_ID = "seatmap-scroll-root";
+
+export function getHomeScrollRoot() {
+  if (typeof document === "undefined") return null;
+  return document.getElementById(HOME_SCROLL_ROOT_ID);
+}
 
 export function readHomeScrollY() {
   const raw = getStoredValue(HOME_SCROLL_STATE_KEY);
@@ -25,12 +31,24 @@ export function writeHomeScrollY(scrollY: number) {
 
 export function getCurrentPageScrollY() {
   if (typeof window === "undefined") return 0;
+  const root = getHomeScrollRoot();
+  if (root) return root.scrollTop;
   return Math.max(
     window.scrollY,
     document.documentElement.scrollTop,
     document.body.scrollTop,
     document.scrollingElement?.scrollTop ?? 0,
   );
+}
+
+export function restoreHomeScrollY(scrollY: number) {
+  if (typeof window === "undefined") return;
+  const root = getHomeScrollRoot();
+  if (root) {
+    root.scrollTo({ top: scrollY, behavior: "auto" });
+    return;
+  }
+  window.scrollTo({ top: scrollY, behavior: "auto" });
 }
 
 export function saveCurrentHomeScroll() {

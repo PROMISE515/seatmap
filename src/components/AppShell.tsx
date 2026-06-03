@@ -1,6 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { Bookmark, MapPin } from "lucide-react";
 import type { ReactNode } from "react";
+import { HOME_SCROLL_ROOT_ID } from "@/lib/home-scroll";
 import { useT } from "@/lib/i18n";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -10,11 +11,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isSaved = pathname === "/saved";
 
   return (
-    <div className="min-h-screen bg-surface flex justify-center">
-      <div className="w-full max-w-[420px] bg-background min-h-screen shadow-2xl shadow-black/5 flex flex-col relative">
-        <main className="flex-1 pb-24">{children}</main>
+    <div className="h-[100dvh] overflow-hidden bg-surface flex justify-center">
+      <div className="w-full max-w-[420px] bg-background h-[100dvh] shadow-2xl shadow-black/5 flex flex-col relative overflow-hidden">
+        <main id={HOME_SCROLL_ROOT_ID} className="flex-1 overflow-y-auto pb-24">
+          {children}
+        </main>
 
-        <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[420px] bg-background/85 backdrop-blur-xl border-t border-border">
+        <nav className="absolute bottom-0 left-0 w-full bg-background/85 backdrop-blur-xl border-t border-border">
           <ul className="flex justify-around py-3">
             <NavItem
               to="/"
