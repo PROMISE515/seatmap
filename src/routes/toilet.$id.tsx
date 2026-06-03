@@ -84,6 +84,7 @@ function ToiletNotFound() {
 
 function ToiletDetail() {
   const { id } = Route.useParams();
+  const router = useRouter();
   const fetchToilet = useServerFn(getToiletByAmapId);
   const fetchReports = useServerFn(getToiletReports);
   const [toilet, setToilet] = useState<ToiletDTO | null>(null);
@@ -151,16 +152,25 @@ function ToiletDetail() {
     toast(result.alreadySaved ? "Already saved" : "Saved on this device");
   };
 
+  const handleBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    void router.navigate({ to: "/" });
+  };
+
   return (
     <AppShell>
       <header className="px-6 pt-6 pb-2 flex items-center justify-between">
-        <Link
-          to="/"
+        <button
+          type="button"
+          onClick={handleBack}
           className="inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" aria-hidden />
           Back
-        </Link>
+        </button>
         <Link
           to="/report"
           search={{ place: toilet.name, amapId: toilet.id }}

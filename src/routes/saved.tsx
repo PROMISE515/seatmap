@@ -104,7 +104,7 @@ function SwipeSavedItem({ toilet, onRemove }: { toilet: ToiletDTO; onRemove: () 
         Delete
       </button>
       <div
-        className="relative touch-pan-y bg-background transition-transform duration-150 ease-out"
+        className="relative touch-pan-y bg-red-600 transition-transform duration-150 ease-out"
         style={{
           transform: `translateX(${offset}px)`,
           transitionDuration: dragStartX === null ? undefined : "0ms",
