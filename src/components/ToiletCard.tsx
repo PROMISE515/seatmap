@@ -115,6 +115,14 @@ export function ToiletCard({
                     {t(meta.labelKey)}
                   </span>
                 )}
+                {toilet.kind !== "accessible" && toilet.hasAccessible && (
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${KIND_META.accessible.tone}`}
+                  >
+                    <Accessibility className="size-3" aria-hidden />
+                    {t("card.accessible")}
+                  </span>
+                )}
                 {toilet.floor && (
                   <span className="px-2 py-0.5 rounded-md bg-surface border border-border text-[10px] font-bold text-muted-foreground tabular-nums">
                     {toilet.floor}

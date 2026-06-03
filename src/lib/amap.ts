@@ -15,6 +15,7 @@ export type ToiletDTO = {
   city: string;
   topRated?: boolean;
   duplicateCount?: number;
+  hasAccessible?: boolean;
   seatedConfidence: SeatedConfidence;
   canNavigate: boolean;
   lat: number;

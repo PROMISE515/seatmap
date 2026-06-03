@@ -77,6 +77,28 @@ function venueKeyForToilet(toilet: ToiletDTO) {
   return `${Math.round(toilet.lat * 1000)}:${Math.round(toilet.lng * 1000)}`;
 }
 
+function floorSortValue(floor: string) {
+  const basement = floor.match(/^B(\d+)$/i);
+  if (basement) return -Number(basement[1]);
+  const aboveGround = floor.match(/^(\d+)F$/i);
+  if (aboveGround) return Number(aboveGround[1]);
+  return null;
+}
+
+function formatFloorRange(toilets: ToiletDTO[]) {
+  const floors = toilets
+    .map((toilet) => toilet.floor)
+    .filter((floor): floor is string => Boolean(floor))
+    .map((floor) => ({ floor, value: floorSortValue(floor) }))
+    .filter((item): item is { floor: string; value: number } => item.value !== null)
+    .sort((a, b) => a.value - b.value);
+
+  const unique = [...new Map(floors.map((item) => [item.floor, item])).values()];
+  if (unique.length === 0) return undefined;
+  if (unique.length === 1) return unique[0].floor;
+  return `${unique[0].floor}~${unique[unique.length - 1].floor}`;
+}
+
 function dedupeVenueResults(toilets: ToiletDTO[]) {
   const groups = new Map<string, ToiletDTO[]>();
   for (const toilet of toilets) {
@@ -86,21 +108,12 @@ function dedupeVenueResults(toilets: ToiletDTO[]) {
 
   return [...groups.values()]
     .map((group) => {
-      const [best] = group.sort((a, b) => {
-        const kindScore = (t: ToiletDTO) =>
-          t.kind === "indoor" ? 0 : t.kind === "accessible" ? 1 : t.kind === "nursery" ? 2 : 3;
-        const confidenceScore = (t: ToiletDTO) =>
-          t.seatedConfidence === "confirmed" ? 0 : t.seatedConfidence === "likely" ? 1 : 2;
-        return (
-          confidenceScore(a) - confidenceScore(b) ||
-          kindScore(a) - kindScore(b) ||
-          a.distanceM - b.distanceM
-        );
-      });
+      const [best] = group.sort((a, b) => a.distanceM - b.distanceM);
       return {
         ...best,
         name: best.name,
-        floor: group.length > 1 ? undefined : best.floor,
+        floor: group.length > 1 ? formatFloorRange(group) : best.floor,
+        hasAccessible: group.some((item) => item.kind === "accessible" || item.hasAccessible),
         seatedConfidence: group.some((item) => item.seatedConfidence === "confirmed")
           ? "confirmed"
           : group.some((item) => item.seatedConfidence === "likely")
@@ -110,11 +123,7 @@ function dedupeVenueResults(toilets: ToiletDTO[]) {
         duplicateCount: group.length > 1 ? group.length : undefined,
       };
     })
-    .sort((a, b) => {
-      const confidenceScore = (t: ToiletDTO) =>
-        t.seatedConfidence === "confirmed" ? 0 : t.seatedConfidence === "likely" ? 1 : 2;
-      return confidenceScore(a) - confidenceScore(b) || a.distanceM - b.distanceM;
-    });
+    .sort((a, b) => a.distanceM - b.distanceM);
 }
 
 async function fetchFromAmap(
@@ -336,6 +345,7 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
             lng: r.lng,
             photo: r.photo_url ?? FALLBACK_PHOTO,
             kind,
+            hasAccessible: kind === "accessible",
             floor: parseFloor(address),
             seatedConfidence,
             canNavigate: seatedConfidence === "confirmed" || seatedConfidence === "likely",
@@ -416,6 +426,7 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
         lng: Number(lngStr),
         photo: firstPhoto(p) ?? FALLBACK_PHOTO,
         kind,
+        hasAccessible: kind === "accessible",
         floor: parseFloor(address),
         seatedConfidence,
         canNavigate: seatedConfidence === "confirmed" || seatedConfidence === "likely",
@@ -471,6 +482,7 @@ export const getToiletByAmapId = createServerFn({ method: "POST" })
       lng: row.lng,
       photo: row.photo_url ?? FALLBACK_PHOTO,
       kind,
+      hasAccessible: kind === "accessible",
       floor: parseFloor(address),
       seatedConfidence,
       canNavigate: seatedConfidence === "confirmed" || seatedConfidence === "likely",
