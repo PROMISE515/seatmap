@@ -18,6 +18,7 @@ import { MapPreview } from "@/components/MapPreview";
 import { SeatMapLogo } from "@/components/SeatMapLogo";
 import { StripeEmbeddedCheckout, PaymentTestModeBanner } from "@/components/StripeEmbeddedCheckout";
 import { getStoredValue, setStoredValue } from "@/lib/client-storage";
+import { readHomeScrollY, writeHomeScrollY } from "@/lib/home-scroll";
 import { ManageSubscriptionButton } from "@/components/ManageSubscriptionButton";
 import { useT } from "@/lib/i18n";
 import { getStripeEnvironmentForSessionId } from "@/lib/stripe";
@@ -84,10 +85,8 @@ const SHARE_BONUS_KEY = "seatmap.share.freeCredits";
 const SHARE_REFERRAL_CODE_KEY = "seatmap.share.referralCode";
 const SHARE_VISITOR_ID_KEY = "seatmap.share.visitorId";
 const LAST_SEARCH_STATE_KEY = "seatmap.lastSearchState";
-const HOME_SCROLL_STATE_KEY = "seatmap.homeScrollState";
 const SHARE_PARAM = "seatmap_ref";
 const LAST_SEARCH_MAX_AGE_MS = 30 * 60 * 1000;
-const HOME_SCROLL_MAX_AGE_MS = 30 * 60 * 1000;
 
 const PASS_PLANS = [
   {
@@ -205,25 +204,6 @@ function writeLastSearchState(state: Omit<LastSearchState, "savedAt">) {
   setStoredValue(LAST_SEARCH_STATE_KEY, JSON.stringify({ ...state, savedAt: Date.now() }));
 }
 
-function readHomeScrollY() {
-  const raw = getStoredValue(HOME_SCROLL_STATE_KEY);
-  if (!raw) return 0;
-  try {
-    const parsed = JSON.parse(raw) as { savedAt?: number; scrollY?: number };
-    if (!parsed.savedAt || Date.now() - parsed.savedAt > HOME_SCROLL_MAX_AGE_MS) return 0;
-    return Math.max(0, Number(parsed.scrollY) || 0);
-  } catch {
-    return 0;
-  }
-}
-
-function writeHomeScrollY(scrollY: number) {
-  setStoredValue(
-    HOME_SCROLL_STATE_KEY,
-    JSON.stringify({ savedAt: Date.now(), scrollY: Math.max(0, Math.round(scrollY)) }),
-  );
-}
-
 function HomePage() {
   const { t } = useT();
   const [status, setStatus] = useState<Status>("idle");
@@ -288,11 +268,15 @@ function HomePage() {
     if (scrollY <= 0) return;
     restoredScrollRef.current = true;
 
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => {
-        window.scrollTo({ top: scrollY, behavior: "auto" });
-      });
-    });
+    const restore = () => window.scrollTo({ top: scrollY, behavior: "auto" });
+    window.requestAnimationFrame(() => window.requestAnimationFrame(restore));
+    const firstTimer = window.setTimeout(restore, 50);
+    const secondTimer = window.setTimeout(restore, 150);
+
+    return () => {
+      window.clearTimeout(firstTimer);
+      window.clearTimeout(secondTimer);
+    };
   }, [mapCenter, status, toilets.length]);
 
   useEffect(() => {

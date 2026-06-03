@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bookmark, Trash2 } from "lucide-react";
+import type { PointerEvent } from "react";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { ToiletCard } from "@/components/ToiletCard";
@@ -46,17 +47,7 @@ function SavedPage() {
       <section className="px-6 mt-6 space-y-4">
         {saved.length > 0 ? (
           saved.map((toilet) => (
-            <div key={toilet.id} className="space-y-2">
-              <ToiletCard toilet={toilet} />
-              <button
-                type="button"
-                onClick={() => remove(toilet.id)}
-                className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-border py-2 text-xs font-bold uppercase tracking-widest text-muted-foreground"
-              >
-                <Trash2 className="size-3.5" aria-hidden />
-                Remove
-              </button>
-            </div>
+            <SwipeSavedItem key={toilet.id} toilet={toilet} onRemove={() => remove(toilet.id)} />
           ))
         ) : (
           <div className="rounded-2xl border border-dashed border-border p-6 text-center bg-card">
@@ -74,5 +65,58 @@ function SavedPage() {
         )}
       </section>
     </AppShell>
+  );
+}
+
+function SwipeSavedItem({ toilet, onRemove }: { toilet: ToiletDTO; onRemove: () => void }) {
+  const [dragStartX, setDragStartX] = useState<number | null>(null);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [open, setOpen] = useState(false);
+  const offset = dragStartX === null ? (open ? -88 : 0) : dragOffset;
+
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    setDragStartX(event.clientX);
+    setDragOffset(open ? -88 : 0);
+  };
+
+  const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (dragStartX === null) return;
+    const base = open ? -88 : 0;
+    const next = Math.min(0, Math.max(-96, base + event.clientX - dragStartX));
+    setDragOffset(next);
+  };
+
+  const handlePointerEnd = () => {
+    if (dragStartX === null) return;
+    setOpen(dragOffset < -44);
+    setDragStartX(null);
+    setDragOffset(0);
+  };
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-red-600">
+      <button
+        type="button"
+        onClick={onRemove}
+        className="absolute inset-y-0 right-0 flex w-24 items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-widest text-white"
+      >
+        <Trash2 className="size-4" aria-hidden />
+        Delete
+      </button>
+      <div
+        className="relative touch-pan-y bg-background transition-transform duration-150 ease-out"
+        style={{
+          transform: `translateX(${offset}px)`,
+          transitionDuration: dragStartX === null ? undefined : "0ms",
+        }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerEnd}
+        onPointerCancel={handlePointerEnd}
+        onPointerLeave={handlePointerEnd}
+      >
+        <ToiletCard toilet={toilet} />
+      </div>
+    </div>
   );
 }

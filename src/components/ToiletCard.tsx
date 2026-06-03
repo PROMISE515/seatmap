@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Accessibility, Baby, Bookmark, Building2, Info, Lock, MapPin, Toilet } from "lucide-react";
 import type { ToiletDTO, ToiletKind } from "@/lib/amap";
 import { MapNavigationSheet } from "@/components/MapNavigationSheet";
+import { saveCurrentHomeScroll } from "@/lib/home-scroll";
 import { isToiletSaved, saveToilet } from "@/lib/saved-toilets";
 import { type TranslationKey, useT } from "@/lib/i18n";
 
@@ -174,6 +175,7 @@ export function ToiletCard({
             <Link
               to="/toilet/$id"
               params={{ id: toilet.id }}
+              onClick={saveCurrentHomeScroll}
               className="mt-1.5 block rounded-lg -mx-1 px-1 py-0.5 transition hover:bg-primary/5"
             >
               <h3 className="font-bold text-card-foreground truncate">{toilet.name}</h3>
@@ -236,6 +238,7 @@ export function ToiletCard({
           <Link
             to="/toilet/$id"
             params={{ id: toilet.id }}
+            onClick={saveCurrentHomeScroll}
             className="inline-flex size-11 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition hover:border-primary/40 hover:text-primary"
             aria-label="View details"
           >
