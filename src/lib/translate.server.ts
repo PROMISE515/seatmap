@@ -1,16 +1,9 @@
-// Translate Chinese POI names to concise English using Lovable AI Gateway.
+import { createHash, randomUUID } from "node:crypto";
+
+// Translate Chinese POI names to concise English using Youdao.
 // Used server-side only.
 
-const ENDPOINT = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MODEL = "google/gemini-2.5-flash-lite";
-
-const SYSTEM = `You translate Chinese place / POI names into concise English display names suitable for a travel app.
-Rules:
-- Keep well-known mall and hotel names in their official English form (e.g. 来福士广场 -> Raffles City, JW万豪酒店 -> JW Marriott Hotel, 上海国金中心 -> Shanghai IFC).
-- Translate descriptive parts naturally (卫生间/洗手间/厕所 -> Restroom; 男 -> Men's; 女 -> Women's; 无障碍 -> Accessible; 楼/层 -> Floor).
-- Use Hanyu Pinyin (Title Case, no tone marks) for proper nouns with no standard English form.
-- Keep it short. No quotes, no explanations.
-Return ONLY a JSON array of strings, in the same order as the input, same length.`;
+const YOUDAO_ENDPOINT = "https://openapi.youdao.com/api";
 
 const LOCAL_REPLACEMENTS: Array<[RegExp, string]> = [
   [/上海/g, "Shanghai"],
@@ -52,6 +45,14 @@ const LOCAL_REPLACEMENTS: Array<[RegExp, string]> = [
 
 function hasChinese(text: string) {
   return /[\u3400-\u9fff]/.test(text);
+}
+
+function truncateForYoudaoSign(value: string) {
+  return value.length <= 20 ? value : `${value.slice(0, 10)}${value.length}${value.slice(-10)}`;
+}
+
+function sha256(value: string) {
+  return createHash("sha256").update(value).digest("hex");
 }
 
 export function cleanTranslatedName(value: string) {
@@ -98,42 +99,57 @@ function localTranslateName(name: string) {
   return "Traveler-Friendly Venue";
 }
 
+async function translateNameWithYoudao(name: string, appId: string, appSecret: string) {
+  const salt = randomUUID();
+  const curtime = Math.floor(Date.now() / 1000).toString();
+  const input = truncateForYoudaoSign(name);
+  const sign = sha256(`${appId}${input}${salt}${curtime}${appSecret}`);
+
+  const body = new URLSearchParams({
+    q: name,
+    from: "zh-CHS",
+    to: "en",
+    appKey: appId,
+    salt,
+    sign,
+    signType: "v3",
+    curtime,
+  });
+
+  const res = await fetch(YOUDAO_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+  });
+  if (!res.ok) throw new Error(`Youdao HTTP ${res.status}`);
+
+  const json = (await res.json()) as {
+    errorCode?: string;
+    translation?: string[];
+  };
+  if (json.errorCode && json.errorCode !== "0") {
+    throw new Error(`Youdao error ${json.errorCode}`);
+  }
+
+  return cleanTranslatedName(json.translation?.[0] ?? "");
+}
+
 export async function translateNames(names: string[]): Promise<string[]> {
-  const apiKey = process.env.LOVABLE_API_KEY;
   if (names.length === 0) return names;
-  if (!apiKey) return names.map(localTranslateName);
+
+  const appId = process.env.YOUDAO_APP_ID;
+  const appSecret = process.env.YOUDAO_APP_SECRET;
+  if (!appId || !appSecret) return names.map(localTranslateName);
 
   try {
-    const res = await fetch(ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        messages: [
-          { role: "system", content: SYSTEM },
-          { role: "user", content: JSON.stringify(names) },
-        ],
+    const translated = await Promise.all(
+      names.map(async (name) => {
+        if (!hasChinese(name)) return cleanTranslatedName(name);
+        const result = await translateNameWithYoudao(name, appId, appSecret);
+        return result && !hasChinese(result) ? result : localTranslateName(name);
       }),
-    });
-    if (!res.ok) return names.map(localTranslateName);
-    const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-    const raw = json.choices?.[0]?.message?.content?.trim() ?? "";
-    const cleaned = raw
-      .replace(/^```(?:json)?\s*/i, "")
-      .replace(/```$/i, "")
-      .trim();
-    const parsed = JSON.parse(cleaned);
-    if (!Array.isArray(parsed) || parsed.length !== names.length) {
-      return names.map(localTranslateName);
-    }
-    return parsed.map((v, i) => {
-      const translated = typeof v === "string" && v.trim() ? v.trim() : "";
-      const cleaned = cleanTranslatedName(translated);
-      return cleaned && !hasChinese(cleaned) ? cleaned : localTranslateName(names[i]);
-    });
+    );
+    return translated;
   } catch {
     return names.map(localTranslateName);
   }

@@ -169,7 +169,7 @@ const ACCESSIBLE_SEATED_RE = /(无障碍|accessible)/i;
 // plus explicit accessible toilets. Cafes, fast food, and transport hubs are
 // intentionally excluded for now because they produce noisy POI data.
 const INDOOR_VENUE_RE =
-  /(购物中心|商场|商城|百货|购物公园|商业广场|IFC|国金中心|恒隆|港汇|来福士|Raffles|太古|Taikoo|嘉里中心|Kerry|国贸|万象城|MixC|大悦城|SKP|新世界|K11|环贸|iapm|久光|Sogo|久光百货|银泰|Intime|永旺|AEON|酒店|宾馆|Ritz[- ]?Carlton|丽思卡尔顿|Mandarin\s*Oriental|文华东方|Four\s*Seasons|四季酒店|Hyatt|凯悦|Hilton|希尔顿|Marriott|万豪|Sheraton|喜来登|Westin|威斯汀|Shangri[- ]?La|香格里拉|InterContinental|洲际|JW\s*Marriott|W\s*Hotel|Park\s*Hyatt|柏悦|Grand\s*Hyatt|君悦|Niccolo|尼依格罗|Pullman|铂尔曼|Conrad|康莱德)/i;
+  /(购物中心|商场|商城|百货|购物公园|商业广场|IFC|国金中心|恒隆|港汇|来福士|Raffles|太古|Taikoo|嘉里中心|Kerry|国贸|万象城|MixC|大悦城|SKP|新世界|K11|环贸|iapm|久光|Sogo|久光百货|银泰|Intime|永旺|AEON|Ritz[- ]?Carlton|丽思卡尔顿|Mandarin\s*Oriental|文华东方|Four\s*Seasons|四季酒店|Hyatt|凯悦|Hilton|希尔顿|Marriott|万豪|Sheraton|喜来登|Westin|威斯汀|Shangri[- ]?La|香格里拉|InterContinental|洲际|JW\s*Marriott|W\s*Hotel|Park\s*Hyatt|柏悦|Grand\s*Hyatt|君悦|Niccolo|尼依格罗|Pullman|铂尔曼|Conrad|康莱德)/i;
 
 export function isReliableVenue(name: string, address = ""): boolean {
   return INDOOR_VENUE_RE.test(`${name} ${address}`);

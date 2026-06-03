@@ -8,8 +8,6 @@ import {
   parseFloor,
   isLikelyWestern,
   getSeatedConfidence,
-  cityNameToEnglish,
-  provinceNameToEnglish,
   type ToiletDTO,
 } from "./amap";
 import { cleanTranslatedName, translateNames } from "./translate.server";
@@ -17,12 +15,12 @@ import { cleanTranslatedName, translateNames } from "./translate.server";
 const FALLBACK_PHOTO = "/placeholder.svg";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const AMAP_TOILET_TYPE = "200300";
-const SEARCH_STRATEGY_VERSION = "phase1-venues-v1";
+const SEARCH_STRATEGY_VERSION = "phase1-lean-v1";
 const RELIABLE_VENUE_SEARCHES = [
   { types: "060100|060101|060102|060400" },
   { types: "100000|100100" },
 ];
-const ACCESSIBLE_TOILET_SEARCHES = [{ keywords: "无障碍卫生间" }, { keywords: "无障碍厕所" }];
+const ACCESSIBLE_TOILET_SEARCHES = [{ keywords: "无障碍厕所" }];
 
 type AmapPhoto = { title?: string; url?: string };
 
@@ -186,32 +184,6 @@ async function fetchSeatMapCandidates(gcjLat: number, gcjLng: number, radius: nu
   return [...byId.values()];
 }
 
-async function reverseGeocodeRegion(gcjLat: number, gcjLng: number) {
-  const key = process.env.AMAP_WEB_SERVICE_KEY;
-  if (!key) return null;
-  try {
-    const url = new URL("https://restapi.amap.com/v3/geocode/regeo");
-    url.searchParams.set("key", key);
-    url.searchParams.set("location", `${gcjLng.toFixed(6)},${gcjLat.toFixed(6)}`);
-    const res = await fetch(url.toString());
-    if (!res.ok) return null;
-    const json = (await res.json()) as {
-      status: string;
-      regeocode?: { addressComponent?: { province?: string | string[]; city?: string | string[] } };
-    };
-    if (json.status !== "1") return null;
-    const provinceCn = s(json.regeocode?.addressComponent?.province) || null;
-    const cityCn = s(json.regeocode?.addressComponent?.city) || null;
-    const region =
-      (cityCn ? cityNameToEnglish(cityCn) : null) ??
-      (provinceCn ? provinceNameToEnglish(provinceCn) : null) ??
-      null;
-    return { provinceCn, cityCn, region };
-  } catch {
-    return null;
-  }
-}
-
 // Ensure English names exist for the given (amap_id, chinese_name) pairs.
 // Looks up cached translations from `toilets.name_en`; missing ones are
 // translated via Lovable AI and persisted. Returns a Map<amap_id, name_en>.
@@ -282,16 +254,6 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
 
     const cacheKey = `${SEARCH_STRATEGY_VERSION}:${lat.toFixed(3)},${lng.toFixed(3)},${radius}`;
 
-    const geocodedRegion = await reverseGeocodeRegion(lat, lng);
-
-    async function resolveRegion(provinceCn?: string | null, cityCn?: string | null) {
-      if (geocodedRegion?.region) return geocodedRegion.region;
-      const fromProv = provinceCn ? provinceNameToEnglish(provinceCn) : null;
-      if (fromProv) return fromProv;
-      const fromCity = cityCn ? cityNameToEnglish(cityCn) : null;
-      return fromCity ?? null;
-    }
-
     let cached: { amap_ids: string[]; created_at: string } | null = null;
     try {
       const { data, error } = await supabaseAdmin
@@ -355,9 +317,7 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
             canNavigate: seatedConfidence === "confirmed" || seatedConfidence === "likely",
           };
         });
-        const first = filtered[0];
-        const region = await resolveRegion(first?.province ?? null, first?.city ?? null);
-        return { cached: true, toilets: dedupeVenueResults(dtos), region };
+        return { cached: true, toilets: dedupeVenueResults(dtos), region: null };
       }
     }
 
@@ -437,8 +397,7 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
       };
     });
 
-    const region = await resolveRegion(s(allPois[0]?.pname), s(allPois[0]?.cityname));
-    return { cached: false, toilets: dedupeVenueResults(toilets), region };
+    return { cached: false, toilets: dedupeVenueResults(toilets), region: null };
   });
 
 // --- Detail lookup ------------------------------------------------------
