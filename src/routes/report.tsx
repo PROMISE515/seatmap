@@ -5,6 +5,9 @@ import { AppShell } from "@/components/AppShell";
 import { saveReport } from "@/lib/reports";
 
 export const Route = createFileRoute("/report")({
+  validateSearch: (search: Record<string, unknown>): { place?: string } => ({
+    place: typeof search.place === "string" ? search.place : undefined,
+  }),
   head: () => ({
     meta: [{ title: "Report a Toilet — SeatMap" }, { name: "robots", content: "noindex" }],
   }),
@@ -12,7 +15,8 @@ export const Route = createFileRoute("/report")({
 });
 
 function ReportPage() {
-  const [placeName, setPlaceName] = useState("");
+  const { place } = Route.useSearch();
+  const [placeName, setPlaceName] = useState(place ?? "");
   const [type, setType] = useState<"confirmed_seated" | "wrong_listing" | "closed" | "other">(
     "confirmed_seated",
   );

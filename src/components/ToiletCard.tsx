@@ -1,9 +1,9 @@
+import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Accessibility, Baby, Bookmark, Building2, Lock, MapPin, Toilet } from "lucide-react";
+import { Accessibility, Baby, Building2, Lock, MapPin, Share2, Toilet } from "lucide-react";
 import type { ToiletDTO, ToiletKind } from "@/lib/amap";
 import { MapNavigationSheet } from "@/components/MapNavigationSheet";
-import { isToiletSaved, saveToilet } from "@/lib/saved-toilets";
 import { type TranslationKey, useT } from "@/lib/i18n";
 
 type CardToilet = ToiletDTO & { topRated?: boolean };
@@ -38,26 +38,34 @@ export function ToiletCard({
   const { t } = useT();
   const meta = KIND_META[toilet.kind];
   const Icon = meta.Icon;
-  const [saved, setSaved] = useState(false);
+  const [shareBusy, setShareBusy] = useState(false);
 
   useEffect(() => {
-    setSaved(isToiletSaved(toilet.id));
+    setShareBusy(false);
   }, [toilet.id]);
 
-  const handleSave = () => {
-    const result = saveToilet(toilet);
-    setSaved(true);
-    toast(result.alreadySaved ? t("card.alreadySaved") : t("card.saved"), {
-      description: result.alreadySaved
-        ? t("card.alreadySavedDescription")
-        : t("card.savedDescription"),
-      action: {
-        label: t("card.view"),
-        onClick: () => {
-          window.location.href = "/saved";
-        },
-      },
-    });
+  const handleShare = async () => {
+    if (locked || typeof window === "undefined" || shareBusy) return;
+    setShareBusy(true);
+    const url = `${window.location.origin}/toilet/${encodeURIComponent(toilet.id)}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: toilet.name,
+          text: "SeatMap toilet detail",
+          url,
+        });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast("Detail link copied");
+      }
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        toast("Could not share this place");
+      }
+    } finally {
+      setShareBusy(false);
+    }
   };
 
   const primaryTag =
@@ -155,22 +163,37 @@ export function ToiletCard({
             )}
           </div>
 
-          <h3
-            className={`font-bold text-card-foreground truncate mt-1.5 ${
-              locked ? "select-none blur-sm" : ""
-            }`}
-          >
-            {locked ? "Premium location" : toilet.name}
-          </h3>
-
-          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-            <MapPin className="size-3 shrink-0" aria-hidden />
-            <span className="leading-snug">
-              {showDistance
-                ? t("card.away", toilet.distanceM)
-                : toilet.city || t("card.previewVenue")}
-            </span>
-          </p>
+          {locked ? (
+            <>
+              <h3 className="font-bold text-card-foreground truncate mt-1.5 select-none blur-sm">
+                Premium location
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                <MapPin className="size-3 shrink-0" aria-hidden />
+                <span className="leading-snug">
+                  {showDistance
+                    ? t("card.away", toilet.distanceM)
+                    : toilet.city || t("card.previewVenue")}
+                </span>
+              </p>
+            </>
+          ) : (
+            <Link
+              to="/toilet/$id"
+              params={{ id: toilet.id }}
+              className="mt-1.5 block rounded-lg -mx-1 px-1 py-0.5 transition hover:bg-primary/5"
+            >
+              <h3 className="font-bold text-card-foreground truncate">{toilet.name}</h3>
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                <MapPin className="size-3 shrink-0" aria-hidden />
+                <span className="leading-snug">
+                  {showDistance
+                    ? t("card.away", toilet.distanceM)
+                    : toilet.city || t("card.previewVenue")}
+                </span>
+              </p>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -192,19 +215,16 @@ export function ToiletCard({
         )}
         <button
           type="button"
-          onClick={locked ? undefined : handleSave}
+          onClick={locked ? undefined : handleShare}
           disabled={locked}
           className={`inline-flex size-11 items-center justify-center rounded-xl border transition ${
-            saved
-              ? "border-primary/30 bg-primary/10 text-primary"
-              : locked
-                ? "border-border bg-card text-muted-foreground"
-                : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-primary"
+            locked
+              ? "border-border bg-card text-muted-foreground"
+              : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-primary"
           }`}
-          aria-label={saved ? t("card.savedToilet") : t("card.saveToilet")}
-          aria-pressed={saved}
+          aria-label="Share detail"
         >
-          <Bookmark className={`size-4 ${saved ? "fill-current" : ""}`} aria-hidden />
+          <Share2 className="size-4" aria-hidden />
         </button>
       </div>
       {locked && (

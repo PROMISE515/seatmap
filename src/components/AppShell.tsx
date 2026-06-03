@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { MapPin, Flag } from "lucide-react";
+import { Bookmark, MapPin } from "lucide-react";
 import type { ReactNode } from "react";
 import { useT } from "@/lib/i18n";
 
@@ -7,7 +7,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const { t } = useT();
   const isHome = pathname === "/";
-  const isReport = pathname === "/report";
+  const isSaved = pathname === "/saved";
 
   return (
     <div className="min-h-screen bg-surface flex justify-center">
@@ -23,10 +23,10 @@ export function AppShell({ children }: { children: ReactNode }) {
               active={isHome}
             />
             <NavItem
-              to="/report"
-              label={t("nav.report")}
-              icon={<Flag className="size-4" />}
-              active={isReport}
+              to="/saved"
+              label={t("home.saved")}
+              icon={<Bookmark className="size-4" />}
+              active={isSaved}
             />
           </ul>
         </nav>
@@ -41,7 +41,7 @@ function NavItem({
   icon,
   active,
 }: {
-  to: "/" | "/report";
+  to: "/" | "/saved";
   label: string;
   icon: ReactNode;
   active?: boolean;

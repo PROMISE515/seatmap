@@ -5,17 +5,22 @@ import {
   Accessibility,
   ArrowLeft,
   Baby,
+  Bookmark,
   Building2,
   Check,
+  Flag,
   Loader2,
   MapPin,
   Toilet,
 } from "lucide-react";
+import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { MapNavigationSheet } from "@/components/MapNavigationSheet";
 
 import { getToiletByAmapId } from "@/lib/toilets.functions";
 import type { ToiletDTO } from "@/lib/amap";
+import { getStoredReports } from "@/lib/reports";
+import { isToiletSaved, saveToilet } from "@/lib/saved-toilets";
 
 export const Route = createFileRoute("/toilet/$id")({
   head: ({ params }) => ({
@@ -93,6 +98,7 @@ function ToiletDetail() {
   const fetchToilet = useServerFn(getToiletByAmapId);
   const [toilet, setToilet] = useState<ToiletDTO | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "missing" | "error">("loading");
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -104,6 +110,7 @@ function ToiletDetail() {
           setStatus("missing");
         } else {
           setToilet(res.toilet);
+          setSaved(isToiletSaved(res.toilet.id));
           setStatus("ready");
         }
       })
@@ -140,6 +147,16 @@ function ToiletDetail() {
     );
   }
 
+  const reports = getStoredReports().filter((report) =>
+    report.placeName.toLowerCase().includes(toilet.name.toLowerCase()),
+  );
+
+  const handleSave = () => {
+    const result = saveToilet(toilet);
+    setSaved(true);
+    toast(result.alreadySaved ? "Already saved" : "Saved on this device");
+  };
+
   return (
     <AppShell>
       <header className="px-6 pt-6 pb-2 flex items-center justify-between">
@@ -149,6 +166,14 @@ function ToiletDetail() {
         >
           <ArrowLeft className="size-4" aria-hidden />
           Back
+        </Link>
+        <Link
+          to="/report"
+          search={{ place: toilet.name }}
+          className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-2 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:border-primary/40 hover:text-primary"
+        >
+          <Flag className="size-3.5" aria-hidden />
+          Report
         </Link>
       </header>
 
@@ -208,6 +233,27 @@ function ToiletDetail() {
       </section>
 
       <section className="px-6 mt-8">
+        <div className="mb-3 grid grid-cols-[auto_1fr] gap-2">
+          <button
+            type="button"
+            onClick={handleSave}
+            className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-xs font-bold uppercase tracking-widest transition ${
+              saved
+                ? "border-primary/30 bg-primary/10 text-primary"
+                : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-primary"
+            }`}
+            aria-pressed={saved}
+          >
+            <Bookmark className={`size-4 ${saved ? "fill-current" : ""}`} aria-hidden />
+            {saved ? "Saved" : "Save"}
+          </button>
+          <Link
+            to="/saved"
+            className="inline-flex items-center justify-center rounded-xl border border-border bg-card px-4 py-3 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:border-primary/40 hover:text-primary"
+          >
+            Saved places
+          </Link>
+        </div>
         {toilet.canNavigate ? (
           <MapNavigationSheet
             toilet={toilet}
@@ -219,6 +265,42 @@ function ToiletDetail() {
             Navigation is locked until this place has a seated-toilet signal.
           </div>
         )}
+      </section>
+
+      <section className="px-6 mt-8">
+        <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-extrabold text-brand-dark">Community reports</h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Traveler feedback for this place.
+              </p>
+            </div>
+            <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+              {reports.length}
+            </span>
+          </div>
+
+          {reports.length > 0 ? (
+            <ul className="mt-4 space-y-3">
+              {reports.map((report) => (
+                <li key={report.id} className="rounded-xl bg-surface p-3 text-left">
+                  <p className="text-xs font-bold uppercase tracking-widest text-primary">
+                    {report.type.replace(/_/g, " ")}
+                  </p>
+                  {report.notes && (
+                    <p className="mt-1 text-sm leading-relaxed text-foreground">{report.notes}</p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-4 rounded-xl border border-dashed border-border p-4 text-sm leading-relaxed text-muted-foreground">
+              No reports yet. If you visit this restroom, report whether it has a seated toilet,
+              paper, or access issues.
+            </p>
+          )}
+        </div>
       </section>
     </AppShell>
   );
