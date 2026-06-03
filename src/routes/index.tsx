@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { Bookmark, Loader2, MapPin, Search, Share2 } from "lucide-react";
+import { Loader2, MapPin, Search, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { findNearbyToilets } from "@/lib/toilets.functions";
 import { verifyPassSession } from "@/lib/payments.functions";
@@ -452,13 +452,19 @@ function HomePage() {
             </div>
             <p className="text-sm text-muted-foreground font-medium">{t("home.subtitle")}</p>
           </div>
-          <Link
-            to="/saved"
+          <button
+            type="button"
+            onClick={handleShare}
+            disabled={shareBusy}
             className="mt-1 inline-flex shrink-0 items-center gap-1 rounded-full border border-border px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:border-primary/40 hover:text-primary"
           >
-            <Bookmark className="size-3" aria-hidden />
-            {t("home.saved")}
-          </Link>
+            {shareBusy ? (
+              <Loader2 className="size-3 animate-spin" aria-hidden />
+            ) : (
+              <Share2 className="size-3" aria-hidden />
+            )}
+            {shareBusy ? t("home.checking") : "Share"}
+          </button>
         </div>
         {hasActivePass && passSessionId && (
           <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-3">

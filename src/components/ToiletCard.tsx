@@ -1,9 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Accessibility, Baby, Building2, Lock, MapPin, Share2, Toilet } from "lucide-react";
+import { Accessibility, Baby, Bookmark, Building2, Info, Lock, MapPin, Toilet } from "lucide-react";
 import type { ToiletDTO, ToiletKind } from "@/lib/amap";
 import { MapNavigationSheet } from "@/components/MapNavigationSheet";
+import { isToiletSaved, saveToilet } from "@/lib/saved-toilets";
 import { type TranslationKey, useT } from "@/lib/i18n";
 
 type CardToilet = ToiletDTO & { topRated?: boolean };
@@ -38,34 +39,26 @@ export function ToiletCard({
   const { t } = useT();
   const meta = KIND_META[toilet.kind];
   const Icon = meta.Icon;
-  const [shareBusy, setShareBusy] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    setShareBusy(false);
+    setSaved(isToiletSaved(toilet.id));
   }, [toilet.id]);
 
-  const handleShare = async () => {
-    if (locked || typeof window === "undefined" || shareBusy) return;
-    setShareBusy(true);
-    const url = `${window.location.origin}/toilet/${encodeURIComponent(toilet.id)}`;
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: toilet.name,
-          text: "SeatMap toilet detail",
-          url,
-        });
-      } else {
-        await navigator.clipboard.writeText(url);
-        toast("Detail link copied");
-      }
-    } catch (error) {
-      if (!(error instanceof DOMException && error.name === "AbortError")) {
-        toast("Could not share this place");
-      }
-    } finally {
-      setShareBusy(false);
-    }
+  const handleSave = () => {
+    const result = saveToilet(toilet);
+    setSaved(true);
+    toast(result.alreadySaved ? t("card.alreadySaved") : t("card.saved"), {
+      description: result.alreadySaved
+        ? t("card.alreadySavedDescription")
+        : t("card.savedDescription"),
+      action: {
+        label: t("card.view"),
+        onClick: () => {
+          window.location.href = "/saved";
+        },
+      },
+    });
   };
 
   const primaryTag =
@@ -107,7 +100,7 @@ export function ToiletCard({
           )}
         </div>
 
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pr-10">
           <div className="flex items-center gap-1.5 flex-wrap">
             {locked ? (
               <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
@@ -197,6 +190,23 @@ export function ToiletCard({
         </div>
       </div>
 
+      <button
+        type="button"
+        onClick={locked ? undefined : handleSave}
+        disabled={locked}
+        className={`absolute right-4 top-4 inline-flex size-10 items-center justify-center rounded-xl border transition ${
+          saved
+            ? "border-primary/30 bg-primary/10 text-primary"
+            : locked
+              ? "border-border bg-card text-muted-foreground"
+              : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-primary"
+        }`}
+        aria-label={saved ? t("card.savedToilet") : t("card.saveToilet")}
+        aria-pressed={saved}
+      >
+        <Bookmark className={`size-4 ${saved ? "fill-current" : ""}`} aria-hidden />
+      </button>
+
       <div className={`mt-3 grid grid-cols-[1fr_auto] gap-2 ${locked ? "blur-sm" : ""}`}>
         {allowNavigation && !locked ? (
           <MapNavigationSheet
@@ -213,19 +223,25 @@ export function ToiletCard({
             {showDistance ? t("card.needsSeated") : t("card.useLocation")}
           </button>
         )}
-        <button
-          type="button"
-          onClick={locked ? undefined : handleShare}
-          disabled={locked}
-          className={`inline-flex size-11 items-center justify-center rounded-xl border transition ${
-            locked
-              ? "border-border bg-card text-muted-foreground"
-              : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-primary"
-          }`}
-          aria-label="Share detail"
-        >
-          <Share2 className="size-4" aria-hidden />
-        </button>
+        {locked ? (
+          <button
+            type="button"
+            disabled
+            className="inline-flex size-11 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground"
+            aria-label="Details locked"
+          >
+            <Info className="size-4" aria-hidden />
+          </button>
+        ) : (
+          <Link
+            to="/toilet/$id"
+            params={{ id: toilet.id }}
+            className="inline-flex size-11 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+            aria-label="View details"
+          >
+            <Info className="size-4" aria-hidden />
+          </Link>
+        )}
       </div>
       {locked && (
         <button
