@@ -22,7 +22,17 @@ export function writeHomeScrollY(scrollY: number) {
   );
 }
 
+export function getCurrentPageScrollY() {
+  if (typeof window === "undefined") return 0;
+  return Math.max(
+    window.scrollY,
+    document.documentElement.scrollTop,
+    document.body.scrollTop,
+    document.scrollingElement?.scrollTop ?? 0,
+  );
+}
+
 export function saveCurrentHomeScroll() {
   if (typeof window === "undefined") return;
-  writeHomeScrollY(window.scrollY);
+  writeHomeScrollY(getCurrentPageScrollY());
 }

@@ -18,7 +18,7 @@ import { MapPreview } from "@/components/MapPreview";
 import { SeatMapLogo } from "@/components/SeatMapLogo";
 import { StripeEmbeddedCheckout, PaymentTestModeBanner } from "@/components/StripeEmbeddedCheckout";
 import { getStoredValue, setStoredValue } from "@/lib/client-storage";
-import { readHomeScrollY, writeHomeScrollY } from "@/lib/home-scroll";
+import { getCurrentPageScrollY, readHomeScrollY, writeHomeScrollY } from "@/lib/home-scroll";
 import { ManageSubscriptionButton } from "@/components/ManageSubscriptionButton";
 import { useT } from "@/lib/i18n";
 import { getStripeEnvironmentForSessionId } from "@/lib/stripe";
@@ -226,11 +226,16 @@ function HomePage() {
   const verifyPass = useServerFn(verifyPassSession);
   const shouldRestoreScrollRef = useRef(false);
   const restoredScrollRef = useRef(false);
+  const isRestoringScrollRef = useRef(false);
+  const restoreScrollTargetRef = useRef(0);
 
   useEffect(() => {
     const lastSearch = readLastSearchState();
     if (!lastSearch) return;
+    const scrollY = readHomeScrollY();
     shouldRestoreScrollRef.current = true;
+    restoreScrollTargetRef.current = scrollY;
+    isRestoringScrollRef.current = scrollY > 0;
     setStatus(lastSearch.status);
     setToilets(lastSearch.toilets);
     setRegion(lastSearch.region);
@@ -247,7 +252,9 @@ function HomePage() {
       if (pending) return;
       pending = true;
       window.requestAnimationFrame(() => {
-        writeHomeScrollY(window.scrollY);
+        if (!isRestoringScrollRef.current) {
+          writeHomeScrollY(getCurrentPageScrollY());
+        }
         pending = false;
       });
     };
@@ -255,7 +262,9 @@ function HomePage() {
     window.addEventListener("scroll", saveScroll, { passive: true });
     return () => {
       window.removeEventListener("scroll", saveScroll);
-      writeHomeScrollY(window.scrollY);
+      if (!isRestoringScrollRef.current) {
+        writeHomeScrollY(getCurrentPageScrollY());
+      }
     };
   }, []);
 
@@ -264,7 +273,7 @@ function HomePage() {
     if (!shouldRestoreScrollRef.current || restoredScrollRef.current) return;
     if (status === "idle" || status === "checking" || status === "locating") return;
 
-    const scrollY = readHomeScrollY();
+    const scrollY = restoreScrollTargetRef.current || readHomeScrollY();
     if (scrollY <= 0) return;
     restoredScrollRef.current = true;
 
@@ -272,10 +281,18 @@ function HomePage() {
     window.requestAnimationFrame(() => window.requestAnimationFrame(restore));
     const firstTimer = window.setTimeout(restore, 50);
     const secondTimer = window.setTimeout(restore, 150);
+    const thirdTimer = window.setTimeout(restore, 350);
+    const fourthTimer = window.setTimeout(() => {
+      restore();
+      isRestoringScrollRef.current = false;
+      writeHomeScrollY(scrollY);
+    }, 700);
 
     return () => {
       window.clearTimeout(firstTimer);
       window.clearTimeout(secondTimer);
+      window.clearTimeout(thirdTimer);
+      window.clearTimeout(fourthTimer);
     };
   }, [mapCenter, status, toilets.length]);
 

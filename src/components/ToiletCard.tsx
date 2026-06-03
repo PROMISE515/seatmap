@@ -214,13 +214,13 @@ export function ToiletCard({
           <MapNavigationSheet
             toilet={toilet}
             triggerLabel={t("card.navigate")}
-            triggerClassName="w-full inline-flex items-center justify-center gap-2 py-3 bg-brand-dark text-primary-foreground rounded-xl text-xs font-bold uppercase tracking-widest hover:opacity-90 active:scale-[0.99] transition"
+            triggerClassName="w-full inline-flex items-center justify-center gap-2 py-3 bg-brand-dark text-primary-foreground rounded-lg text-xs font-bold uppercase tracking-widest hover:opacity-90 active:scale-[0.99] transition"
           />
         ) : (
           <button
             type="button"
             disabled
-            className="w-full inline-flex items-center justify-center gap-2 py-3 bg-muted text-muted-foreground rounded-xl text-xs font-bold uppercase tracking-widest cursor-not-allowed"
+            className="w-full inline-flex items-center justify-center gap-2 py-3 bg-muted text-muted-foreground rounded-lg text-xs font-bold uppercase tracking-widest cursor-not-allowed"
           >
             {showDistance ? t("card.needsSeated") : t("card.useLocation")}
           </button>
@@ -229,7 +229,7 @@ export function ToiletCard({
           <button
             type="button"
             disabled
-            className="inline-flex size-11 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground"
+            className="inline-flex size-11 items-center justify-center rounded-full border border-border bg-card text-muted-foreground"
             aria-label="Details locked"
           >
             <Info className="size-4" aria-hidden />
@@ -239,7 +239,7 @@ export function ToiletCard({
             to="/toilet/$id"
             params={{ id: toilet.id }}
             onClick={saveCurrentHomeScroll}
-            className="inline-flex size-11 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+            className="inline-flex size-11 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition hover:border-primary/40 hover:text-primary"
             aria-label="View details"
           >
             <Info className="size-4" aria-hidden />
