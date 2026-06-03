@@ -6,8 +6,8 @@ const MODEL = "google/gemini-2.5-flash-lite";
 
 const SYSTEM = `You translate Chinese place / POI names into concise English display names suitable for a travel app.
 Rules:
-- Keep well-known brand/venue names in their official English form (e.g. 星巴克 -> Starbucks, 来福士广场 -> Raffles City, JW万豪酒店 -> JW Marriott Hotel, 上海国金中心 -> Shanghai IFC).
-- Translate descriptive parts naturally (卫生间/洗手间/厕所 -> Restroom; 男 -> Men's; 女 -> Women's; 无障碍 -> Accessible; 母婴室 -> Nursery Room; 楼/层 -> Floor; 地铁站 -> Metro Station; 机场 -> Airport).
+- Keep well-known mall and hotel names in their official English form (e.g. 来福士广场 -> Raffles City, JW万豪酒店 -> JW Marriott Hotel, 上海国金中心 -> Shanghai IFC).
+- Translate descriptive parts naturally (卫生间/洗手间/厕所 -> Restroom; 男 -> Men's; 女 -> Women's; 无障碍 -> Accessible; 楼/层 -> Floor).
 - Use Hanyu Pinyin (Title Case, no tone marks) for proper nouns with no standard English form.
 - Keep it short. No quotes, no explanations.
 Return ONLY a JSON array of strings, in the same order as the input, same length.`;
@@ -40,15 +40,7 @@ const LOCAL_REPLACEMENTS: Array<[RegExp, string]> = [
   [/商城/g, "Mall"],
   [/商场/g, "Mall"],
   [/广场/g, "Plaza"],
-  [/星巴克/g, "Starbucks"],
-  [/瑞幸咖啡/g, "Luckin Coffee"],
-  [/咖啡/g, "Coffee"],
   [/行政中心/g, "Administrative Center"],
-  [/地铁站/g, "Metro Station"],
-  [/地铁/g, "Metro"],
-  [/机场/g, "Airport"],
-  [/火车站/g, "Railway Station"],
-  [/高铁站/g, "High-Speed Rail Station"],
   [/卫生间|洗手间|厕所/g, "Restroom"],
   [/男/g, "Men's"],
   [/女/g, "Women's"],
@@ -66,17 +58,9 @@ export function cleanTranslatedName(value: string) {
   let cleaned = value
     .replace(/[（]/g, " (")
     .replace(/[）]/g, ")")
-    .replace(/peet'?s\s*coffee/gi, "Peet's Coffee")
-    .replace(/luckin\s*coffee/gi, "Luckin Coffee")
-    .replace(/starbucks/gi, "Starbucks")
     .replace(/\(\s*\)/g, "")
     .replace(/\s+/g, " ")
     .trim();
-
-  for (const brand of ["Luckin Coffee", "Peet's Coffee", "Starbucks"]) {
-    const escaped = brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    cleaned = cleaned.replace(new RegExp(`(?:${escaped}\\s*){2,}`, "gi"), brand);
-  }
 
   cleaned = cleaned.replace(/^(.+?)\s+\1$/i, "$1").trim();
 
@@ -110,8 +94,7 @@ function localTranslateName(name: string) {
   if (translated && translated !== name && !hasChinese(translated)) return translated;
   if (/酒店/.test(name)) return "Traveler-Friendly Hotel";
   if (/购物|商场|商城|广场/.test(name)) return "Traveler-Friendly Mall";
-  if (/咖啡|星巴克|瑞幸/.test(name)) return "Traveler-Friendly Cafe";
-  if (/地铁|机场|火车站|高铁站/.test(name)) return "Traveler-Friendly Transit Venue";
+  if (/无障碍/.test(name)) return "Accessible Restroom";
   return "Traveler-Friendly Venue";
 }
 

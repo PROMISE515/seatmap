@@ -67,10 +67,10 @@ export const cities: City[] = [
     country: "China",
     countryCode: "CN",
     intro:
-      "Xi'an is tourism-heavy, but seated-toilet reliability is best around major malls, hotels, and transport hubs.",
+      "Xi'an is tourism-heavy, but seated-toilet reliability is best around major malls and international hotels.",
     travelerTip:
-      "Around the Bell Tower, SKP, large malls, international hotels, and railway station facilities are better candidates.",
-    neighborhoods: ["Bell Tower", "Muslim Quarter", "SKP", "Qujiang", "Xi'an North Railway"],
+      "Around the Bell Tower, SKP, large malls, and international hotels are better candidates.",
+    neighborhoods: ["Bell Tower", "Muslim Quarter", "SKP", "Qujiang", "High-Tech Zone"],
     centerLat: 34.3416,
     centerLng: 108.9398,
     radius: 5000,
@@ -142,16 +142,10 @@ export const cities: City[] = [
     country: "China",
     countryCode: "CN",
     intro:
-      "Zhangjiajie is a major international nature destination, but seated-toilet availability is uneven outside hotels and transport hubs.",
+      "Zhangjiajie is a major international nature destination, but seated-toilet availability is uneven outside hotels and larger visitor venues.",
     travelerTip:
-      "International hotels, railway/airport facilities, and large tourist-area venues are safer than small scenic-area public toilets.",
-    neighborhoods: [
-      "Wulingyuan",
-      "Zhangjiajie Station",
-      "Tianmen Mountain",
-      "Airport area",
-      "Dayong",
-    ],
+      "International hotels and larger tourist-area venues are safer than small scenic-area public toilets.",
+    neighborhoods: ["Wulingyuan", "Tianmen Mountain", "Dayong", "Hotel areas"],
     centerLat: 29.1167,
     centerLng: 110.4792,
     radius: 8000,

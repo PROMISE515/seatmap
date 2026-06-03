@@ -17,13 +17,12 @@ import { cleanTranslatedName, translateNames } from "./translate.server";
 const FALLBACK_PHOTO = "/placeholder.svg";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const AMAP_TOILET_TYPE = "200300";
-const SEARCH_STRATEGY_VERSION = "venues-v1";
+const SEARCH_STRATEGY_VERSION = "phase1-venues-v1";
 const RELIABLE_VENUE_SEARCHES = [
   { types: "060100|060101|060102|060400" },
   { types: "100000|100100" },
-  { types: "050500|050501" },
-  { types: "150000|150200|150300" },
 ];
+const ACCESSIBLE_TOILET_SEARCHES = [{ keywords: "无障碍卫生间" }, { keywords: "无障碍厕所" }];
 
 type AmapPhoto = { title?: string; url?: string };
 
@@ -166,6 +165,11 @@ async function fetchSeatMapCandidates(gcjLat: number, gcjLng: number, radius: nu
     ...RELIABLE_VENUE_SEARCHES.map((search) =>
       fetchFromAmap(gcjLat, gcjLng, radius, search)
         .then((pois) => pois.map((p) => ({ ...p, seatmapSource: "venue" as const })))
+        .catch(() => [] as SeatMapPoi[]),
+    ),
+    ...ACCESSIBLE_TOILET_SEARCHES.map((search) =>
+      fetchFromAmap(gcjLat, gcjLng, radius, search)
+        .then((pois) => pois.map((p) => ({ ...p, seatmapSource: "toilet" as const })))
         .catch(() => [] as SeatMapPoi[]),
     ),
   ];

@@ -29,11 +29,7 @@ export function classifyToilet(name: string, address = ""): ToiletKind {
   const hay = `${name} ${address}`;
   if (/无障碍/.test(hay)) return "accessible";
   if (/母婴/.test(hay)) return "nursery";
-  if (
-    /(商场|广场|中心|mall|MALL|永旺|酒店|宾馆|hotel|HOTEL|大厦|写字楼|地铁|机场|火车站|高铁|星巴克|Starbucks|咖啡|Coffee|麦当劳|KFC|肯德基)/.test(
-      hay,
-    )
-  )
+  if (/(商场|广场|中心|mall|MALL|永旺|酒店|宾馆|hotel|HOTEL|大厦|写字楼)/.test(hay))
     return "indoor";
   return "public";
 }
@@ -157,7 +153,7 @@ export function cityNameToEnglish(cn: string): string | undefined {
 // Roadside 公厕 / 公共厕所 in China are predominantly squat-only and must
 // be excluded unless the name explicitly mentions a seated/western/accessible
 // feature, OR the toilet sits inside a high-confidence indoor venue
-// (international hotel, premium mall, branded chain, airport, etc.).
+// (mall, premium mall, or international hotel).
 
 // Hard exclusions — even if other keywords match, reject these.
 // Most Chinese 公厕 / 公共厕所 / 卫生间 / 洗手间 / 母婴室 are squat-only and
@@ -169,9 +165,11 @@ const EXCLUDE_RE =
 const SEATED_FEATURE_RE = /(西式|坐便|马桶|seated|western)/i;
 const ACCESSIBLE_SEATED_RE = /(无障碍|accessible)/i;
 
-// High-confidence indoor venues that reliably provide seated toilets.
+// First-stage high-confidence venues: malls, premium malls, international hotels,
+// plus explicit accessible toilets. Cafes, fast food, and transport hubs are
+// intentionally excluded for now because they produce noisy POI data.
 const INDOOR_VENUE_RE =
-  /(购物中心|商场|商城|百货|购物公园|商业广场|IFC|国金中心|恒隆|港汇|来福士|Raffles|太古|Taikoo|嘉里中心|Kerry|国贸|万象城|MixC|大悦城|SKP|新世界|K11|环贸|iapm|久光|Sogo|久光百货|银泰|Intime|永旺|AEON|宜家|IKEA|Apple\s*Store|苹果直营|MUJI|无印良品|Uniqlo|优衣库|星巴克臻选|星巴克|Starbucks|Costa|瑞幸|Luckin|Peet'?s|Manner|麦当劳|McDonald|肯德基|KFC|酒店|宾馆|Ritz[- ]?Carlton|丽思卡尔顿|Mandarin\s*Oriental|文华东方|Four\s*Seasons|四季酒店|Hyatt|凯悦|Hilton|希尔顿|Marriott|万豪|Sheraton|喜来登|Westin|威斯汀|Shangri[- ]?La|香格里拉|InterContinental|洲际|JW\s*Marriott|W\s*Hotel|Park\s*Hyatt|柏悦|Grand\s*Hyatt|君悦|机场\s*T\d|Airport\s*Terminal|国际机场|International\s*Airport|高铁站|Railway\s*Station|火车站\s*候车|Metro\s*Station)/i;
+  /(购物中心|商场|商城|百货|购物公园|商业广场|IFC|国金中心|恒隆|港汇|来福士|Raffles|太古|Taikoo|嘉里中心|Kerry|国贸|万象城|MixC|大悦城|SKP|新世界|K11|环贸|iapm|久光|Sogo|久光百货|银泰|Intime|永旺|AEON|酒店|宾馆|Ritz[- ]?Carlton|丽思卡尔顿|Mandarin\s*Oriental|文华东方|Four\s*Seasons|四季酒店|Hyatt|凯悦|Hilton|希尔顿|Marriott|万豪|Sheraton|喜来登|Westin|威斯汀|Shangri[- ]?La|香格里拉|InterContinental|洲际|JW\s*Marriott|W\s*Hotel|Park\s*Hyatt|柏悦|Grand\s*Hyatt|君悦|Niccolo|尼依格罗|Pullman|铂尔曼|Conrad|康莱德)/i;
 
 export function isReliableVenue(name: string, address = ""): boolean {
   return INDOOR_VENUE_RE.test(`${name} ${address}`);
@@ -180,6 +178,7 @@ export function isReliableVenue(name: string, address = ""): boolean {
 export function isLikelyWestern(name: string, address = ""): boolean {
   const hay = `${name} ${address}`;
   if (EXCLUDE_RE.test(name)) return false;
+  if (ACCESSIBLE_SEATED_RE.test(hay)) return true;
   if (SEATED_FEATURE_RE.test(hay)) return true;
   if (isReliableVenue(name, address)) return true;
   return false;

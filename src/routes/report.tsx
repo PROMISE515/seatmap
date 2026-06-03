@@ -53,7 +53,7 @@ function ReportPage() {
             value={placeName}
             onChange={(event) => setPlaceName(event.target.value)}
             required
-            placeholder="Mall, hotel, station, or address"
+            placeholder="Mall, hotel, accessible restroom, or address"
             className="mt-2 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
           />
         </label>

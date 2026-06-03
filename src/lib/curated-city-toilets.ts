@@ -49,7 +49,7 @@ const curatedCityToilets: Record<string, CuratedToilet[]> = {
   xian: [
     venue("xian-skp", "Xi'an SKP", "Chang'an North Road", 34.24, 108.947, "B1~L6"),
     venue(
-      "xian-luckin-bell-tower",
+      "xian-bell-tower-commercial-area",
       "Bell Tower Commercial Area",
       "Bell Tower",
       34.261,
@@ -58,12 +58,12 @@ const curatedCityToilets: Record<string, CuratedToilet[]> = {
     ),
     venue("xian-gran-melia", "Gran Melia Xi'an", "Qujiang New District", 34.194, 108.976, "L1~L3"),
     venue(
-      "xian-north-station",
-      "Xi'an North Railway Station",
-      "North Railway Station",
-      34.376,
-      108.94,
-      "1F~2F",
+      "xian-ritz-carlton",
+      "The Ritz-Carlton Xi'an",
+      "High-Tech Zone",
+      34.225,
+      108.885,
+      "L1~L3",
     ),
   ],
   chongqing: [
@@ -129,12 +129,12 @@ const curatedCityToilets: Record<string, CuratedToilet[]> = {
       "L1~L3",
     ),
     venue(
-      "zhangjiajie-airport",
-      "Zhangjiajie Hehua Airport",
-      "Airport area",
-      29.103,
-      110.443,
-      "1F~2F",
+      "zhangjiajie-neodalle",
+      "Neodalle Zhangjiajie Wulingyuan",
+      "Wulingyuan",
+      29.346,
+      110.555,
+      "L1~L3",
     ),
   ],
   "hong-kong": [
