@@ -1,7 +1,12 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { Bookmark, MapPin } from "lucide-react";
-import type { ReactNode } from "react";
-import { HOME_SCROLL_ROOT_ID } from "@/lib/home-scroll";
+import { useEffect, type ReactNode } from "react";
+import {
+  HOME_SCROLL_ROOT_ID,
+  readHomeScrollY,
+  requestHomeScrollRestore,
+  restoreHomeScrollY,
+} from "@/lib/home-scroll";
 import { useT } from "@/lib/i18n";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -9,6 +14,25 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { t } = useT();
   const isHome = pathname === "/";
   const isSaved = pathname === "/saved";
+
+  useEffect(() => {
+    if (!isHome || typeof window === "undefined") return;
+    const scrollY = readHomeScrollY();
+    if (scrollY <= 0) return;
+
+    const restore = () => restoreHomeScrollY(scrollY);
+    window.requestAnimationFrame(() => window.requestAnimationFrame(restore));
+    const timers = [
+      window.setTimeout(restore, 80),
+      window.setTimeout(restore, 180),
+      window.setTimeout(restore, 380),
+      window.setTimeout(restore, 760),
+    ];
+
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+    };
+  }, [isHome, pathname]);
 
   return (
     <div className="h-[100dvh] overflow-hidden bg-surface flex justify-center">
@@ -58,7 +82,14 @@ function NavItem({
   );
   return (
     <li>
-      <Link to={to}>{content}</Link>
+      <Link
+        to={to}
+        onClick={() => {
+          if (to === "/") requestHomeScrollRestore();
+        }}
+      >
+        {content}
+      </Link>
     </li>
   );
 }

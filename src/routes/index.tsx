@@ -238,12 +238,20 @@ function HomePage() {
   const restoredScrollRef = useRef(false);
   const isRestoringScrollRef = useRef(false);
   const restoreScrollTargetRef = useRef(0);
+  const lastHomeScrollYRef = useRef(0);
+  const scrollListenerMountedAtRef = useRef(0);
 
   useEffect(() => {
     const lastSearch = readLastSearchState();
     const restoreRequested = consumeHomeScrollRestoreRequest();
-    if (!lastSearch) return;
     const scrollY = readHomeScrollY();
+    lastHomeScrollYRef.current = scrollY;
+    if (!lastSearch) {
+      shouldRestoreScrollRef.current = restoreRequested && scrollY > 0;
+      restoreScrollTargetRef.current = scrollY;
+      isRestoringScrollRef.current = scrollY > 0;
+      return;
+    }
     shouldRestoreScrollRef.current = restoreRequested || scrollY > 0;
     restoreScrollTargetRef.current = scrollY;
     isRestoringScrollRef.current = scrollY > 0;
@@ -275,13 +283,19 @@ function HomePage() {
     if (typeof window === "undefined") return;
     const scrollRoot = getHomeScrollRoot() ?? window;
     let pending = false;
+    scrollListenerMountedAtRef.current = Date.now();
 
     const saveScroll = () => {
       if (pending) return;
       pending = true;
       window.requestAnimationFrame(() => {
         if (!isRestoringScrollRef.current) {
-          writeHomeScrollY(getCurrentPageScrollY());
+          const currentY = getCurrentPageScrollY();
+          const mountedLongEnough = Date.now() - scrollListenerMountedAtRef.current > 1000;
+          if (currentY > 0 || mountedLongEnough) {
+            lastHomeScrollYRef.current = currentY;
+            writeHomeScrollY(currentY);
+          }
         }
         pending = false;
       });
@@ -291,7 +305,7 @@ function HomePage() {
     return () => {
       scrollRoot.removeEventListener("scroll", saveScroll);
       if (!isRestoringScrollRef.current) {
-        writeHomeScrollY(getCurrentPageScrollY());
+        writeHomeScrollY(lastHomeScrollYRef.current);
       }
     };
   }, []);

@@ -73,6 +73,7 @@ export function ToiletCard({
         locked ? "cursor-pointer" : ""
       }`}
       onClick={locked ? onUnlock : undefined}
+      onPointerDown={locked ? undefined : saveCurrentHomeScroll}
     >
       <div className="flex items-start gap-4">
         {/* Distance hero */}
