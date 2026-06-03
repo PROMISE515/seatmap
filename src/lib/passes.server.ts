@@ -82,6 +82,22 @@ export async function upsertPassFromCheckoutSession({
     updated_at: new Date().toISOString(),
   };
 
+  if (subscription?.id) {
+    const { data: existing, error: selectError } = await supabaseAdmin
+      .from("stripe_passes")
+      .select("id")
+      .eq("environment", environment)
+      .eq("stripe_subscription_id", subscription.id)
+      .maybeSingle();
+    if (selectError) throw selectError;
+
+    if (existing) {
+      const { error } = await supabaseAdmin.from("stripe_passes").update(row).eq("id", existing.id);
+      if (error) throw error;
+      return;
+    }
+  }
+
   const { error } = await supabaseAdmin
     .from("stripe_passes")
     .upsert(row, { onConflict: "environment,checkout_session_id" });
@@ -128,7 +144,22 @@ export async function upsertPassFromSubscription({
 
   const query = supabaseAdmin.from("stripe_passes");
   const { error } = existing
-    ? await query.update(row).eq("id", existing.id)
+    ? await query
+        .update({
+          stripe_customer_id: row.stripe_customer_id,
+          stripe_subscription_id: row.stripe_subscription_id,
+          stripe_price_id: row.stripe_price_id,
+          plan_lookup_key: row.plan_lookup_key,
+          status: row.status,
+          payment_status: row.payment_status,
+          current_period_start: row.current_period_start,
+          current_period_end: row.current_period_end,
+          pass_expires_at: row.pass_expires_at,
+          last_event_id: row.last_event_id,
+          raw: row.raw,
+          updated_at: row.updated_at,
+        })
+        .eq("id", existing.id)
     : await query.insert(row);
   if (error) throw error;
 }
