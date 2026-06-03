@@ -1,6 +1,7 @@
 import { getStoredValue, setStoredValue } from "@/lib/client-storage";
 
 const HOME_SCROLL_STATE_KEY = "seatmap.homeScrollState";
+const HOME_SCROLL_RESTORE_KEY = "seatmap.restoreHomeScroll";
 const HOME_SCROLL_MAX_AGE_MS = 30 * 60 * 1000;
 
 export function readHomeScrollY() {
@@ -35,4 +36,14 @@ export function getCurrentPageScrollY() {
 export function saveCurrentHomeScroll() {
   if (typeof window === "undefined") return;
   writeHomeScrollY(getCurrentPageScrollY());
+}
+
+export function requestHomeScrollRestore() {
+  setStoredValue(HOME_SCROLL_RESTORE_KEY, "1");
+}
+
+export function consumeHomeScrollRestoreRequest() {
+  const requested = getStoredValue(HOME_SCROLL_RESTORE_KEY) === "1";
+  if (requested) setStoredValue(HOME_SCROLL_RESTORE_KEY, "0");
+  return requested;
 }

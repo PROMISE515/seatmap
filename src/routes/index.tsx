@@ -18,7 +18,12 @@ import { MapPreview } from "@/components/MapPreview";
 import { SeatMapLogo } from "@/components/SeatMapLogo";
 import { StripeEmbeddedCheckout, PaymentTestModeBanner } from "@/components/StripeEmbeddedCheckout";
 import { getStoredValue, setStoredValue } from "@/lib/client-storage";
-import { getCurrentPageScrollY, readHomeScrollY, writeHomeScrollY } from "@/lib/home-scroll";
+import {
+  consumeHomeScrollRestoreRequest,
+  getCurrentPageScrollY,
+  readHomeScrollY,
+  writeHomeScrollY,
+} from "@/lib/home-scroll";
 import { ManageSubscriptionButton } from "@/components/ManageSubscriptionButton";
 import { useT } from "@/lib/i18n";
 import { getStripeEnvironmentForSessionId } from "@/lib/stripe";
@@ -218,6 +223,9 @@ function HomePage() {
   const [shareBusy, setShareBusy] = useState(false);
   const [hasActivePass, setHasActivePass] = useState(false);
   const [passSessionId, setPassSessionId] = useState<string | null>(null);
+  const [locationPermission, setLocationPermission] = useState<
+    "unknown" | "prompt" | "granted" | "denied"
+  >("unknown");
   const [supportedRegions, setSupportedRegions] = useState("Shanghai, Beijing and Qingdao");
   const findNearby = useServerFn(findNearbyToilets);
   const ensureReferral = useServerFn(ensureShareReferral);
@@ -231,9 +239,10 @@ function HomePage() {
 
   useEffect(() => {
     const lastSearch = readLastSearchState();
+    const restoreRequested = consumeHomeScrollRestoreRequest();
     if (!lastSearch) return;
     const scrollY = readHomeScrollY();
-    shouldRestoreScrollRef.current = true;
+    shouldRestoreScrollRef.current = restoreRequested || scrollY > 0;
     restoreScrollTargetRef.current = scrollY;
     isRestoringScrollRef.current = scrollY > 0;
     setStatus(lastSearch.status);
@@ -242,6 +251,22 @@ function HomePage() {
     setMapCenter(lastSearch.mapCenter);
     setErrorMsg(lastSearch.errorMsg);
     setSupportedRegions(lastSearch.supportedRegions);
+  }, []);
+
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.permissions?.query) return;
+    let cancelled = false;
+    void navigator.permissions
+      .query({ name: "geolocation" as PermissionName })
+      .then((permission) => {
+        if (cancelled) return;
+        setLocationPermission(permission.state);
+        permission.onchange = () => setLocationPermission(permission.state);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -520,9 +545,11 @@ function HomePage() {
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        setLocationPermission("granted");
         runSearch({ lat: pos.coords.latitude, lng: pos.coords.longitude, gcj: false });
       },
       (error) => {
+        if (error.code === error.PERMISSION_DENIED) setLocationPermission("denied");
         setErrorMsg(geolocationErrorMessage(error));
         setStatus("location_error");
       },
@@ -660,6 +687,23 @@ function HomePage() {
                     ? (errorMsg ?? t("home.turnOnLocation"))
                     : t("home.noMapHint")}
                 </p>
+                {(status === "idle" || status === "location_error") && (
+                  <button
+                    type="button"
+                    onClick={handleFind}
+                    className="mt-3 inline-flex items-center justify-center rounded-lg bg-primary px-4 py-3 text-xs font-bold uppercase tracking-widest text-primary-foreground"
+                  >
+                    {locationPermission === "denied"
+                      ? "Try location again"
+                      : "Allow location access"}
+                  </button>
+                )}
+                {locationPermission === "denied" && (
+                  <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+                    If your browser has blocked location, open site settings and allow location for
+                    SeatMap.
+                  </p>
+                )}
               </div>
             </div>
           </div>

@@ -8,6 +8,7 @@ import { MapNavigationSheet } from "@/components/MapNavigationSheet";
 
 import { getToiletByAmapId } from "@/lib/toilets.functions";
 import type { ToiletDTO } from "@/lib/amap";
+import { requestHomeScrollRestore } from "@/lib/home-scroll";
 import { getToiletReports, type ToiletReportDTO } from "@/lib/reports.functions";
 import { isToiletSaved, saveToilet } from "@/lib/saved-toilets";
 
@@ -153,10 +154,7 @@ function ToiletDetail() {
   };
 
   const handleBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      window.history.back();
-      return;
-    }
+    requestHomeScrollRestore();
     void router.navigate({ to: "/" });
   };
 
