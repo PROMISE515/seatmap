@@ -172,10 +172,6 @@ function OpenedCityLinks() {
   );
 }
 
-function freeSearchLimit() {
-  return 1 + Math.max(0, Number(getStoredValue(SHARE_BONUS_KEY) || "0"));
-}
-
 function createShareToken() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID().replaceAll("-", "");
@@ -221,6 +217,7 @@ function HomePage() {
   );
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [shareBusy, setShareBusy] = useState(false);
+  const [hasActivePass, setHasActivePass] = useState(false);
   const [supportedRegions, setSupportedRegions] = useState("Shanghai, Beijing and Qingdao");
   const findNearby = useServerFn(findNearbyToilets);
   const ensureReferral = useServerFn(ensureShareReferral);
@@ -274,7 +271,10 @@ function HomePage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const passExpiresAt = Number(getStoredValue(PASS_EXPIRES_AT_KEY) || "0");
-    if (passExpiresAt > Date.now()) return;
+    if (passExpiresAt > Date.now()) {
+      setHasActivePass(true);
+      return;
+    }
 
     const sessionId = getStoredValue(PASS_SESSION_KEY);
     if (!sessionId) return;
@@ -283,10 +283,14 @@ function HomePage() {
       data: { sessionId, environment: getStripeEnvironment() },
     })
       .then((res) => {
-        if (!res.valid || res.expired) return;
+        if (!res.valid || res.expired) {
+          setHasActivePass(false);
+          return;
+        }
         setStoredValue(PASS_EXPIRES_AT_KEY, String(res.expiresAtMs));
         setStoredValue(PASS_SESSION_KEY, sessionId);
         setStoredValue(SEARCH_COUNT_KEY, "0");
+        setHasActivePass(true);
       })
       .catch(() => undefined);
   }, [verifyPass]);
@@ -347,7 +351,7 @@ function HomePage() {
     const center = coords.gcj ? coords : wgs84ToGcj02(coords.lat, coords.lng);
     setMapCenter({ lat: center.lat, lng: center.lng, label: "You" });
     try {
-      const res = await findNearby({ data: { ...coords, radius: 1000 } });
+      const res = await findNearby({ data: { ...coords, radius: 20000 } });
       setRegion(res.region ?? null);
       if (res.unsupported) {
         setToilets([]);
@@ -365,7 +369,10 @@ function HomePage() {
 
   const restorePassFromCheckout = async () => {
     const passExpiresAt = Number(getStoredValue(PASS_EXPIRES_AT_KEY) || "0");
-    if (passExpiresAt > Date.now()) return true;
+    if (passExpiresAt > Date.now()) {
+      setHasActivePass(true);
+      return true;
+    }
 
     const sessionId = getStoredValue(PASS_SESSION_KEY);
     if (!sessionId) return false;
@@ -374,12 +381,17 @@ function HomePage() {
       const res = await verifyPass({
         data: { sessionId, environment: getStripeEnvironment() },
       });
-      if (!res.valid || res.expired) return false;
+      if (!res.valid || res.expired) {
+        setHasActivePass(false);
+        return false;
+      }
       setStoredValue(PASS_EXPIRES_AT_KEY, String(res.expiresAtMs));
       setStoredValue(PASS_SESSION_KEY, sessionId);
       setStoredValue(SEARCH_COUNT_KEY, "0");
+      setHasActivePass(true);
       return true;
     } catch {
+      setHasActivePass(false);
       return false;
     }
   };
@@ -388,18 +400,11 @@ function HomePage() {
     if (typeof window === "undefined") return;
 
     const passExpiresAt = Number(getStoredValue(PASS_EXPIRES_AT_KEY) || "0");
-    let hasActivePass = passExpiresAt > Date.now();
-    if (!hasActivePass) {
+    const activePass = passExpiresAt > Date.now();
+    setHasActivePass(activePass);
+    if (!activePass) {
       setStatus("checking");
-      hasActivePass = await restorePassFromCheckout();
-    }
-
-    if (!hasActivePass) {
-      const count = Number(getStoredValue(SEARCH_COUNT_KEY) || "0");
-      if (count >= freeSearchLimit()) {
-        setShowPaywall(true);
-        return;
-      }
+      await restorePassFromCheckout();
     }
 
     setStatus("locating");
@@ -407,13 +412,6 @@ function HomePage() {
     setRegion(null);
     setMapCenter(null);
     setErrorMsg(null);
-    const bump = () => {
-      if (!hasActivePass) {
-        const count = Number(getStoredValue(SEARCH_COUNT_KEY) || "0");
-        setStoredValue(SEARCH_COUNT_KEY, String(count + 1));
-      }
-    };
-
     if (!navigator.geolocation) {
       setErrorMsg(
         "This browser does not support location. Search is only available in opened cities.",
@@ -423,7 +421,6 @@ function HomePage() {
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        bump();
         runSearch({ lat: pos.coords.latitude, lng: pos.coords.longitude, gcj: false });
       },
       (error) => {
@@ -572,7 +569,14 @@ function HomePage() {
 
           {status === "ready" ? (
             toilets.length > 0 ? (
-              toilets.map((t) => <ToiletCard key={t.id} toilet={t} />)
+              toilets.map((t, index) => (
+                <ToiletCard
+                  key={t.id}
+                  toilet={t}
+                  locked={!hasActivePass && index > 0}
+                  onUnlock={() => setShowPaywall(true)}
+                />
+              ))
             ) : (
               <div className="rounded-2xl border border-dashed border-border p-6 text-center bg-card">
                 <p className="text-sm text-muted-foreground">{errorMsg ?? t("home.noToilets")}</p>
