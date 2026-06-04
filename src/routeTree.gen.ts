@@ -15,6 +15,7 @@ import { Route as PassRouteImport } from './routes/pass'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ToiletIdRouteImport } from './routes/toilet.$id'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
+import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as CityPublicToiletsRouteImport } from './routes/$city.public-toilets'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api.stripe.webhook'
 
@@ -48,6 +49,11 @@ const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
   path: '/checkout/return',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/admin/reports',
+  path: '/admin/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CityPublicToiletsRoute = CityPublicToiletsRouteImport.update({
   id: '/$city/public-toilets',
   path: '/$city/public-toilets',
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/report': typeof ReportRoute
   '/saved': typeof SavedRoute
   '/$city/public-toilets': typeof CityPublicToiletsRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/toilet/$id': typeof ToiletIdRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/report': typeof ReportRoute
   '/saved': typeof SavedRoute
   '/$city/public-toilets': typeof CityPublicToiletsRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/toilet/$id': typeof ToiletIdRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/report': typeof ReportRoute
   '/saved': typeof SavedRoute
   '/$city/public-toilets': typeof CityPublicToiletsRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/toilet/$id': typeof ToiletIdRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/report'
     | '/saved'
     | '/$city/public-toilets'
+    | '/admin/reports'
     | '/checkout/return'
     | '/toilet/$id'
     | '/api/stripe/webhook'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/report'
     | '/saved'
     | '/$city/public-toilets'
+    | '/admin/reports'
     | '/checkout/return'
     | '/toilet/$id'
     | '/api/stripe/webhook'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/report'
     | '/saved'
     | '/$city/public-toilets'
+    | '/admin/reports'
     | '/checkout/return'
     | '/toilet/$id'
     | '/api/stripe/webhook'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   ReportRoute: typeof ReportRoute
   SavedRoute: typeof SavedRoute
   CityPublicToiletsRoute: typeof CityPublicToiletsRoute
+  AdminReportsRoute: typeof AdminReportsRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   ToiletIdRoute: typeof ToiletIdRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
@@ -178,6 +191,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/admin/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/$city/public-toilets': {
       id: '/$city/public-toilets'
       path: '/$city/public-toilets'
@@ -201,6 +221,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReportRoute: ReportRoute,
   SavedRoute: SavedRoute,
   CityPublicToiletsRoute: CityPublicToiletsRoute,
+  AdminReportsRoute: AdminReportsRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   ToiletIdRoute: ToiletIdRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,

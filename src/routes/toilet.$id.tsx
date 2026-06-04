@@ -186,7 +186,7 @@ function ToiletDetail() {
           className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-2 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:border-primary/40 hover:text-primary"
         >
           <Flag className="size-3.5" aria-hidden />
-          Report
+          Review
         </Link>
       </header>
 

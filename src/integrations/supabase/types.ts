@@ -159,6 +159,30 @@ export type Database = {
           },
         ];
       };
+      toilet_blacklist: {
+        Row: {
+          amap_id: string;
+          created_at: string;
+          id: string;
+          place_name: string;
+          reason: string | null;
+        };
+        Insert: {
+          amap_id: string;
+          created_at?: string;
+          id?: string;
+          place_name: string;
+          reason?: string | null;
+        };
+        Update: {
+          amap_id?: string;
+          created_at?: string;
+          id?: string;
+          place_name?: string;
+          reason?: string | null;
+        };
+        Relationships: [];
+      };
       toilet_search_cache: {
         Row: {
           amap_ids: string[];

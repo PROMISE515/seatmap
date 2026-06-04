@@ -4,7 +4,7 @@ import { ArrowLeft, Flag, ImagePlus, Loader2, Siren, Star, X } from "lucide-reac
 import type { ChangeEvent, FormEvent } from "react";
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
-import { submitToiletReport } from "@/lib/reports.functions";
+import { submitPlaceComplaint, submitToiletReport } from "@/lib/reports.functions";
 
 type PendingPhoto = {
   name: string;
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/report")({
     amapId: typeof search.amapId === "string" ? search.amapId : undefined,
   }),
   head: () => ({
-    meta: [{ title: "Report a Toilet — SeatMap" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Review a Toilet — SeatMap" }, { name: "robots", content: "noindex" }],
   }),
   component: ReportPage,
 });
@@ -25,6 +25,7 @@ export const Route = createFileRoute("/report")({
 function ReportPage() {
   const { place, amapId } = Route.useSearch();
   const submitReport = useServerFn(submitToiletReport);
+  const submitComplaintReport = useServerFn(submitPlaceComplaint);
   const [placeName, setPlaceName] = useState(place ?? "");
   const [type, setType] = useState<"confirmed_seated" | "wrong_listing" | "closed" | "other">(
     "confirmed_seated",
@@ -35,11 +36,13 @@ function ReportPage() {
   const [saving, setSaving] = useState(false);
   const [savingComplaint, setSavingComplaint] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [complaintMessage, setComplaintMessage] = useState<string | null>(null);
   const [photos, setPhotos] = useState<PendingPhoto[]>([]);
 
   const saveReport = async (options: { isComplaint: boolean }) => {
     setSaving(true);
     setError(null);
+    setComplaintMessage(null);
     setSaved(false);
 
     try {
@@ -71,36 +74,57 @@ function ReportPage() {
     await saveReport({ isComplaint: false });
   };
 
+  const getCurrentPosition = () =>
+    new Promise<GeolocationPosition>((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error("Geolocation unavailable"));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 15000,
+      });
+    });
+
   const submitComplaint = async () => {
     if (!placeName.trim()) {
       setError("Add a place name before filing a complaint.");
       return;
     }
+    if (!amapId) {
+      setError("This place cannot be reported because it is missing location data.");
+      return;
+    }
+
     setSavingComplaint(true);
-    const originalType = type;
-    const originalRating = rating;
-    setType("wrong_listing");
-    setRating(1);
+    setError(null);
+    setComplaintMessage(null);
+    setSaved(false);
+
     try {
-      await submitReport({
+      const position = await getCurrentPosition();
+      const result = await submitComplaintReport({
         data: {
           amapId,
           placeName,
-          type: "wrong_listing",
-          rating: 1,
-          notes: notes || "Complaint: this place does not have a seated toilet.",
-          isComplaint: true,
-          photoDataUrls: photos.map((photo) => photo.dataUrl),
+          userLat: position.coords.latitude,
+          userLng: position.coords.longitude,
         },
       });
-      setNotes("");
-      setPhotos([]);
-      setSaved(true);
-      setError(null);
+
+      if (!result.ok) {
+        if (result.reason === "out_of_range") {
+          setError("You need to be within 1km of this place to report it.");
+        } else {
+          setError("This place cannot be reported because it is missing location data.");
+        }
+        return;
+      }
+
+      setComplaintMessage("Thank you for reporting this place. We will verify it.");
     } catch {
-      setType(originalType);
-      setRating(originalRating);
-      setError("Could not file this complaint. Please check Supabase setup and try again.");
+      setError("Location access is needed to report this place within 1km.");
     } finally {
       setSavingComplaint(false);
     }
@@ -300,6 +324,12 @@ function ReportPage() {
         {saved && (
           <p className="rounded-lg bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
             Review saved. Thank you for helping other travelers.
+          </p>
+        )}
+
+        {complaintMessage && (
+          <p className="rounded-lg bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
+            {complaintMessage}
           </p>
         )}
 

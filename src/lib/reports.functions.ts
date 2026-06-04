@@ -2,8 +2,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { wgs84ToGcj02 } from "@/lib/amap";
 
 const REPORT_PHOTO_BUCKET = "toilet-report-photos";
+const COMPLAINT_RADIUS_M = 1000;
 
 const reportSchema = z.object({
   amapId: z.string().min(1).max(128).optional(),
@@ -23,6 +25,22 @@ export type ToiletReportDTO = {
   isComplaint: boolean;
   photoUrls: string[];
   createdAt: string;
+};
+
+export type AdminComplaintDTO = {
+  id: string;
+  amapId: string | null;
+  placeName: string;
+  createdAt: string;
+  blacklisted: boolean;
+  toilet: {
+    name: string | null;
+    nameEn: string | null;
+    address: string | null;
+    city: string | null;
+    lat: number | null;
+    lng: number | null;
+  } | null;
 };
 
 function parsePhotoDataUrl(dataUrl: string) {
@@ -63,6 +81,19 @@ async function uploadReportPhotos(amapId: string | undefined, photoDataUrls: str
   return urls;
 }
 
+function distanceMeters(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  const latRad = (a.lat * Math.PI) / 180;
+  const dx = (b.lng - a.lng) * 111000 * Math.cos(latRad);
+  const dy = (b.lat - a.lat) * 111000;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function adminTokenIsValid(token: string | undefined) {
+  const configured = process.env.ADMIN_TOKEN;
+  if (!configured) return process.env.NODE_ENV !== "production";
+  return token === configured;
+}
+
 export const submitToiletReport = createServerFn({ method: "POST" })
   .inputValidator((input) => reportSchema.parse(input))
   .handler(async ({ data }) => {
@@ -91,6 +122,51 @@ export const submitToiletReport = createServerFn({ method: "POST" })
 
     if (error) throw error;
     return { ok: true as const };
+  });
+
+export const submitPlaceComplaint = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        amapId: z.string().min(1).max(128),
+        placeName: z.string().min(1).max(240),
+        userLat: z.number().min(-90).max(90),
+        userLng: z.number().min(-180).max(180),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { data: toilet, error: toiletError } = await supabaseAdmin
+      .from("toilets")
+      .select("id, amap_id, name, lat, lng")
+      .eq("amap_id", data.amapId)
+      .maybeSingle();
+
+    if (toiletError) throw toiletError;
+    if (!toilet) return { ok: false as const, reason: "missing_place" as const };
+
+    const userGcj = wgs84ToGcj02(data.userLat, data.userLng);
+    const distanceM = Math.round(
+      distanceMeters(userGcj, { lat: Number(toilet.lat), lng: Number(toilet.lng) }),
+    );
+
+    if (distanceM > COMPLAINT_RADIUS_M) {
+      return { ok: false as const, reason: "out_of_range" as const, distanceM };
+    }
+
+    const { error } = await supabaseAdmin.from("toilet_reports").insert({
+      toilet_id: toilet.id,
+      amap_id: data.amapId,
+      place_name: data.placeName,
+      report_type: "wrong_listing",
+      rating: null,
+      notes: null,
+      is_complaint: true,
+      photo_urls: [],
+    });
+
+    if (error) throw error;
+    return { ok: true as const, distanceM };
   });
 
 export const getToiletReports = createServerFn({ method: "POST" })
@@ -122,4 +198,97 @@ export const getToiletReports = createServerFn({ method: "POST" })
         createdAt: row.created_at,
       })),
     };
+  });
+
+export const getAdminComplaints = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        token: z.string().optional(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    if (!adminTokenIsValid(data.token)) {
+      return { authorized: false as const, complaints: [] as AdminComplaintDTO[] };
+    }
+
+    const { data: reports, error } = await supabaseAdmin
+      .from("toilet_reports")
+      .select("id, amap_id, place_name, created_at")
+      .eq("is_complaint", true)
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (error) throw error;
+
+    const amapIds = [
+      ...new Set((reports ?? []).map((row) => row.amap_id).filter(Boolean)),
+    ] as string[];
+
+    const [{ data: toilets }, { data: blacklistRows }] = await Promise.all([
+      amapIds.length
+        ? supabaseAdmin
+            .from("toilets")
+            .select("amap_id, name, name_en, address, city, lat, lng")
+            .in("amap_id", amapIds)
+        : Promise.resolve({ data: [] }),
+      amapIds.length
+        ? supabaseAdmin.from("toilet_blacklist").select("amap_id").in("amap_id", amapIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    const toiletByAmapId = new Map((toilets ?? []).map((row) => [row.amap_id, row]));
+    const blacklisted = new Set((blacklistRows ?? []).map((row) => row.amap_id));
+
+    return {
+      authorized: true as const,
+      complaints: (reports ?? []).map<AdminComplaintDTO>((row) => {
+        const toilet = row.amap_id ? toiletByAmapId.get(row.amap_id) : null;
+        return {
+          id: row.id,
+          amapId: row.amap_id,
+          placeName: row.place_name,
+          createdAt: row.created_at,
+          blacklisted: row.amap_id ? blacklisted.has(row.amap_id) : false,
+          toilet: toilet
+            ? {
+                name: toilet.name,
+                nameEn: toilet.name_en,
+                address: toilet.address,
+                city: toilet.city,
+                lat: toilet.lat,
+                lng: toilet.lng,
+              }
+            : null,
+        };
+      }),
+    };
+  });
+
+export const blacklistPlace = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        token: z.string().optional(),
+        amapId: z.string().min(1).max(128),
+        placeName: z.string().min(1).max(240),
+        reason: z.string().max(500).optional().default("Complaint review"),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    if (!adminTokenIsValid(data.token)) return { authorized: false as const };
+
+    const { error } = await supabaseAdmin.from("toilet_blacklist").upsert(
+      {
+        amap_id: data.amapId,
+        place_name: data.placeName,
+        reason: data.reason,
+      },
+      { onConflict: "amap_id" },
+    );
+
+    if (error) throw error;
+    return { authorized: true as const, ok: true as const };
   });

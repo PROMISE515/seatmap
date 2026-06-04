@@ -140,6 +140,22 @@ function filterResultsForMode(toilets: ToiletDTO[], mode: SearchMode) {
   return toilets.filter((toilet) => toilet.tags.includes("Western Toilet"));
 }
 
+async function getBlacklistedAmapIds(amapIds: string[]) {
+  const unique = [...new Set(amapIds.filter(Boolean))];
+  if (unique.length === 0) return new Set<string>();
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("toilet_blacklist")
+      .select("amap_id")
+      .in("amap_id", unique);
+    if (error) return new Set<string>();
+    return new Set((data ?? []).map((row) => row.amap_id));
+  } catch {
+    return new Set<string>();
+  }
+}
+
 async function fetchFromAmap(
   gcjLat: number,
   gcjLng: number,
@@ -386,12 +402,15 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
           .map((id) => byId.get(id))
           .filter((r): r is NonNullable<typeof r> => Boolean(r));
 
-        const filtered = ordered.filter((r) =>
-          searchMode === "nursery"
-            ? hasNurserySignal(r.name, r.address ?? "") && hasUsefulPoiName(r.name)
-            : isLikelyWestern(r.name, r.address ?? "") ||
-              (hasNurserySignal(r.name, r.address ?? "") && hasUsefulPoiName(r.name)),
-        );
+        const blacklisted = await getBlacklistedAmapIds(ordered.map((r) => r.amap_id));
+        const filtered = ordered
+          .filter((r) => !blacklisted.has(r.amap_id))
+          .filter((r) =>
+            searchMode === "nursery"
+              ? hasNurserySignal(r.name, r.address ?? "") && hasUsefulPoiName(r.name)
+              : isLikelyWestern(r.name, r.address ?? "") ||
+                (hasNurserySignal(r.name, r.address ?? "") && hasUsefulPoiName(r.name)),
+          );
 
         const nameMap = await ensureTranslations(
           filtered.map((r) => ({ amapId: r.amap_id, name: r.name })),
@@ -432,11 +451,14 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
     }
 
     const allPois = await fetchSeatMapCandidates(lat, lng, radius, searchMode);
+    const blacklisted = await getBlacklistedAmapIds(allPois.map((p) => p.id));
     const pois = allPois.filter((p) =>
-      searchMode === "nursery"
-        ? hasNurserySignal(p.name ?? "", s(p.address)) && hasUsefulPoiName(p.name ?? "")
-        : isLikelyWestern(p.name ?? "", s(p.address)) ||
-          (hasNurserySignal(p.name ?? "", s(p.address)) && hasUsefulPoiName(p.name ?? "")),
+      blacklisted.has(p.id)
+        ? false
+        : searchMode === "nursery"
+          ? hasNurserySignal(p.name ?? "", s(p.address)) && hasUsefulPoiName(p.name ?? "")
+          : isLikelyWestern(p.name ?? "", s(p.address)) ||
+            (hasNurserySignal(p.name ?? "", s(p.address)) && hasUsefulPoiName(p.name ?? "")),
     );
 
     if (pois.length > 0) {
@@ -543,6 +565,9 @@ export const getToiletByAmapId = createServerFn({ method: "POST" })
       }
       return { toilet: null };
     }
+
+    const blacklisted = await getBlacklistedAmapIds([row.amap_id]);
+    if (blacklisted.has(row.amap_id)) return { toilet: null };
 
     const nameMap = await ensureTranslations([{ amapId: row.amap_id, name: row.name }]);
     const address = row.address ?? "";
