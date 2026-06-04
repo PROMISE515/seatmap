@@ -273,7 +273,9 @@ function ToiletDetail() {
         )}
       </section>
 
-      <section className="sticky bottom-0 z-20 mt-8 bg-background/95 px-6 pb-5 pt-3 backdrop-blur-xl">
+      <div className="h-28" aria-hidden />
+
+      <section className="fixed inset-x-0 bottom-0 z-20 mx-auto w-full max-w-[420px] bg-background/95 px-6 pb-5 pt-3 backdrop-blur-xl">
         <div className="grid grid-cols-[auto_1fr] gap-2">
           <button
             type="button"
