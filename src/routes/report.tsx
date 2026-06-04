@@ -4,7 +4,8 @@ import { ArrowLeft, Flag, ImagePlus, Loader2, Siren, Star, X } from "lucide-reac
 import type { ChangeEvent, FormEvent } from "react";
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
-import { submitPlaceComplaint, submitToiletReport } from "@/lib/reports.functions";
+import { submitToiletReport } from "@/lib/reports.functions";
+import { useT } from "@/lib/i18n";
 
 type PendingPhoto = {
   name: string;
@@ -25,7 +26,7 @@ export const Route = createFileRoute("/report")({
 function ReportPage() {
   const { place, amapId } = Route.useSearch();
   const submitReport = useServerFn(submitToiletReport);
-  const submitComplaintReport = useServerFn(submitPlaceComplaint);
+  const { t } = useT();
   const [placeName, setPlaceName] = useState(place ?? "");
   const [type, setType] = useState<"confirmed_seated" | "wrong_listing" | "closed" | "other">(
     "confirmed_seated",
@@ -34,15 +35,12 @@ function ReportPage() {
   const [notes, setNotes] = useState("");
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [savingComplaint, setSavingComplaint] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [complaintMessage, setComplaintMessage] = useState<string | null>(null);
   const [photos, setPhotos] = useState<PendingPhoto[]>([]);
 
   const saveReport = async (options: { isComplaint: boolean }) => {
     setSaving(true);
     setError(null);
-    setComplaintMessage(null);
     setSaved(false);
 
     try {
@@ -72,62 +70,6 @@ function ReportPage() {
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     await saveReport({ isComplaint: false });
-  };
-
-  const getCurrentPosition = () =>
-    new Promise<GeolocationPosition>((resolve, reject) => {
-      if (!navigator.geolocation) {
-        reject(new Error("Geolocation unavailable"));
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(resolve, reject, {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 15000,
-      });
-    });
-
-  const submitComplaint = async () => {
-    if (!placeName.trim()) {
-      setError("Add a place name before filing a complaint.");
-      return;
-    }
-    if (!amapId) {
-      setError("This place cannot be reported because it is missing location data.");
-      return;
-    }
-
-    setSavingComplaint(true);
-    setError(null);
-    setComplaintMessage(null);
-    setSaved(false);
-
-    try {
-      const position = await getCurrentPosition();
-      const result = await submitComplaintReport({
-        data: {
-          amapId,
-          placeName,
-          userLat: position.coords.latitude,
-          userLng: position.coords.longitude,
-        },
-      });
-
-      if (!result.ok) {
-        if (result.reason === "out_of_range") {
-          setError("You need to be within 1km of this place to report it.");
-        } else {
-          setError("This place cannot be reported because it is missing location data.");
-        }
-        return;
-      }
-
-      setComplaintMessage("Thank you for reporting this place. We will verify it.");
-    } catch {
-      setError("Location access is needed to report this place within 1km.");
-    } finally {
-      setSavingComplaint(false);
-    }
   };
 
   const handlePhotoChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -186,29 +128,24 @@ function ReportPage() {
               Back
             </Link>
           )}
-          <button
-            type="button"
-            onClick={submitComplaint}
-            disabled={savingComplaint}
+          <Link
+            to="/complaint"
+            search={{ place: placeName || place, amapId }}
             className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground transition hover:bg-red-600/10 hover:text-foreground disabled:opacity-60"
           >
-            {savingComplaint ? (
-              <Loader2 className="size-3 animate-spin text-red-600" aria-hidden />
-            ) : (
-              <Siren className="size-3 text-red-600" aria-hidden />
-            )}
-            {savingComplaint ? "Filing" : "Report this place"}
-          </button>
+            <Siren className="size-3 text-red-600" aria-hidden />
+            Report this place
+          </Link>
         </div>
         <div className="flex items-center gap-2">
           <div className="size-9 rounded-lg bg-primary/10 text-primary grid place-items-center">
             <Flag className="size-4" aria-hidden />
           </div>
           <div>
-            <h1 className="text-xl font-extrabold tracking-tight text-brand-dark">Review</h1>
-            <p className="text-sm text-muted-foreground font-medium">
-              Help travelers understand this restroom before they arrive.
-            </p>
+            <h1 className="text-xl font-extrabold tracking-tight text-brand-dark">
+              {t("review.title")}
+            </h1>
+            <p className="text-sm text-muted-foreground font-medium">{t("review.helper")}</p>
           </div>
         </div>
       </header>
@@ -324,12 +261,6 @@ function ReportPage() {
         {saved && (
           <p className="rounded-lg bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
             Review saved. Thank you for helping other travelers.
-          </p>
-        )}
-
-        {complaintMessage && (
-          <p className="rounded-lg bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
-            {complaintMessage}
           </p>
         )}
 

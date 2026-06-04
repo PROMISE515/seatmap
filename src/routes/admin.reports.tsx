@@ -4,7 +4,9 @@ import { Ban, Loader2, ShieldAlert } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   blacklistPlace,
+  getAdminBlacklist,
   getAdminComplaints,
+  type AdminBlacklistDTO,
   type AdminComplaintDTO,
 } from "@/lib/reports.functions";
 
@@ -21,20 +23,26 @@ export const Route = createFileRoute("/admin/reports")({
 function AdminReportsPage() {
   const { token } = Route.useSearch();
   const fetchComplaints = useServerFn(getAdminComplaints);
+  const fetchBlacklist = useServerFn(getAdminBlacklist);
   const saveBlacklist = useServerFn(blacklistPlace);
   const [authorized, setAuthorized] = useState(true);
   const [loading, setLoading] = useState(true);
   const [busyAmapId, setBusyAmapId] = useState<string | null>(null);
   const [complaints, setComplaints] = useState<AdminComplaintDTO[]>([]);
+  const [blacklist, setBlacklist] = useState<AdminBlacklistDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await fetchComplaints({ data: { token } });
-      setAuthorized(result.authorized);
-      setComplaints(result.complaints);
+      const [complaintResult, blacklistResult] = await Promise.all([
+        fetchComplaints({ data: { token } }),
+        fetchBlacklist({ data: { token } }),
+      ]);
+      setAuthorized(complaintResult.authorized && blacklistResult.authorized);
+      setComplaints(complaintResult.complaints);
+      setBlacklist(blacklistResult.blacklist);
     } catch {
       setError("无法加载举报列表，请检查 Supabase migration 和 ADMIN_TOKEN。");
     } finally {
@@ -56,8 +64,11 @@ function AdminReportsPage() {
         data: {
           token,
           amapId: complaint.amapId,
-          placeName: complaint.toilet?.nameEn || complaint.toilet?.name || complaint.placeName,
-          reason: "用户举报：该地点没有坐便",
+          placeName: complaint.toilet?.name || complaint.placeName,
+          reason:
+            complaint.reason === "no_nursery_room"
+              ? "用户举报：该地点没有母婴室"
+              : "用户举报：该地点没有坐便",
         },
       });
       if (!result.authorized) {
@@ -70,6 +81,12 @@ function AdminReportsPage() {
     } finally {
       setBusyAmapId(null);
     }
+  };
+
+  const complaintReasonLabel = (reason: AdminComplaintDTO["reason"]) => {
+    if (reason === "no_nursery_room") return "没有母婴室";
+    if (reason === "no_seated_toilet") return "没有坐便";
+    return "其他";
   };
 
   if (!authorized) {
@@ -128,7 +145,7 @@ function AdminReportsPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="truncate text-base font-extrabold text-brand-dark">
-                        {complaint.toilet?.nameEn || complaint.toilet?.name || complaint.placeName}
+                        {complaint.toilet?.name || complaint.placeName}
                       </h2>
                       {complaint.blacklisted ? (
                         <span className="inline-flex items-center gap-1 rounded-md bg-red-600/10 px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-red-700">
@@ -145,6 +162,14 @@ function AdminReportsPage() {
                     <p className="mt-1 text-sm text-muted-foreground">
                       {complaint.toilet?.address || "暂无地址"}
                     </p>
+                    <p className="mt-2 text-sm font-semibold text-foreground">
+                      举报原因：{complaintReasonLabel(complaint.reason)}
+                    </p>
+                    {complaint.description && (
+                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                        描述：{complaint.description}
+                      </p>
+                    )}
                     <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                       <span>高德 ID：{complaint.amapId || "缺失"}</span>
                       <span>城市：{complaint.toilet?.city || "未知"}</span>
@@ -178,6 +203,44 @@ function AdminReportsPage() {
             ))}
           </ul>
         )}
+
+        <section className="mt-10">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-primary">Blacklist</p>
+              <h2 className="mt-1 text-xl font-extrabold text-brand-dark">黑名单册</h2>
+            </div>
+            <span className="text-sm font-semibold text-muted-foreground">
+              {blacklist.length} 个地点
+            </span>
+          </div>
+
+          {blacklist.length === 0 ? (
+            <div className="mt-4 rounded-lg border border-border bg-background p-6 text-sm text-muted-foreground">
+              暂时没有黑名单地点。
+            </div>
+          ) : (
+            <ul className="mt-4 space-y-2">
+              {blacklist.map((item) => (
+                <li
+                  key={item.id}
+                  className="rounded-lg border border-border bg-background p-4 text-sm shadow-sm"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h3 className="font-extrabold text-brand-dark">{item.placeName}</h3>
+                      <p className="mt-1 text-muted-foreground">{item.reason || "未填写原因"}</p>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      <div>高德 ID：{item.amapId}</div>
+                      <div>拉黑时间：{new Date(item.createdAt).toLocaleString()}</div>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </div>
     </main>
   );

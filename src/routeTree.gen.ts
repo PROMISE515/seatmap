@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as PassRouteImport } from './routes/pass'
+import { Route as ComplaintRouteImport } from './routes/complaint'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ToiletIdRouteImport } from './routes/toilet.$id'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
@@ -32,6 +33,11 @@ const ReportRoute = ReportRouteImport.update({
 const PassRoute = PassRouteImport.update({
   id: '/pass',
   path: '/pass',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComplaintRoute = ComplaintRouteImport.update({
+  id: '/complaint',
+  path: '/complaint',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -67,6 +73,7 @@ const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/complaint': typeof ComplaintRoute
   '/pass': typeof PassRoute
   '/report': typeof ReportRoute
   '/saved': typeof SavedRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/complaint': typeof ComplaintRoute
   '/pass': typeof PassRoute
   '/report': typeof ReportRoute
   '/saved': typeof SavedRoute
@@ -90,6 +98,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/complaint': typeof ComplaintRoute
   '/pass': typeof PassRoute
   '/report': typeof ReportRoute
   '/saved': typeof SavedRoute
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/complaint'
     | '/pass'
     | '/report'
     | '/saved'
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/complaint'
     | '/pass'
     | '/report'
     | '/saved'
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/complaint'
     | '/pass'
     | '/report'
     | '/saved'
@@ -137,6 +149,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ComplaintRoute: typeof ComplaintRoute
   PassRoute: typeof PassRoute
   ReportRoute: typeof ReportRoute
   SavedRoute: typeof SavedRoute
@@ -168,6 +181,13 @@ declare module '@tanstack/react-router' {
       path: '/pass'
       fullPath: '/pass'
       preLoaderRoute: typeof PassRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/complaint': {
+      id: '/complaint'
+      path: '/complaint'
+      fullPath: '/complaint'
+      preLoaderRoute: typeof ComplaintRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -217,6 +237,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ComplaintRoute: ComplaintRoute,
   PassRoute: PassRoute,
   ReportRoute: ReportRoute,
   SavedRoute: SavedRoute,

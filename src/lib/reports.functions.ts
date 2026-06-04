@@ -31,6 +31,8 @@ export type AdminComplaintDTO = {
   id: string;
   amapId: string | null;
   placeName: string;
+  reason: "no_seated_toilet" | "no_nursery_room" | "other";
+  description: string;
   createdAt: string;
   blacklisted: boolean;
   toilet: {
@@ -41,6 +43,14 @@ export type AdminComplaintDTO = {
     lat: number | null;
     lng: number | null;
   } | null;
+};
+
+export type AdminBlacklistDTO = {
+  id: string;
+  amapId: string;
+  placeName: string;
+  reason: string;
+  createdAt: string;
 };
 
 function parsePhotoDataUrl(dataUrl: string) {
@@ -130,6 +140,8 @@ export const submitPlaceComplaint = createServerFn({ method: "POST" })
       .object({
         amapId: z.string().min(1).max(128),
         placeName: z.string().min(1).max(240),
+        reason: z.enum(["no_seated_toilet", "no_nursery_room"]),
+        description: z.string().max(1000).optional().default(""),
         userLat: z.number().min(-90).max(90),
         userLng: z.number().min(-180).max(180),
       })
@@ -158,9 +170,12 @@ export const submitPlaceComplaint = createServerFn({ method: "POST" })
       toilet_id: toilet.id,
       amap_id: data.amapId,
       place_name: data.placeName,
-      report_type: "wrong_listing",
+      report_type: data.reason === "no_seated_toilet" ? "wrong_listing" : "other",
       rating: null,
-      notes: null,
+      notes: JSON.stringify({
+        reason: data.reason,
+        description: data.description,
+      }),
       is_complaint: true,
       photo_urls: [],
     });
@@ -168,6 +183,22 @@ export const submitPlaceComplaint = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true as const, distanceM };
   });
+
+function parseComplaintNotes(notes: string | null) {
+  if (!notes) return { reason: "other" as const, description: "" };
+  try {
+    const parsed = JSON.parse(notes) as { reason?: string; description?: string };
+    if (parsed.reason === "no_seated_toilet" || parsed.reason === "no_nursery_room") {
+      return {
+        reason: parsed.reason,
+        description: parsed.description ?? "",
+      };
+    }
+  } catch {
+    return { reason: "other" as const, description: notes };
+  }
+  return { reason: "other" as const, description: notes };
+}
 
 export const getToiletReports = createServerFn({ method: "POST" })
   .inputValidator((input) =>
@@ -216,7 +247,7 @@ export const getAdminComplaints = createServerFn({ method: "POST" })
 
     const { data: reports, error } = await supabaseAdmin
       .from("toilet_reports")
-      .select("id, amap_id, place_name, created_at")
+      .select("id, amap_id, place_name, notes, created_at")
       .eq("is_complaint", true)
       .order("created_at", { ascending: false })
       .limit(100);
@@ -246,10 +277,13 @@ export const getAdminComplaints = createServerFn({ method: "POST" })
       authorized: true as const,
       complaints: (reports ?? []).map<AdminComplaintDTO>((row) => {
         const toilet = row.amap_id ? toiletByAmapId.get(row.amap_id) : null;
+        const complaint = parseComplaintNotes(row.notes);
         return {
           id: row.id,
           amapId: row.amap_id,
           placeName: row.place_name,
+          reason: complaint.reason,
+          description: complaint.description,
           createdAt: row.created_at,
           blacklisted: row.amap_id ? blacklisted.has(row.amap_id) : false,
           toilet: toilet
@@ -292,4 +326,37 @@ export const blacklistPlace = createServerFn({ method: "POST" })
 
     if (error) throw error;
     return { authorized: true as const, ok: true as const };
+  });
+
+export const getAdminBlacklist = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        token: z.string().optional(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    if (!adminTokenIsValid(data.token)) {
+      return { authorized: false as const, blacklist: [] as AdminBlacklistDTO[] };
+    }
+
+    const { data: rows, error } = await supabaseAdmin
+      .from("toilet_blacklist")
+      .select("id, amap_id, place_name, reason, created_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (error) throw error;
+
+    return {
+      authorized: true as const,
+      blacklist: (rows ?? []).map<AdminBlacklistDTO>((row) => ({
+        id: row.id,
+        amapId: row.amap_id,
+        placeName: row.place_name,
+        reason: row.reason ?? "",
+        createdAt: row.created_at,
+      })),
+    };
   });
