@@ -119,11 +119,6 @@ export function ToiletCard({
                     </span>
                   );
                 })}
-                {toilet.floor && (
-                  <span className="px-2 py-0.5 rounded-md bg-surface border border-border text-[10px] font-bold text-muted-foreground tabular-nums">
-                    {toilet.floor}
-                  </span>
-                )}
                 {toilet.topRated && (
                   <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
                     {t("card.topRated")}

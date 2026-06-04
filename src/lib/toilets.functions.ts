@@ -245,8 +245,8 @@ function mergeTags(tags: string[]) {
   return ordered.filter((tag) => set.has(tag));
 }
 
-function hasUsefulPlaceName(name: string, address = "") {
-  const cleaned = `${name} ${address}`
+function hasUsefulPoiName(name: string) {
+  const cleaned = name
     .replace(/[（）()]/g, "")
     .replace(/母婴室?|nursery\s*room|baby\s*care/gi, "")
     .replace(/\b(b|l)?\d+\s*(f|层|楼)?\b/gi, "")
@@ -388,11 +388,9 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
 
         const filtered = ordered.filter((r) =>
           searchMode === "nursery"
-            ? hasNurserySignal(r.name, r.address ?? "") &&
-              hasUsefulPlaceName(r.name, r.address ?? "")
+            ? hasNurserySignal(r.name, r.address ?? "") && hasUsefulPoiName(r.name)
             : isLikelyWestern(r.name, r.address ?? "") ||
-              (hasNurserySignal(r.name, r.address ?? "") &&
-                hasUsefulPlaceName(r.name, r.address ?? "")),
+              (hasNurserySignal(r.name, r.address ?? "") && hasUsefulPoiName(r.name)),
         );
 
         const nameMap = await ensureTranslations(
@@ -436,11 +434,9 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
     const allPois = await fetchSeatMapCandidates(lat, lng, radius, searchMode);
     const pois = allPois.filter((p) =>
       searchMode === "nursery"
-        ? hasNurserySignal(p.name ?? "", s(p.address)) &&
-          hasUsefulPlaceName(p.name ?? "", s(p.address))
+        ? hasNurserySignal(p.name ?? "", s(p.address)) && hasUsefulPoiName(p.name ?? "")
         : isLikelyWestern(p.name ?? "", s(p.address)) ||
-          (hasNurserySignal(p.name ?? "", s(p.address)) &&
-            hasUsefulPlaceName(p.name ?? "", s(p.address))),
+          (hasNurserySignal(p.name ?? "", s(p.address)) && hasUsefulPoiName(p.name ?? "")),
     );
 
     if (pois.length > 0) {
