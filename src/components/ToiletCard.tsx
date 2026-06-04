@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Accessibility, Baby, Bookmark, Check, Info, Lock, MapPin } from "lucide-react";
+import { Baby, Bookmark, Check, Info, Lock, MapPin } from "lucide-react";
 import type { ToiletDTO } from "@/lib/amap";
 import { MapNavigationSheet } from "@/components/MapNavigationSheet";
 import { saveCurrentHomeScroll } from "@/lib/home-scroll";
@@ -10,9 +10,29 @@ import { useT } from "@/lib/i18n";
 
 type CardToilet = ToiletDTO & { topRated?: boolean };
 
+function WheelchairTagIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.25"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="8" cy="5" r="2" />
+      <path d="M9 8v5h5l3 5" />
+      <path d="M8 13a5 5 0 1 0 5 5" />
+      <path d="M7 10h5" />
+    </svg>
+  );
+}
+
 const TAG_META = {
   "Western Toilet": { Icon: Check, tone: "bg-primary/10 text-primary" },
-  Accessible: { Icon: Accessibility, tone: "bg-sky-500/10 text-sky-600" },
+  Accessible: { Icon: WheelchairTagIcon, tone: "bg-sky-500/10 text-sky-600" },
   Nursery: { Icon: Baby, tone: "bg-pink-500/10 text-pink-600" },
   Free: { Icon: Check, tone: "bg-emerald-500/10 text-emerald-700" },
 };

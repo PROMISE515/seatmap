@@ -538,6 +538,19 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
     };
   });
 
+export const filterBlacklistedToiletIds = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        ids: z.array(z.string().min(1).max(128)).max(100),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const blacklisted = await getBlacklistedAmapIds(data.ids);
+    return { ids: [...blacklisted] };
+  });
+
 // --- Detail lookup ------------------------------------------------------
 
 export const getToiletByAmapId = createServerFn({ method: "POST" })

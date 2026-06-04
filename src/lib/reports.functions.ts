@@ -325,6 +325,9 @@ export const blacklistPlace = createServerFn({ method: "POST" })
     );
 
     if (error) throw error;
+
+    await supabaseAdmin.from("toilet_search_cache").delete().contains("amap_ids", [data.amapId]);
+
     return { authorized: true as const, ok: true as const };
   });
 

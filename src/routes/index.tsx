@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { Baby, Loader2, MapPin, Search, Share2 } from "lucide-react";
 import { toast } from "sonner";
-import { findNearbyToilets } from "@/lib/toilets.functions";
+import { filterBlacklistedToiletIds, findNearbyToilets } from "@/lib/toilets.functions";
 import { verifyPassSession } from "@/lib/payments.functions";
 import {
   claimShareReferral,
@@ -91,7 +91,7 @@ const PASS_SESSION_KEY = "seatmap.pass.sid";
 const SHARE_BONUS_KEY = "seatmap.share.freeCredits";
 const SHARE_REFERRAL_CODE_KEY = "seatmap.share.referralCode";
 const SHARE_VISITOR_ID_KEY = "seatmap.share.visitorId";
-const LAST_SEARCH_STATE_KEY = "seatmap.lastSearchState";
+const LAST_SEARCH_STATE_KEY = "seatmap.lastSearchState.v2";
 const SHARE_PARAM = "seatmap_ref";
 const LAST_SEARCH_MAX_AGE_MS = 30 * 60 * 1000;
 
@@ -235,6 +235,7 @@ function HomePage() {
   const [supportedRegions, setSupportedRegions] = useState("Shanghai, Beijing and Qingdao");
   const [searchMode, setSearchMode] = useState<SearchMode>("toilet");
   const findNearby = useServerFn(findNearbyToilets);
+  const filterBlacklisted = useServerFn(filterBlacklistedToiletIds);
   const ensureReferral = useServerFn(ensureShareReferral);
   const claimReferral = useServerFn(claimShareReferral);
   const getReferralCredits = useServerFn(getShareReferralCredits);
@@ -268,6 +269,45 @@ function HomePage() {
     setSupportedRegions(lastSearch.supportedRegions);
     setSearchMode(lastSearch.searchMode);
   }, []);
+
+  useEffect(() => {
+    if (toilets.length === 0) return;
+    let cancelled = false;
+
+    const removeBlacklisted = async () => {
+      try {
+        const result = await filterBlacklisted({
+          data: { ids: toilets.map((toilet) => toilet.id) },
+        });
+        if (cancelled || result.ids.length === 0) return;
+        const blacklisted = new Set(result.ids);
+        setToilets((current) => {
+          const next = current.filter((toilet) => !blacklisted.has(toilet.id));
+          if (next.length !== current.length) {
+            writeLastSearchState({
+              status: next.length > 0 ? "ready" : "unsupported",
+              searchMode,
+              toilets: next,
+              region,
+              mapCenter,
+              errorMsg,
+              supportedRegions,
+            });
+          }
+          return next;
+        });
+      } catch {
+        // Search already filters blacklist server-side; this pass only cleans stale local state.
+      }
+    };
+
+    void removeBlacklisted();
+    window.addEventListener("focus", removeBlacklisted);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", removeBlacklisted);
+    };
+  }, [errorMsg, filterBlacklisted, mapCenter, region, searchMode, supportedRegions, toilets]);
 
   useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.permissions?.query) return;
