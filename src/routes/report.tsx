@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Flag, ImagePlus, Loader2, Siren, Star, X } from "lucide-react";
+import { ArrowLeft, ImagePlus, Loader2, Siren, Star, X } from "lucide-react";
 import type { ChangeEvent, FormEvent } from "react";
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
@@ -137,16 +137,11 @@ function ReportPage() {
             Report this place
           </Link>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="size-9 rounded-lg bg-primary/10 text-primary grid place-items-center">
-            <Flag className="size-4" aria-hidden />
-          </div>
-          <div>
-            <h1 className="text-xl font-extrabold tracking-tight text-brand-dark">
-              {t("review.title")}
-            </h1>
-            <p className="text-sm text-muted-foreground font-medium">{t("review.helper")}</p>
-          </div>
+        <div>
+          <h1 className="text-xl font-extrabold tracking-tight text-brand-dark">
+            {t("review.title")}
+          </h1>
+          <p className="text-sm text-muted-foreground font-medium">{t("review.helper")}</p>
         </div>
       </header>
 
