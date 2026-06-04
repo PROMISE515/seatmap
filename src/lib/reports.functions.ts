@@ -182,6 +182,7 @@ export const getToiletReports = createServerFn({ method: "POST" })
       .from("toilet_reports")
       .select("id, report_type, rating, notes, is_complaint, photo_urls, created_at")
       .eq("amap_id", data.amapId)
+      .eq("is_complaint", false)
       .order("created_at", { ascending: false })
       .limit(20);
 

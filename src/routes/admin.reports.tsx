@@ -13,7 +13,7 @@ export const Route = createFileRoute("/admin/reports")({
     token: typeof search.token === "string" ? search.token : undefined,
   }),
   head: () => ({
-    meta: [{ title: "SeatMap Complaints Admin" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "SeatMap 举报后台" }, { name: "robots", content: "noindex" }],
   }),
   component: AdminReportsPage,
 });
@@ -36,7 +36,7 @@ function AdminReportsPage() {
       setAuthorized(result.authorized);
       setComplaints(result.complaints);
     } catch {
-      setError("Could not load complaints. Check Supabase migrations and ADMIN_TOKEN.");
+      setError("无法加载举报列表，请检查 Supabase migration 和 ADMIN_TOKEN。");
     } finally {
       setLoading(false);
     }
@@ -57,7 +57,7 @@ function AdminReportsPage() {
           token,
           amapId: complaint.amapId,
           placeName: complaint.toilet?.nameEn || complaint.toilet?.name || complaint.placeName,
-          reason: "User complaint: no seated toilet",
+          reason: "用户举报：该地点没有坐便",
         },
       });
       if (!result.authorized) {
@@ -66,7 +66,7 @@ function AdminReportsPage() {
       }
       await load();
     } catch {
-      setError("Could not add this place to blacklist.");
+      setError("无法加入黑名单，请稍后重试。");
     } finally {
       setBusyAmapId(null);
     }
@@ -76,9 +76,9 @@ function AdminReportsPage() {
     return (
       <main className="min-h-screen bg-surface px-6 py-10">
         <div className="mx-auto max-w-3xl rounded-lg border border-border bg-background p-6">
-          <h1 className="text-xl font-extrabold text-brand-dark">Admin access required</h1>
+          <h1 className="text-xl font-extrabold text-brand-dark">需要后台访问权限</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Open this page with <code className="font-mono">?token=ADMIN_TOKEN</code>.
+            请使用 <code className="font-mono">?token=ADMIN_TOKEN</code> 打开这个页面。
           </p>
         </div>
       </main>
@@ -90,17 +90,15 @@ function AdminReportsPage() {
       <div className="mx-auto max-w-5xl">
         <header className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-primary">
-              SeatMap Admin
-            </p>
-            <h1 className="mt-1 text-2xl font-extrabold text-brand-dark">Place complaints</h1>
+            <p className="text-xs font-bold uppercase tracking-widest text-primary">SeatMap 后台</p>
+            <h1 className="mt-1 text-2xl font-extrabold text-brand-dark">地点举报</h1>
           </div>
           <button
             type="button"
             onClick={() => void load()}
             className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-bold text-muted-foreground hover:text-foreground"
           >
-            Refresh
+            刷新
           </button>
         </header>
 
@@ -113,11 +111,11 @@ function AdminReportsPage() {
         {loading ? (
           <div className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground">
             <Loader2 className="size-4 animate-spin" aria-hidden />
-            Loading complaints
+            正在加载举报
           </div>
         ) : complaints.length === 0 ? (
           <div className="mt-8 rounded-lg border border-border bg-background p-6 text-sm text-muted-foreground">
-            No complaints yet.
+            暂时没有举报。
           </div>
         ) : (
           <ul className="mt-6 space-y-3">
@@ -135,28 +133,28 @@ function AdminReportsPage() {
                       {complaint.blacklisted ? (
                         <span className="inline-flex items-center gap-1 rounded-md bg-red-600/10 px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-red-700">
                           <Ban className="size-3" aria-hidden />
-                          Blacklisted
+                          已拉黑
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-amber-700">
                           <ShieldAlert className="size-3" aria-hidden />
-                          Needs review
+                          待核实
                         </span>
                       )}
                     </div>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {complaint.toilet?.address || "No address saved"}
+                      {complaint.toilet?.address || "暂无地址"}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                      <span>AMap: {complaint.amapId || "missing"}</span>
-                      <span>City: {complaint.toilet?.city || "unknown"}</span>
+                      <span>高德 ID：{complaint.amapId || "缺失"}</span>
+                      <span>城市：{complaint.toilet?.city || "未知"}</span>
                       <span>
-                        Coords:{" "}
+                        坐标：
                         {complaint.toilet?.lat && complaint.toilet?.lng
                           ? `${complaint.toilet.lat.toFixed(6)}, ${complaint.toilet.lng.toFixed(6)}`
-                          : "unknown"}
+                          : "未知"}
                       </span>
-                      <span>{new Date(complaint.createdAt).toLocaleString()}</span>
+                      <span>举报时间：{new Date(complaint.createdAt).toLocaleString()}</span>
                     </div>
                   </div>
 
@@ -173,7 +171,7 @@ function AdminReportsPage() {
                     ) : (
                       <Ban className="size-4" aria-hidden />
                     )}
-                    Add to blacklist
+                    加入黑名单
                   </button>
                 </div>
               </li>
