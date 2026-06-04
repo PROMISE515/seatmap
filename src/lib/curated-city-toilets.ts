@@ -158,7 +158,7 @@ function venue(
     name,
     rawName: name,
     floor,
-    tags: ["Western Toilet", "Traveler-friendly"],
+    tags: ["Western Toilet"],
     address,
     city: "",
     lat,

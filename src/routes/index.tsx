@@ -230,6 +230,8 @@ function HomePage() {
   const [locationPermission, setLocationPermission] = useState<
     "unknown" | "prompt" | "granted" | "denied"
   >("unknown");
+  const [showLocationPrompt, setShowLocationPrompt] = useState(false);
+  const [pendingLocationMode, setPendingLocationMode] = useState<SearchMode>("toilet");
   const [supportedRegions, setSupportedRegions] = useState("Shanghai, Beijing and Qingdao");
   const [searchMode, setSearchMode] = useState<SearchMode>("toilet");
   const findNearby = useServerFn(findNearbyToilets);
@@ -549,7 +551,7 @@ function HomePage() {
     }
   };
 
-  const handleFind = async (mode: SearchMode = "toilet") => {
+  const startLocationSearch = async (mode: SearchMode) => {
     if (typeof window === "undefined") return;
     setSearchMode(mode);
 
@@ -585,6 +587,21 @@ function HomePage() {
     );
   };
 
+  const handleFind = async (mode: SearchMode = "toilet") => {
+    setSearchMode(mode);
+    if (locationPermission === "granted") {
+      await startLocationSearch(mode);
+      return;
+    }
+    setPendingLocationMode(mode);
+    setShowLocationPrompt(true);
+  };
+
+  const confirmLocationPrompt = async () => {
+    setShowLocationPrompt(false);
+    await startLocationSearch(pendingLocationMode);
+  };
+
   return (
     <AppShell>
       {/* Header */}
@@ -613,32 +630,7 @@ function HomePage() {
             {shareBusy ? t("home.checking") : "Share"}
           </button>
         </div>
-        {hasActivePass && passSessionId && (
-          <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-3">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary">
-              Travel Pass Active
-            </p>
-          </div>
-        )}
       </header>
-
-      <section className="px-6 mt-3">
-        <button
-          type="button"
-          onClick={() => handleFind("nursery")}
-          disabled={status === "locating"}
-          className="inline-flex items-center gap-2 rounded-md py-1 text-xs font-bold text-muted-foreground transition hover:text-foreground disabled:opacity-60"
-        >
-          <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-pink-50 text-pink-600">
-            {status === "locating" && searchMode === "nursery" ? (
-              <Loader2 className="size-4 animate-spin" aria-hidden />
-            ) : (
-              <Baby className="size-4" aria-hidden />
-            )}
-          </span>
-          Need a nursery room?
-        </button>
-      </section>
 
       {/* Hero CTA */}
       <section className="px-6 mt-6">
@@ -675,6 +667,24 @@ function HomePage() {
               </span>
             </>
           )}
+        </button>
+      </section>
+
+      <section className="px-6 mt-4">
+        <button
+          type="button"
+          onClick={() => handleFind("nursery")}
+          disabled={status === "locating"}
+          className="inline-flex flex-col items-center gap-1.5 rounded-lg px-1 py-1 text-center text-[11px] font-bold text-muted-foreground transition hover:text-foreground disabled:opacity-60"
+        >
+          <span className="grid size-11 place-items-center rounded-xl bg-pink-50 text-pink-600">
+            {status === "locating" && searchMode === "nursery" ? (
+              <Loader2 className="size-5 animate-spin" aria-hidden />
+            ) : (
+              <Baby className="size-5" aria-hidden />
+            )}
+          </span>
+          <span className="leading-tight">Nursery room</span>
         </button>
       </section>
 
@@ -732,17 +742,6 @@ function HomePage() {
                     ? (errorMsg ?? t("home.turnOnLocation"))
                     : t("home.noMapHint")}
                 </p>
-                {(status === "idle" || status === "location_error") && (
-                  <button
-                    type="button"
-                    onClick={() => handleFind(searchMode)}
-                    className="mt-3 inline-flex items-center justify-center rounded-lg bg-primary px-4 py-3 text-xs font-bold uppercase tracking-widest text-primary-foreground"
-                  >
-                    {locationPermission === "denied"
-                      ? "Try location again"
-                      : "Allow location access"}
-                  </button>
-                )}
                 {locationPermission === "denied" && (
                   <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
                     If your browser has blocked location, open site settings and allow location for
@@ -882,6 +881,44 @@ function HomePage() {
 
           <DialogFooter className="flex-col gap-2 sm:flex-col">
             <p className="text-[10px] text-center text-muted-foreground">{t("home.noAccount")}</p>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showLocationPrompt} onOpenChange={setShowLocationPrompt}>
+        <DialogContent className="max-w-[360px] rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-extrabold tracking-tight text-brand-dark">
+              Use your current location
+            </DialogTitle>
+            <DialogDescription>
+              SeatMap needs your location to sort nearby places by walking distance and open the
+              right navigation destination.
+            </DialogDescription>
+          </DialogHeader>
+
+          {locationPermission === "denied" && (
+            <div className="rounded-xl bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-900">
+              Your browser may have blocked location. If the next step does not work, open this
+              site's settings and allow location.
+            </div>
+          )}
+
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            <button
+              type="button"
+              onClick={confirmLocationPrompt}
+              className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-extrabold uppercase tracking-widest text-primary-foreground"
+            >
+              Allow location
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowLocationPrompt(false)}
+              className="inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-widest text-muted-foreground"
+            >
+              Not now
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

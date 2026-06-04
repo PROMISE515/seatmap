@@ -1,28 +1,28 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Accessibility, Baby, Bookmark, Building2, Info, Lock, MapPin, Toilet } from "lucide-react";
-import type { ToiletDTO, ToiletKind } from "@/lib/amap";
+import { Accessibility, Baby, Bookmark, Check, Info, Lock, MapPin } from "lucide-react";
+import type { ToiletDTO } from "@/lib/amap";
 import { MapNavigationSheet } from "@/components/MapNavigationSheet";
 import { saveCurrentHomeScroll } from "@/lib/home-scroll";
 import { isToiletSaved, saveToilet } from "@/lib/saved-toilets";
-import { type TranslationKey, useT } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 
 type CardToilet = ToiletDTO & { topRated?: boolean };
 
-const KIND_META: Record<
-  ToiletKind,
-  { labelKey: TranslationKey; Icon: typeof Toilet; tone: string }
-> = {
-  indoor: { labelKey: "card.indoor", Icon: Building2, tone: "bg-primary/10 text-primary" },
-  accessible: {
-    labelKey: "card.accessible",
-    Icon: Accessibility,
-    tone: "bg-sky-500/10 text-sky-600",
-  },
-  nursery: { labelKey: "card.nursery", Icon: Baby, tone: "bg-pink-500/10 text-pink-600" },
-  public: { labelKey: "card.public", Icon: Toilet, tone: "bg-muted text-muted-foreground" },
+const TAG_META = {
+  "Western Toilet": { Icon: Check, tone: "bg-primary/10 text-primary" },
+  Accessible: { Icon: Accessibility, tone: "bg-sky-500/10 text-sky-600" },
+  Nursery: { Icon: Baby, tone: "bg-pink-500/10 text-pink-600" },
+  Free: { Icon: Check, tone: "bg-emerald-500/10 text-emerald-700" },
 };
+
+const TAG_ORDER = ["Western Toilet", "Accessible", "Nursery", "Free"];
+
+function displayTags(tags: string[]) {
+  const set = new Set(tags);
+  return TAG_ORDER.filter((tag) => set.has(tag));
+}
 
 export function ToiletCard({
   toilet,
@@ -38,9 +38,8 @@ export function ToiletCard({
   onUnlock?: () => void;
 }) {
   const { t } = useT();
-  const meta = KIND_META[toilet.kind];
-  const Icon = meta.Icon;
   const [saved, setSaved] = useState(false);
+  const tags = displayTags(toilet.tags);
 
   useEffect(() => {
     setSaved(isToiletSaved(toilet.id));
@@ -62,10 +61,7 @@ export function ToiletCard({
     });
   };
 
-  const primaryTag =
-    toilet.seatedConfidence === "confirmed" || toilet.seatedConfidence === "likely"
-      ? t("card.likelyWestern")
-      : t("card.needsConfirmation");
+  const primaryTag = tags[0] ?? t("card.likelyWestern");
 
   return (
     <article
@@ -110,22 +106,19 @@ export function ToiletCard({
               </span>
             ) : (
               <>
-                {toilet.kind !== "indoor" && (
-                  <span
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${meta.tone}`}
-                  >
-                    <Icon className="size-3" aria-hidden />
-                    {t(meta.labelKey)}
-                  </span>
-                )}
-                {toilet.kind !== "accessible" && toilet.hasAccessible && (
-                  <span
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${KIND_META.accessible.tone}`}
-                  >
-                    <Accessibility className="size-3" aria-hidden />
-                    {t("card.accessible")}
-                  </span>
-                )}
+                {tags.map((tag) => {
+                  const meta = TAG_META[tag as keyof typeof TAG_META];
+                  const Icon = meta.Icon;
+                  return (
+                    <span
+                      key={tag}
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${meta.tone}`}
+                    >
+                      <Icon className="size-3" aria-hidden />
+                      {tag}
+                    </span>
+                  );
+                })}
                 {toilet.floor && (
                   <span className="px-2 py-0.5 rounded-md bg-surface border border-border text-[10px] font-bold text-muted-foreground tabular-nums">
                     {toilet.floor}
@@ -134,19 +127,6 @@ export function ToiletCard({
                 {toilet.topRated && (
                   <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
                     {t("card.topRated")}
-                  </span>
-                )}
-                {toilet.seatedConfidence !== "confirmed" && (
-                  <span
-                    className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-                      toilet.seatedConfidence === "likely"
-                        ? "bg-primary/10 text-primary"
-                        : "bg-amber-500/10 text-amber-700"
-                    }`}
-                  >
-                    {toilet.seatedConfidence === "likely"
-                      ? t("card.likelyWestern")
-                      : t("card.needsConfirmation")}
                   </span>
                 )}
               </>
