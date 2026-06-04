@@ -26,7 +26,6 @@ import {
   restoreHomeScrollY,
   writeHomeScrollY,
 } from "@/lib/home-scroll";
-import { ManageSubscriptionButton } from "@/components/ManageSubscriptionButton";
 import { useT } from "@/lib/i18n";
 import { getStripeEnvironmentForSessionId } from "@/lib/stripe";
 import {
@@ -604,14 +603,9 @@ function HomePage() {
         </div>
         {hasActivePass && passSessionId && (
           <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-3">
-            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-primary">
+            <p className="text-xs font-bold uppercase tracking-widest text-primary">
               Travel Pass Active
             </p>
-            <ManageSubscriptionButton
-              sessionId={passSessionId}
-              label="Manage or cancel subscription"
-              className="w-full rounded-xl border border-primary/20 bg-background px-4 py-3 text-xs font-bold uppercase tracking-widest text-brand-dark transition hover:border-primary/50"
-            />
           </div>
         )}
       </header>

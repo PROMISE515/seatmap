@@ -136,11 +136,6 @@ export function ToiletCard({
                     {t("card.topRated")}
                   </span>
                 )}
-                {toilet.duplicateCount && (
-                  <span className="px-2 py-0.5 rounded-md bg-secondary text-secondary-foreground text-[10px] font-bold uppercase tracking-wider">
-                    {t("card.entries", toilet.duplicateCount)}
-                  </span>
-                )}
                 {toilet.seatedConfidence !== "confirmed" && (
                   <span
                     className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${

@@ -4,7 +4,6 @@ import { Loader2 } from "lucide-react";
 import { verifyPassSession } from "@/lib/payments.functions";
 import { getStripeEnvironmentForSessionId } from "@/lib/stripe";
 import { removeStoredValue, setStoredValue } from "@/lib/client-storage";
-import { ManageSubscriptionButton } from "@/components/ManageSubscriptionButton";
 
 export const Route = createFileRoute("/pass")({
   validateSearch: (search: Record<string, unknown>): { sid?: string } => ({
@@ -87,14 +86,9 @@ function PassPage() {
           <p className="text-sm text-muted-foreground mb-1">
             Active until {new Date(state.expiresAtMs).toLocaleDateString()}
           </p>
-          {sid && (
-            <div className="mt-5 w-full max-w-xs">
-              <ManageSubscriptionButton sessionId={sid} label="Manage or cancel subscription" />
-            </div>
-          )}
           <Link
             to="/"
-            className="mt-3 inline-flex w-full max-w-xs items-center justify-center rounded-xl bg-primary px-6 py-3 text-sm font-bold uppercase tracking-widest text-primary-foreground"
+            className="mt-5 inline-flex w-full max-w-xs items-center justify-center rounded-xl bg-primary px-6 py-3 text-sm font-bold uppercase tracking-widest text-primary-foreground"
           >
             Continue to SeatMap
           </Link>

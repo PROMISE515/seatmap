@@ -143,7 +143,7 @@ function ReportPage() {
   return (
     <AppShell>
       <header className="px-6 pt-6 pb-2">
-        <div className="mb-5 flex items-center justify-between">
+        <div className="mb-5">
           {amapId ? (
             <Link
               to="/toilet/$id"
@@ -162,19 +162,6 @@ function ReportPage() {
               Back
             </Link>
           )}
-          <button
-            type="button"
-            onClick={submitComplaint}
-            disabled={savingComplaint}
-            className="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-2 text-xs font-bold uppercase tracking-widest text-white disabled:opacity-70"
-          >
-            {savingComplaint ? (
-              <Loader2 className="size-3.5 animate-spin" aria-hidden />
-            ) : (
-              <Siren className="size-3.5" aria-hidden />
-            )}
-            Complaint
-          </button>
         </div>
         <div className="flex items-center gap-2">
           <div className="size-9 rounded-lg bg-primary/10 text-primary grid place-items-center">
@@ -316,6 +303,20 @@ function ReportPage() {
         >
           {saving && <Loader2 className="size-4 animate-spin" aria-hidden />}
           {saving ? "Saving" : "Save report"}
+        </button>
+
+        <button
+          type="button"
+          onClick={submitComplaint}
+          disabled={savingComplaint}
+          className="mx-auto inline-flex items-center justify-center gap-1 text-[11px] font-semibold text-muted-foreground transition hover:text-foreground disabled:opacity-60"
+        >
+          {savingComplaint ? (
+            <Loader2 className="size-[11px] animate-spin text-red-600" aria-hidden />
+          ) : (
+            <Siren className="size-[11px] text-red-600" aria-hidden />
+          )}
+          {savingComplaint ? "Filing complaint" : "Report this place"}
         </button>
       </form>
     </AppShell>

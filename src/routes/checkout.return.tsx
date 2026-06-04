@@ -4,7 +4,6 @@ import { Copy, Check, Star, AlertTriangle } from "lucide-react";
 import { verifyPassSession } from "@/lib/payments.functions";
 import { getStripeEnvironmentForSessionId } from "@/lib/stripe";
 import { removeStoredValue, setStoredValue } from "@/lib/client-storage";
-import { ManageSubscriptionButton } from "@/components/ManageSubscriptionButton";
 
 export const Route = createFileRoute("/checkout/return")({
   validateSearch: (search: Record<string, unknown>): { session_id?: string } => ({
@@ -145,9 +144,6 @@ function CheckoutReturn() {
         >
           Back to SeatMap
         </Link>
-        <div className="mt-3">
-          <ManageSubscriptionButton sessionId={session_id} label="Manage or cancel subscription" />
-        </div>
       </div>
     </div>
   );
