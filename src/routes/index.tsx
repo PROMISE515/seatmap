@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
-import { Loader2, MapPin, Search, Share2 } from "lucide-react";
+import { Baby, Loader2, MapPin, Search, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { findNearbyToilets } from "@/lib/toilets.functions";
 import { verifyPassSession } from "@/lib/payments.functions";
@@ -83,6 +83,7 @@ export const Route = createFileRoute("/")({
 });
 
 type Status = "idle" | "checking" | "locating" | "ready" | "unsupported" | "location_error";
+type SearchMode = "toilet" | "nursery";
 
 const SEARCH_COUNT_KEY = "seatmap.search.count";
 const PASS_EXPIRES_AT_KEY = "seatmap.pass.expiresAt";
@@ -175,6 +176,7 @@ async function copyShareLink(text: string) {
 type LastSearchState = {
   savedAt: number;
   status: Extract<Status, "ready" | "unsupported" | "location_error">;
+  searchMode: SearchMode;
   toilets: ToiletDTO[];
   region: string | null;
   mapCenter: { lat: number; lng: number; label: string } | null;
@@ -195,6 +197,7 @@ function readLastSearchState(): LastSearchState | null {
         parsed.status === "unsupported" || parsed.status === "location_error"
           ? parsed.status
           : "ready",
+      searchMode: parsed.searchMode === "nursery" ? "nursery" : "toilet",
       toilets: parsed.toilets,
       region: parsed.region ?? null,
       mapCenter: parsed.mapCenter ?? null,
@@ -228,6 +231,7 @@ function HomePage() {
     "unknown" | "prompt" | "granted" | "denied"
   >("unknown");
   const [supportedRegions, setSupportedRegions] = useState("Shanghai, Beijing and Qingdao");
+  const [searchMode, setSearchMode] = useState<SearchMode>("toilet");
   const findNearby = useServerFn(findNearbyToilets);
   const ensureReferral = useServerFn(ensureShareReferral);
   const claimReferral = useServerFn(claimShareReferral);
@@ -260,6 +264,7 @@ function HomePage() {
     setMapCenter(lastSearch.mapCenter);
     setErrorMsg(lastSearch.errorMsg);
     setSupportedRegions(lastSearch.supportedRegions);
+    setSearchMode(lastSearch.searchMode);
   }, []);
 
   useEffect(() => {
@@ -461,12 +466,15 @@ function HomePage() {
     }
   };
 
-  const runSearch = async (coords: { lat: number; lng: number; gcj: boolean }) => {
+  const runSearch = async (
+    coords: { lat: number; lng: number; gcj: boolean },
+    mode: SearchMode,
+  ) => {
     setErrorMsg(null);
     const center = coords.gcj ? coords : wgs84ToGcj02(coords.lat, coords.lng);
     setMapCenter({ lat: center.lat, lng: center.lng, label: "You" });
     try {
-      const res = await findNearby({ data: { ...coords, radius: 20000 } });
+      const res = await findNearby({ data: { ...coords, radius: 20000, searchMode: mode } });
       setRegion(res.region ?? null);
       if (res.unsupported) {
         setToilets([]);
@@ -475,6 +483,7 @@ function HomePage() {
         setStatus("ready");
         writeLastSearchState({
           status: "ready",
+          searchMode: mode,
           toilets: [],
           region: res.region ?? null,
           mapCenter: center ? { lat: center.lat, lng: center.lng, label: "You" } : null,
@@ -487,6 +496,7 @@ function HomePage() {
       setStatus("ready");
       writeLastSearchState({
         status: "ready",
+        searchMode: mode,
         toilets: res.toilets,
         region: res.region ?? null,
         mapCenter: { lat: center.lat, lng: center.lng, label: "You" },
@@ -499,6 +509,7 @@ function HomePage() {
       setStatus("ready");
       writeLastSearchState({
         status: "ready",
+        searchMode: mode,
         toilets: [],
         region: null,
         mapCenter: { lat: center.lat, lng: center.lng, label: "You" },
@@ -538,8 +549,9 @@ function HomePage() {
     }
   };
 
-  const handleFind = async () => {
+  const handleFind = async (mode: SearchMode = "toilet") => {
     if (typeof window === "undefined") return;
+    setSearchMode(mode);
 
     const passExpiresAt = Number(getStoredValue(PASS_EXPIRES_AT_KEY) || "0");
     const activePass = passExpiresAt > Date.now();
@@ -562,7 +574,7 @@ function HomePage() {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setLocationPermission("granted");
-        runSearch({ lat: pos.coords.latitude, lng: pos.coords.longitude, gcj: false });
+        runSearch({ lat: pos.coords.latitude, lng: pos.coords.longitude, gcj: false }, mode);
       },
       (error) => {
         if (error.code === error.PERMISSION_DENIED) setLocationPermission("denied");
@@ -610,11 +622,29 @@ function HomePage() {
         )}
       </header>
 
+      <section className="px-6 mt-3">
+        <button
+          type="button"
+          onClick={() => handleFind("nursery")}
+          disabled={status === "locating"}
+          className="inline-flex items-center gap-2 rounded-md py-1 text-xs font-bold text-muted-foreground transition hover:text-foreground disabled:opacity-60"
+        >
+          <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-pink-50 text-pink-600">
+            {status === "locating" && searchMode === "nursery" ? (
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+            ) : (
+              <Baby className="size-4" aria-hidden />
+            )}
+          </span>
+          Need a nursery room?
+        </button>
+      </section>
+
       {/* Hero CTA */}
       <section className="px-6 mt-6">
         <button
           type="button"
-          onClick={handleFind}
+          onClick={() => handleFind("toilet")}
           disabled={status === "locating"}
           className="w-full bg-primary hover:bg-brand-dark text-primary-foreground py-6 rounded-2xl shadow-brand transition-all active:scale-[0.98] flex flex-col items-center justify-center gap-2 disabled:opacity-80"
         >
@@ -634,7 +664,11 @@ function HomePage() {
                 ) : (
                   <Search className="size-5" aria-hidden />
                 )}
-                {status === "location_error" ? t("home.tryLocation") : t("home.findNearby")}
+                {status === "location_error"
+                  ? t("home.tryLocation")
+                  : searchMode === "nursery" && status === "locating"
+                    ? "Finding nearby nursery rooms"
+                    : t("home.findNearby")}
               </span>
               <span className="text-xs font-medium text-primary-foreground/80 uppercase tracking-widest">
                 {status === "location_error" ? t("home.requestLocation") : t("home.searchRadius")}
@@ -701,7 +735,7 @@ function HomePage() {
                 {(status === "idle" || status === "location_error") && (
                   <button
                     type="button"
-                    onClick={handleFind}
+                    onClick={() => handleFind(searchMode)}
                     className="mt-3 inline-flex items-center justify-center rounded-lg bg-primary px-4 py-3 text-xs font-bold uppercase tracking-widest text-primary-foreground"
                   >
                     {locationPermission === "denied"
@@ -726,7 +760,9 @@ function HomePage() {
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               {status === "ready"
-                ? t("home.nearestOptions")
+                ? searchMode === "nursery"
+                  ? "Nearby Nursery Rooms"
+                  : t("home.nearestOptions")
                 : status === "unsupported"
                   ? t("home.serviceNotOpen")
                   : t("home.readyWhen")}

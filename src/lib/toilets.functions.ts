@@ -22,6 +22,8 @@ const RELIABLE_VENUE_SEARCHES = [
   { types: "100000|100100" },
 ];
 const ACCESSIBLE_TOILET_SEARCHES = [{ keywords: "无障碍厕所" }];
+const NURSERY_SEARCHES = [{ keywords: "母婴室" }, { keywords: "母婴" }];
+type SearchMode = "toilet" | "nursery";
 
 type AmapPhoto = { title?: string; url?: string };
 
@@ -156,7 +158,28 @@ async function fetchFromAmap(
   return json.pois ?? [];
 }
 
-async function fetchSeatMapCandidates(gcjLat: number, gcjLng: number, radius: number) {
+async function fetchSeatMapCandidates(
+  gcjLat: number,
+  gcjLng: number,
+  radius: number,
+  mode: SearchMode,
+) {
+  if (mode === "nursery") {
+    const groups = await Promise.all(
+      NURSERY_SEARCHES.map((search) =>
+        fetchFromAmap(gcjLat, gcjLng, radius, search)
+          .then((pois) => pois.map((p) => ({ ...p, seatmapSource: "venue" as const })))
+          .catch(() => [] as SeatMapPoi[]),
+      ),
+    );
+    const byId = new Map<string, SeatMapPoi>();
+    for (const poi of groups.flat()) {
+      if (!poi.id || !poi.location) continue;
+      byId.set(poi.id, poi);
+    }
+    return [...byId.values()];
+  }
+
   const searches = [
     fetchFromAmap(gcjLat, gcjLng, radius, { types: AMAP_TOILET_TYPE }).then((pois) =>
       pois.map((p) => ({ ...p, seatmapSource: "toilet" as const })),
@@ -183,6 +206,27 @@ async function fetchSeatMapCandidates(gcjLat: number, gcjLng: number, radius: nu
     }
   }
   return [...byId.values()];
+}
+
+function hasNurserySignal(name: string, address = "") {
+  return /母婴|nursery|baby\s*care|family\s*room/i.test(`${name} ${address}`);
+}
+
+function tagsForPoi(mode: SearchMode, name: string, address: string) {
+  if (mode === "nursery") return ["Nursery", "Baby care"];
+  const seatedConfidence = getSeatedConfidence(name, address);
+  const tags =
+    seatedConfidence === "confirmed"
+      ? ["Western Toilet", "Free"]
+      : ["Western Toilet", "Traveler-friendly"];
+  if (hasNurserySignal(name, address)) tags.push("Nursery");
+  return tags;
+}
+
+function canNavigateToPoi(mode: SearchMode, name: string, address: string) {
+  if (mode === "nursery") return true;
+  const seatedConfidence = getSeatedConfidence(name, address);
+  return seatedConfidence === "confirmed" || seatedConfidence === "likely";
 }
 
 // Ensure English names exist for the given (amap_id, chinese_name) pairs.
@@ -261,14 +305,15 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
         lng: z.number().min(-180).max(180),
         radius: z.number().int().min(100).max(50000).default(1000),
         gcj: z.boolean().default(false),
+        searchMode: z.enum(["toilet", "nursery"]).default("toilet"),
       })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    const { lat: rawLat, lng: rawLng, radius, gcj } = data;
+    const { lat: rawLat, lng: rawLng, radius, gcj, searchMode } = data;
     const { lat, lng } = gcj ? { lat: rawLat, lng: rawLng } : wgs84ToGcj02(rawLat, rawLng);
 
-    const cacheKey = `${SEARCH_STRATEGY_VERSION}:${lat.toFixed(3)},${lng.toFixed(3)},${radius}`;
+    const cacheKey = `${SEARCH_STRATEGY_VERSION}:${searchMode}:${lat.toFixed(3)},${lng.toFixed(3)},${radius}`;
 
     let cached: { amap_ids: string[]; created_at: string } | null = null;
     try {
@@ -298,7 +343,11 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
           .map((id) => byId.get(id))
           .filter((r): r is NonNullable<typeof r> => Boolean(r));
 
-        const filtered = ordered.filter((r) => isLikelyWestern(r.name, r.address ?? ""));
+        const filtered = ordered.filter((r) =>
+          searchMode === "nursery"
+            ? hasNurserySignal(r.name, r.address ?? "")
+            : isLikelyWestern(r.name, r.address ?? ""),
+        );
 
         const nameMap = await ensureTranslations(
           filtered.map((r) => ({ amapId: r.amap_id, name: r.name })),
@@ -317,10 +366,7 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
             rawName: r.name,
             walkMin: walkMinFromMeters(dist),
             distanceM: dist,
-            tags:
-              seatedConfidence === "confirmed"
-                ? ["Western Toilet", "Free"]
-                : ["Western Toilet", "Traveler-friendly"],
+            tags: tagsForPoi(searchMode, r.name, address),
             address,
             city: r.city ?? "",
             lat: r.lat,
@@ -330,15 +376,19 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
             hasAccessible: kind === "accessible",
             floor: parseFloor(address),
             seatedConfidence,
-            canNavigate: seatedConfidence === "confirmed" || seatedConfidence === "likely",
+            canNavigate: canNavigateToPoi(searchMode, r.name, address),
           };
         });
         return { cached: true, toilets: dedupeVenueResults(dtos), region: null };
       }
     }
 
-    const allPois = await fetchSeatMapCandidates(lat, lng, radius);
-    const pois = allPois.filter((p) => isLikelyWestern(p.name ?? "", s(p.address)));
+    const allPois = await fetchSeatMapCandidates(lat, lng, radius, searchMode);
+    const pois = allPois.filter((p) =>
+      searchMode === "nursery"
+        ? hasNurserySignal(p.name ?? "", s(p.address))
+        : isLikelyWestern(p.name ?? "", s(p.address)),
+    );
 
     if (pois.length > 0) {
       const rows = pois.map((p) => {
@@ -396,10 +446,7 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
         rawName: p.name,
         walkMin: walkMinFromMeters(distanceM),
         distanceM,
-        tags:
-          seatedConfidence === "confirmed"
-            ? ["Western Toilet", "Free"]
-            : ["Western Toilet", "Traveler-friendly"],
+        tags: tagsForPoi(searchMode, p.name, address),
         address,
         city: s(p.cityname),
         lat: Number(latStr),
@@ -409,7 +456,7 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
         hasAccessible: kind === "accessible",
         floor: parseFloor(address),
         seatedConfidence,
-        canNavigate: seatedConfidence === "confirmed" || seatedConfidence === "likely",
+        canNavigate: canNavigateToPoi(searchMode, p.name, address),
       };
     });
 
@@ -448,14 +495,16 @@ export const getToiletByAmapId = createServerFn({ method: "POST" })
     const address = row.address ?? "";
     const kind = classifyToilet(row.name, address);
     const seatedConfidence = getSeatedConfidence(row.name, address);
+    const isNursery = kind === "nursery" || hasNurserySignal(row.name, address);
     const dto: ToiletDTO = {
       id: row.amap_id,
       name: nameMap.get(row.amap_id) ?? row.name,
       rawName: row.name,
       walkMin: 0,
       distanceM: 0,
-      tags:
-        seatedConfidence === "confirmed"
+      tags: isNursery
+        ? ["Nursery", "Baby care"]
+        : seatedConfidence === "confirmed"
           ? ["Western Toilet", "Free"]
           : seatedConfidence === "likely"
             ? ["Western Toilet", "Traveler-friendly"]
@@ -469,7 +518,7 @@ export const getToiletByAmapId = createServerFn({ method: "POST" })
       hasAccessible: kind === "accessible",
       floor: parseFloor(address),
       seatedConfidence,
-      canNavigate: seatedConfidence === "confirmed" || seatedConfidence === "likely",
+      canNavigate: isNursery || seatedConfidence === "confirmed" || seatedConfidence === "likely",
     };
     return { toilet: dto };
   });
