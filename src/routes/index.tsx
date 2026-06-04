@@ -91,8 +91,12 @@ const PASS_SESSION_KEY = "seatmap.pass.sid";
 const SHARE_BONUS_KEY = "seatmap.share.freeCredits";
 const SHARE_REFERRAL_CODE_KEY = "seatmap.share.referralCode";
 const SHARE_VISITOR_ID_KEY = "seatmap.share.visitorId";
-const LAST_SEARCH_STATE_KEY = "seatmap.lastSearchState.v3";
-const OLD_LAST_SEARCH_STATE_KEYS = ["seatmap.lastSearchState", "seatmap.lastSearchState.v2"];
+const LAST_SEARCH_STATE_KEY = "seatmap.lastSearchState.v4";
+const OLD_LAST_SEARCH_STATE_KEYS = [
+  "seatmap.lastSearchState",
+  "seatmap.lastSearchState.v2",
+  "seatmap.lastSearchState.v3",
+];
 const SHARE_PARAM = "seatmap_ref";
 const LAST_SEARCH_MAX_AGE_MS = 30 * 60 * 1000;
 
