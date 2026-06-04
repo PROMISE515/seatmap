@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Bookmark, Check, Flag, Loader2, MapPin, Share2, Star } from "lucide-react";
+import { ArrowLeft, Bookmark, Flag, Loader2, MapPin, Share2, Star } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { MapNavigationSheet } from "@/components/MapNavigationSheet";
@@ -81,6 +81,17 @@ function ToiletNotFound() {
       </div>
     </AppShell>
   );
+}
+
+function formatDetailLocation(toilet: ToiletDTO) {
+  const distance = toilet.distanceM > 0 ? `${toilet.distanceM}m away` : "Distance unavailable";
+  if (!toilet.floor) return distance;
+
+  const floor = toilet.floor.includes("~")
+    ? `Floors ${toilet.floor.replace("~", " to ")}`
+    : `Floor ${toilet.floor}`;
+
+  return `${distance} · ${floor}`;
 }
 
 function ToiletDetail() {
@@ -183,50 +194,8 @@ function ToiletDetail() {
         <h1 className="text-2xl font-extrabold tracking-tight text-brand-dark">{toilet.name}</h1>
         <p className="mt-1 text-sm text-muted-foreground flex items-center gap-1.5">
           <MapPin className="size-3.5" aria-hidden />
-          {toilet.distanceM > 0 ? `${toilet.distanceM}m away` : "Nearby"}
-          {toilet.floor ? ` · Floor ${toilet.floor}` : ""}
+          {formatDetailLocation(toilet)}
         </p>
-
-        <ul className="mt-5 flex flex-wrap gap-2">
-          {toilet.tags.map((tag: string) => (
-            <li
-              key={tag}
-              className="px-2.5 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-md inline-flex items-center gap-1"
-            >
-              <Check className="size-3" aria-hidden />
-              {tag}
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="px-6 mt-8">
-        <div className="grid grid-cols-[auto_1fr] gap-2">
-          <button
-            type="button"
-            onClick={handleSave}
-            className={`inline-flex min-w-24 items-center justify-center gap-2 rounded-lg border px-4 py-3 text-xs font-bold uppercase tracking-widest transition ${
-              saved
-                ? "border-primary/30 bg-primary/10 text-primary"
-                : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-primary"
-            }`}
-            aria-pressed={saved}
-          >
-            <Bookmark className={`size-4 ${saved ? "fill-current" : ""}`} aria-hidden />
-            {saved ? "Saved" : "Save"}
-          </button>
-          {toilet.canNavigate ? (
-            <MapNavigationSheet
-              toilet={toilet}
-              triggerLabel="Start Navigation"
-              triggerClassName="w-full bg-primary text-primary-foreground px-4 py-3 rounded-lg shadow-brand active:scale-[0.98] transition inline-flex items-center justify-center gap-2 font-bold tracking-tight text-sm"
-            />
-          ) : (
-            <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-4 text-sm font-semibold text-amber-800">
-              Navigation is locked until this place has a seated-toilet signal.
-            </div>
-          )}
-        </div>
       </section>
 
       <section className="px-6 mt-8">
@@ -302,6 +271,35 @@ function ToiletDetail() {
             paper, or access issues.
           </p>
         )}
+      </section>
+
+      <section className="sticky bottom-0 z-20 mt-8 bg-background/95 px-6 pb-5 pt-3 backdrop-blur-xl">
+        <div className="grid grid-cols-[auto_1fr] gap-2">
+          <button
+            type="button"
+            onClick={handleSave}
+            className={`inline-flex min-w-16 items-center justify-center gap-2 rounded-lg border px-4 py-3 text-xs font-bold uppercase tracking-widest transition ${
+              saved
+                ? "border-primary/30 bg-primary/10 text-primary"
+                : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-primary"
+            }`}
+            aria-pressed={saved}
+          >
+            <Bookmark className={`size-4 ${saved ? "fill-current" : ""}`} aria-hidden />
+            {saved ? "Saved" : "Save"}
+          </button>
+          {toilet.canNavigate ? (
+            <MapNavigationSheet
+              toilet={toilet}
+              triggerLabel="Start Navigation"
+              triggerClassName="w-full bg-primary text-primary-foreground px-4 py-3 rounded-lg shadow-brand active:scale-[0.98] transition inline-flex items-center justify-center gap-2 font-bold tracking-tight text-sm"
+            />
+          ) : (
+            <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-4 text-sm font-semibold text-amber-800">
+              Navigation is locked until this place has a seated-toilet signal.
+            </div>
+          )}
+        </div>
       </section>
     </AppShell>
   );

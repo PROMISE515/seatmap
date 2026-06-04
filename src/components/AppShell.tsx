@@ -14,6 +14,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { t } = useT();
   const isHome = pathname === "/";
   const isSaved = pathname === "/saved";
+  const showBottomNav = isHome || isSaved;
 
   useEffect(() => {
     if (!isHome || typeof window === "undefined") return;
@@ -37,26 +38,31 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="h-[100dvh] overflow-hidden bg-surface flex justify-center">
       <div className="w-full max-w-[420px] bg-background h-[100dvh] shadow-2xl shadow-black/5 flex flex-col relative overflow-hidden">
-        <main id={HOME_SCROLL_ROOT_ID} className="flex-1 overflow-y-auto pb-24">
+        <main
+          id={HOME_SCROLL_ROOT_ID}
+          className={`flex-1 overflow-y-auto ${showBottomNav ? "pb-24" : ""}`}
+        >
           {children}
         </main>
 
-        <nav className="absolute bottom-0 left-0 w-full bg-background/85 backdrop-blur-xl border-t border-border">
-          <ul className="flex justify-around py-3">
-            <NavItem
-              to="/"
-              label={t("nav.nearby")}
-              icon={<MapPin className="size-4" />}
-              active={isHome}
-            />
-            <NavItem
-              to="/saved"
-              label={t("home.saved")}
-              icon={<Bookmark className="size-4" />}
-              active={isSaved}
-            />
-          </ul>
-        </nav>
+        {showBottomNav && (
+          <nav className="absolute bottom-0 left-0 w-full bg-background/85 backdrop-blur-xl border-t border-border">
+            <ul className="flex justify-around py-3">
+              <NavItem
+                to="/"
+                label={t("nav.nearby")}
+                icon={<MapPin className="size-4" />}
+                active={isHome}
+              />
+              <NavItem
+                to="/saved"
+                label={t("home.saved")}
+                icon={<Bookmark className="size-4" />}
+                active={isSaved}
+              />
+            </ul>
+          </nav>
+        )}
       </div>
     </div>
   );

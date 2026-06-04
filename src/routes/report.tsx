@@ -143,7 +143,7 @@ function ReportPage() {
   return (
     <AppShell>
       <header className="px-6 pt-6 pb-2">
-        <div className="mb-5">
+        <div className="mb-5 flex items-center justify-between gap-3">
           {amapId ? (
             <Link
               to="/toilet/$id"
@@ -162,15 +162,28 @@ function ReportPage() {
               Back
             </Link>
           )}
+          <button
+            type="button"
+            onClick={submitComplaint}
+            disabled={savingComplaint}
+            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground transition hover:bg-red-600/10 hover:text-foreground disabled:opacity-60"
+          >
+            {savingComplaint ? (
+              <Loader2 className="size-3 animate-spin text-red-600" aria-hidden />
+            ) : (
+              <Siren className="size-3 text-red-600" aria-hidden />
+            )}
+            {savingComplaint ? "Filing" : "Report this place"}
+          </button>
         </div>
         <div className="flex items-center gap-2">
           <div className="size-9 rounded-lg bg-primary/10 text-primary grid place-items-center">
             <Flag className="size-4" aria-hidden />
           </div>
           <div>
-            <h1 className="text-xl font-extrabold tracking-tight text-brand-dark">Report</h1>
+            <h1 className="text-xl font-extrabold tracking-tight text-brand-dark">Review</h1>
             <p className="text-sm text-muted-foreground font-medium">
-              Help build the confirmed seated-toilet list.
+              Help travelers understand this restroom before they arrive.
             </p>
           </div>
         </div>
@@ -192,7 +205,7 @@ function ReportPage() {
 
         <label className="block">
           <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-            Report type
+            Review type
           </span>
           <select
             value={type}
@@ -286,7 +299,7 @@ function ReportPage() {
 
         {saved && (
           <p className="rounded-lg bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
-            Report saved. Thank you for helping other travelers.
+            Review saved. Thank you for helping other travelers.
           </p>
         )}
 
@@ -302,21 +315,7 @@ function ReportPage() {
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-4 text-sm font-extrabold uppercase tracking-widest text-primary-foreground shadow-brand disabled:opacity-70"
         >
           {saving && <Loader2 className="size-4 animate-spin" aria-hidden />}
-          {saving ? "Saving" : "Save report"}
-        </button>
-
-        <button
-          type="button"
-          onClick={submitComplaint}
-          disabled={savingComplaint}
-          className="mx-auto inline-flex items-center justify-center gap-1 text-[11px] font-semibold text-muted-foreground transition hover:text-foreground disabled:opacity-60"
-        >
-          {savingComplaint ? (
-            <Loader2 className="size-[11px] animate-spin text-red-600" aria-hidden />
-          ) : (
-            <Siren className="size-[11px] text-red-600" aria-hidden />
-          )}
-          {savingComplaint ? "Filing complaint" : "Report this place"}
+          {saving ? "Saving" : "Save review"}
         </button>
       </form>
     </AppShell>
