@@ -10,19 +10,37 @@ Safe Seat uses Stripe hosted Checkout. The app selects sandbox or live mode from
 
 Create prices in Stripe with these lookup keys:
 
-- `travel_pass_7_price` for the US$0.99 / 7 day plan
-- `travel_pass_15_price` for the US$1.69 / 15 day plan
-- `travel_pass_30_price` for the US$2.99 / 30 day plan
+- `travel_pass_7_price` for the US$2.99 / 7 day plan
+- `travel_pass_14_price` for the US$3.99 / 14 day plan
+- `travel_pass_lifetime_price` for the US$19.99 lifetime plan
 
 The code resolves prices by `lookup_key`, not by hard-coded Stripe price IDs.
-Recurring prices are supported automatically through Stripe subscription mode.
+Create these as one-time prices, not recurring subscriptions. The app always
+creates Checkout Sessions in `payment` mode.
+
+Stripe Dashboard settings:
+
+- Product: `SeatMap Travel Pass`
+- Pricing model: `Standard pricing`
+- Billing period: leave unset / one-time
+- Currency: `USD`
+- Prices:
+  - US$2.99, lookup key `travel_pass_7_price`
+  - US$3.99, lookup key `travel_pass_14_price`
+  - US$19.99, lookup key `travel_pass_lifetime_price`
+
+Discount math:
+
+- 7 days: US$2.99 baseline.
+- 14 days: US$3.99 vs US$5.98 if buying two 7-day passes, about 33% off.
+- Lifetime: US$19.99. This is treated as best long-term value, not a percentage discount.
 
 If you did not set lookup keys in Stripe, add the exact price IDs instead:
 
 ```bash
 STRIPE_TRAVEL_PASS_7_PRICE_ID=price_...
-STRIPE_TRAVEL_PASS_15_PRICE_ID=price_...
-STRIPE_TRAVEL_PASS_30_PRICE_ID=price_...
+STRIPE_TRAVEL_PASS_14_PRICE_ID=price_...
+STRIPE_TRAVEL_PASS_LIFETIME_PRICE_ID=price_...
 ```
 
 ## Environment Variables
@@ -59,15 +77,9 @@ set `STRIPE_SANDBOX_API_KEY`, `STRIPE_LIVE_API_KEY`, and `LOVABLE_API_KEY`.
 5. Stripe returns to `/checkout/return?session_id=...`.
 6. The app verifies the Checkout Session and stores the private pass link locally.
 
-For subscription prices, pass access is based on the live Stripe subscription
-status and the current billing period end. The `/pass?sid=...` private link can
-be opened on another browser or device to restore access without logging in.
-
-## Subscription Management
-
-Enable Stripe Customer Portal in the Stripe Dashboard before launch. The app uses
-the private pass link's Checkout Session ID to create a Customer Portal session,
-so users can manage or cancel their subscription without creating an account.
+For one-time prices, pass access is based on the Checkout Session creation time
+plus the plan duration. The `/pass?sid=...` private link can be opened on another
+browser or device to restore access without logging in.
 
 Do not paste live Stripe keys into chat. Put them in `.env` locally and in the
 production deployment environment.
@@ -84,12 +96,7 @@ Subscribe to:
 
 - `checkout.session.completed`
 - `checkout.session.async_payment_succeeded`
-- `customer.subscription.created`
-- `customer.subscription.updated`
-- `customer.subscription.deleted`
-- `invoice.payment_succeeded`
-- `invoice.payment_failed`
 
-The webhook syncs subscription status into Supabase `stripe_passes`, so the
+The webhook syncs paid Checkout Sessions into Supabase `stripe_passes`, so the
 private `/pass?sid=...` link can be restored even when a browser has no local
 storage state.

@@ -60,10 +60,15 @@ export function cleanTranslatedName(value: string) {
     .replace(/[（]/g, " (")
     .replace(/[）]/g, ")")
     .replace(/\(\s*\)/g, "")
+    .replace(/^[\s/\\._·,-]+/g, "")
+    .replace(/[\s/\\._·,-]+$/g, "")
     .replace(/\s+/g, " ")
     .trim();
 
   cleaned = cleaned.replace(/^(.+?)\s+\1$/i, "$1").trim();
+
+  const wrappedOnly = cleaned.match(/^\(([^)]+)\)$/);
+  if (wrappedOnly) cleaned = wrappedOnly[1].trim();
 
   const duplicateParenthetical = cleaned.match(/^(.+?)\s*\((.+)\)$/);
   if (duplicateParenthetical) {

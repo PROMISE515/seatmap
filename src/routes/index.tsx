@@ -17,7 +17,7 @@ import { ToiletCard } from "@/components/ToiletCard";
 import { MapPreview } from "@/components/MapPreview";
 import { SeatMapLogo } from "@/components/SeatMapLogo";
 import { StripeEmbeddedCheckout, PaymentTestModeBanner } from "@/components/StripeEmbeddedCheckout";
-import { getStoredValue, setStoredValue } from "@/lib/client-storage";
+import { getStoredValue, removeStoredValue, setStoredValue } from "@/lib/client-storage";
 import {
   consumeHomeScrollRestoreRequest,
   getCurrentPageScrollY,
@@ -91,28 +91,31 @@ const PASS_SESSION_KEY = "seatmap.pass.sid";
 const SHARE_BONUS_KEY = "seatmap.share.freeCredits";
 const SHARE_REFERRAL_CODE_KEY = "seatmap.share.referralCode";
 const SHARE_VISITOR_ID_KEY = "seatmap.share.visitorId";
-const LAST_SEARCH_STATE_KEY = "seatmap.lastSearchState.v2";
+const LAST_SEARCH_STATE_KEY = "seatmap.lastSearchState.v3";
+const OLD_LAST_SEARCH_STATE_KEYS = ["seatmap.lastSearchState", "seatmap.lastSearchState.v2"];
 const SHARE_PARAM = "seatmap_ref";
 const LAST_SEARCH_MAX_AGE_MS = 30 * 60 * 1000;
 
 const PASS_PLANS = [
   {
     days: 7,
-    price: "$0.99",
+    label: "7 days",
+    price: "$2.99",
     priceId: "travel_pass_7_price",
   },
   {
-    days: 15,
-    price: "$1.69",
-    priceId: "travel_pass_15_price",
-    savingsPercent: 20,
+    days: 14,
+    label: "14 days",
+    price: "$3.99",
+    priceId: "travel_pass_14_price",
+    savingsPercent: 33,
+    best: true,
   },
   {
-    days: 30,
-    price: "$2.99",
-    priceId: "travel_pass_30_price",
-    savingsPercent: 30,
-    best: true,
+    days: 36500,
+    label: "Lifetime",
+    price: "$19.99",
+    priceId: "travel_pass_lifetime_price",
   },
 ];
 
@@ -213,6 +216,27 @@ function writeLastSearchState(state: Omit<LastSearchState, "savedAt">) {
   setStoredValue(LAST_SEARCH_STATE_KEY, JSON.stringify({ ...state, savedAt: Date.now() }));
 }
 
+function hasDirtyDisplayName(name: string) {
+  const cleaned = name
+    .replace(/[（]/g, "(")
+    .replace(/[）]/g, ")")
+    .replace(/^\(([^)]+)\)$/g, "$1")
+    .replace(/^[\s/\\._·,-]+/g, "")
+    .replace(/[\s/\\._·,-]+$/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!cleaned) return true;
+  if (/[\u3400-\u9fff]/.test(cleaned)) return true;
+  return /^(nursery room|baby care|family room|restroom|bathroom|toilet|public toilet|shopping mall|mall|plaza|hotel|venue|traveler-friendly venue|traveler-friendly hotel|traveler-friendly mall)$/i.test(
+    cleaned,
+  );
+}
+
+function filterDisplayableToilets(toilets: ToiletDTO[]) {
+  return toilets.filter((toilet) => !hasDirtyDisplayName(toilet.name));
+}
+
 function HomePage() {
   const { t } = useT();
   const [status, setStatus] = useState<Status>("idle");
@@ -248,6 +272,7 @@ function HomePage() {
   const scrollListenerMountedAtRef = useRef(0);
 
   useEffect(() => {
+    OLD_LAST_SEARCH_STATE_KEYS.forEach(removeStoredValue);
     const lastSearch = readLastSearchState();
     const restoreRequested = consumeHomeScrollRestoreRequest();
     const scrollY = readHomeScrollY();
@@ -262,7 +287,7 @@ function HomePage() {
     restoreScrollTargetRef.current = scrollY;
     isRestoringScrollRef.current = scrollY > 0;
     setStatus(lastSearch.status);
-    setToilets(lastSearch.toilets);
+    setToilets(filterDisplayableToilets(lastSearch.toilets));
     setRegion(lastSearch.region);
     setMapCenter(lastSearch.mapCenter);
     setErrorMsg(lastSearch.errorMsg);
@@ -517,6 +542,7 @@ function HomePage() {
     setMapCenter({ lat: center.lat, lng: center.lng, label: "You" });
     try {
       const res = await findNearby({ data: { ...coords, radius: 20000, searchMode: mode } });
+      const displayableToilets = filterDisplayableToilets(res.toilets);
       setRegion(res.region ?? null);
       if (res.unsupported) {
         setToilets([]);
@@ -534,12 +560,12 @@ function HomePage() {
         });
         return;
       }
-      setToilets(res.toilets);
+      setToilets(displayableToilets);
       setStatus("ready");
       writeLastSearchState({
         status: "ready",
         searchMode: mode,
-        toilets: res.toilets,
+        toilets: displayableToilets,
         region: res.region ?? null,
         mapCenter: { lat: center.lat, lng: center.lng, label: "You" },
         errorMsg: null,
@@ -877,9 +903,10 @@ function HomePage() {
                 }`}
               >
                 <div>
-                  <p className="font-bold">{p.days} days</p>
+                  <p className="font-bold">{p.label}</p>
                   <p className="text-xs text-muted-foreground">
-                    {t("home.unlimited")} · {t("home.days", p.days)}
+                    {t("home.unlimited")} ·{" "}
+                    {p.days >= 36500 ? t("home.lifetime") : t("home.days", p.days)}
                   </p>
                   {p.savingsPercent && (
                     <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">

@@ -272,13 +272,42 @@ function hasUsefulPoiName(name: string) {
   return cleaned.length >= 2;
 }
 
+function hasChinese(text: string) {
+  return /[\u3400-\u9fff]/.test(text);
+}
+
+function isUsableDisplayName(name: string) {
+  const cleaned = cleanTranslatedName(name);
+  if (!cleaned || hasChinese(cleaned)) return false;
+  if (/^[-_.()\s/\\·,]+$/.test(cleaned)) return false;
+  if (
+    /^(nursery room|baby care|family room|restroom|bathroom|toilet|public toilet|shopping mall|mall|plaza|hotel|venue|traveler-friendly venue|traveler-friendly hotel|traveler-friendly mall)$/i.test(
+      cleaned,
+    )
+  ) {
+    return false;
+  }
+  if (
+    /^(the\s+)?(nursery room|restroom|bathroom|toilet|shopping mall|mall|plaza|hotel)\s*\d*$/i.test(
+      cleaned,
+    )
+  ) {
+    return false;
+  }
+  return true;
+}
+
+function filterDisplayableToilets(toilets: ToiletDTO[]) {
+  return toilets.filter((toilet) => isUsableDisplayName(toilet.name));
+}
+
 function tagsForPoi(mode: SearchMode, name: string, address: string) {
-  if (mode === "nursery") return ["Nursery"];
+  if (mode === "nursery") return ["Nursery", "Free"];
   const seatedConfidence = getSeatedConfidence(name, address);
-  const tags = seatedConfidence === "needs_confirmation" ? [] : ["Western Toilet"];
+  const tags = seatedConfidence === "needs_confirmation" ? ["Free"] : ["Western Toilet", "Free"];
   if (hasAccessibleSignal(name, address)) tags.push("Accessible");
   if (hasNurserySignal(name, address)) tags.push("Nursery");
-  if (hasFreeSignal(name, address) || seatedConfidence === "confirmed") tags.push("Free");
+  if (hasFreeSignal(name, address)) tags.push("Free");
   return mergeTags(tags);
 }
 
@@ -298,11 +327,10 @@ async function ensureTranslations(
   if (pairs.length === 0) return out;
 
   const ids = pairs.map((p) => p.amapId);
-  const hasChinese = (text: string) => /[\u3400-\u9fff]/.test(text);
   const isUsableTranslatedName = (value: string) => {
     const cleaned = cleanTranslatedName(value);
-    if (!cleaned || hasChinese(cleaned)) return false;
-    if (/^[-_.()\s]+$/.test(cleaned)) return false;
+    if (!isUsableDisplayName(cleaned)) return false;
+    if (/^[-_.()\s/\\·,]+$/.test(cleaned)) return false;
     if (/^\([^)]*\)$/.test(cleaned)) return false;
     if (/\(\s*\)$/.test(cleaned)) return false;
     if (
@@ -347,7 +375,9 @@ async function ensureTranslations(
         supabaseAdmin.from("toilets").update({ name_en: u.nameEn }).eq("amap_id", u.amapId),
       ),
     );
-    for (const u of updates) cached.set(u.amapId, u.nameEn);
+    for (const u of updates) {
+      if (isUsableTranslatedName(u.nameEn)) cached.set(u.amapId, u.nameEn);
+    }
   }
 
   for (const p of pairs) {
@@ -444,7 +474,9 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
         });
         return {
           cached: true,
-          toilets: filterResultsForMode(dedupeVenueResults(dtos), searchMode),
+          toilets: filterDisplayableToilets(
+            filterResultsForMode(dedupeVenueResults(dtos), searchMode),
+          ),
           region: null,
         };
       }
@@ -533,7 +565,9 @@ export const findNearbyToilets = createServerFn({ method: "POST" })
 
     return {
       cached: false,
-      toilets: filterResultsForMode(dedupeVenueResults(toilets), searchMode),
+      toilets: filterDisplayableToilets(
+        filterResultsForMode(dedupeVenueResults(toilets), searchMode),
+      ),
       region: null,
     };
   });

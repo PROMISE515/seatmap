@@ -8,21 +8,23 @@ import {
   upsertPassFromCheckoutSession,
 } from "@/lib/passes.server";
 
+const LIFETIME_PASS_DAYS = 36500;
+
 const PLANS: Record<string, { days: number; priceEnvKey: string; lookupKey: string }> = {
   travel_pass_7_price: {
     days: 7,
     priceEnvKey: "STRIPE_TRAVEL_PASS_7_PRICE_ID",
     lookupKey: "travel_pass_7_price",
   },
-  travel_pass_15_price: {
-    days: 15,
-    priceEnvKey: "STRIPE_TRAVEL_PASS_15_PRICE_ID",
-    lookupKey: "travel_pass_15_price",
+  travel_pass_14_price: {
+    days: 14,
+    priceEnvKey: "STRIPE_TRAVEL_PASS_14_PRICE_ID",
+    lookupKey: "travel_pass_14_price",
   },
-  travel_pass_30_price: {
-    days: 30,
-    priceEnvKey: "STRIPE_TRAVEL_PASS_30_PRICE_ID",
-    lookupKey: "travel_pass_30_price",
+  travel_pass_lifetime_price: {
+    days: LIFETIME_PASS_DAYS,
+    priceEnvKey: "STRIPE_TRAVEL_PASS_LIFETIME_PRICE_ID",
+    lookupKey: "travel_pass_lifetime_price",
   },
 };
 
@@ -128,23 +130,17 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       typeof stripePrice.product === "string" ? stripePrice.product : stripePrice.product.id;
     const product = await stripe.products.retrieve(productId);
     const productDescription = product.name;
-    const metadata = { plan_lookup_key: data.priceId };
-    const mode = stripePrice.recurring ? "subscription" : "payment";
+    const metadata = { plan_lookup_key: data.priceId, pass_days: String(plan.days) };
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       line_items: [{ price: stripePrice.id, quantity: 1 }],
-      mode,
+      mode: "payment",
       ui_mode: "hosted_page",
       success_url: data.returnUrl,
       cancel_url: cancelUrl,
       metadata,
+      payment_intent_data: { description: productDescription, metadata },
     };
-
-    if (mode === "subscription") {
-      sessionParams.subscription_data = { description: productDescription, metadata };
-    } else {
-      sessionParams.payment_intent_data = { description: productDescription };
-    }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 

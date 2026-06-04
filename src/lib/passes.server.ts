@@ -23,6 +23,12 @@ function sessionCustomerId(session: Stripe.Checkout.Session) {
   return customer.id;
 }
 
+function getOneTimePassExpiresAt(session: Stripe.Checkout.Session) {
+  const days = Number(session.metadata?.pass_days);
+  if (!Number.isFinite(days) || days <= 0) return null;
+  return new Date(session.created * 1000 + days * 24 * 60 * 60 * 1000).toISOString();
+}
+
 export function getSubscriptionPeriod(subscription: Stripe.Subscription) {
   const periodStarts = subscription.items.data
     .map((item) => item.current_period_start)
@@ -62,7 +68,7 @@ export async function upsertPassFromCheckoutSession({
     null;
   const planLookupKey =
     session.metadata?.plan_lookup_key ?? subscription?.metadata.plan_lookup_key ?? null;
-  const passExpiresAt = period.endsAt;
+  const passExpiresAt = subscription ? period.endsAt : getOneTimePassExpiresAt(session);
   const status = subscription?.status ?? (session.payment_status === "paid" ? "paid" : "unpaid");
 
   const row = {
