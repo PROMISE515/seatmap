@@ -27,7 +27,7 @@ const translations = {
     "nav.nearby": "Nearby",
     "nav.report": "Report",
     "home.srSubtitle": "Find seated toilets nearby in China",
-    "home.subtitle": "Find a seated toilet nearby in China",
+    "home.subtitle": "Find a western toilet nearby in China",
     "home.saved": "Saved",
     "home.you": "You",
     "home.locatingTitle": "Locating you...",

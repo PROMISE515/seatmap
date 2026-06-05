@@ -41,13 +41,13 @@ export const Route = createFileRoute("/")({
   codeSplitGroupings: [["loader", "component"]],
   head: () => ({
     meta: [
-      { title: "SeatMap — Find a seated toilet nearby in China" },
+      { title: "SeatMap — Find a western toilet nearby in China" },
       {
         name: "description",
         content:
           "SeatMap helps foreign travelers find nearby seated toilets in China in 10 seconds. Fast, calm, reliable.",
       },
-      { property: "og:title", content: "SeatMap — Find a seated toilet nearby in China" },
+      { property: "og:title", content: "SeatMap — Find a western toilet nearby in China" },
       {
         property: "og:description",
         content: "A calm safety button for travelers in China. Find a seated toilet, fast.",

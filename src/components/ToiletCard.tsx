@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Baby, Bookmark, Check, Info, Lock, MapPin } from "lucide-react";
+import { Baby, Bookmark, Check, Lock, MapPin } from "lucide-react";
 import type { ToiletDTO } from "@/lib/amap";
 import { MapNavigationSheet } from "@/components/MapNavigationSheet";
 import { saveCurrentHomeScroll } from "@/lib/home-scroll";
@@ -200,7 +200,7 @@ export function ToiletCard({
         <Bookmark className={`size-4 ${saved ? "fill-current" : ""}`} aria-hidden />
       </button>
 
-      <div className={`mt-3 grid grid-cols-[1fr_auto] gap-2 ${locked ? "blur-sm" : ""}`}>
+      <div className={`mt-3 ${locked ? "blur-sm" : ""}`}>
         {allowNavigation && !locked ? (
           <MapNavigationSheet
             toilet={toilet}
@@ -215,26 +215,6 @@ export function ToiletCard({
           >
             {showDistance ? t("card.needsSeated") : t("card.useLocation")}
           </button>
-        )}
-        {locked ? (
-          <button
-            type="button"
-            disabled
-            className="inline-flex size-11 items-center justify-center rounded-full border border-border bg-card text-muted-foreground"
-            aria-label="Details locked"
-          >
-            <Info className="size-4" aria-hidden />
-          </button>
-        ) : (
-          <Link
-            to="/toilet/$id"
-            params={{ id: toilet.id }}
-            onClick={saveCurrentHomeScroll}
-            className="inline-flex size-11 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition hover:border-primary/40 hover:text-primary"
-            aria-label="View details"
-          >
-            <Info className="size-4" aria-hidden />
-          </Link>
         )}
       </div>
       {locked && (
