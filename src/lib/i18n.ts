@@ -33,9 +33,14 @@ const translations = {
     "home.locatingTitle": "Locating you...",
     "home.locatingCaption": "You are safe now",
     "home.tryLocation": "Try Current Location Again",
-    "home.findNearby": "Find Nearby Seated Toilet",
+    "home.findNearby": "Click to search",
+    "home.share": "Share",
+    "home.nurseryRoom": "Nursery room",
+    "home.nearbyNurseryRooms": "Nearby Nursery Rooms",
     "home.requestLocation": "Request browser location",
     "home.searchRadius": "Search 20 km radius",
+    "home.shareTitle": "SeatMap",
+    "home.shareText": "Open my SeatMap invite link.",
     "home.mapCheck": "Map check",
     "home.tapToLocate": "Tap to locate",
     "home.checking": "Checking",
@@ -58,6 +63,18 @@ const translations = {
     "home.readyWhen": "Ready when you are",
     "home.sortedByDistance": "Sorted by distance",
     "home.noToilets": "No toilets found within 20 km. Try moving and searching again.",
+    "home.searchNotConfigured":
+      "Search is not configured yet. Add the required service keys and try again.",
+    "home.searchUnavailable":
+      "Live search is temporarily unavailable. Check the AMap service key or network, then try again.",
+    "home.searchFailed": "Search failed. Please try again.",
+    "home.locationDenied":
+      "Location permission was denied. Allow location in your browser, then try again.",
+    "home.locationUnavailableDetailed":
+      "Your current location is unavailable. Check network/location services, then try again.",
+    "home.locationTimeout": "Location timed out. Please try again.",
+    "home.locationFailed": "Location failed. Please try again.",
+    "home.locationUnsupported": "This browser does not support location.",
     "home.unsupported": (region, supported) =>
       `No traveler-friendly seated toilets found near ${region}. Try again nearby or choose a manual preview: ${supported}.`,
     "home.reportSeated": "Report a seated toilet",
@@ -172,9 +189,14 @@ const translations = {
     "home.locatingTitle": "Buscando tu ubicación...",
     "home.locatingCaption": "Ya estás en buenas manos",
     "home.tryLocation": "Intentar ubicación otra vez",
-    "home.findNearby": "Buscar baño con inodoro cercano",
+    "home.findNearby": "Toca para buscar",
+    "home.share": "Compartir",
+    "home.nurseryRoom": "Sala de lactancia",
+    "home.nearbyNurseryRooms": "Salas de lactancia cercanas",
     "home.requestLocation": "Pedir ubicación del navegador",
     "home.searchRadius": "Buscar en radio de 20 km",
+    "home.shareTitle": "SeatMap",
+    "home.shareText": "Abre mi enlace de invitación de SeatMap.",
     "home.mapCheck": "Comprobación del mapa",
     "home.tapToLocate": "Toca para ubicarte",
     "home.checking": "Comprobando",
@@ -198,6 +220,18 @@ const translations = {
     "home.readyWhen": "Listo cuando quieras",
     "home.sortedByDistance": "Ordenado por distancia",
     "home.noToilets": "No se encontraron baños en 20 km. Muévete un poco e intenta otra vez.",
+    "home.searchNotConfigured":
+      "La búsqueda aún no está configurada. Agrega las claves de servicio necesarias e inténtalo otra vez.",
+    "home.searchUnavailable":
+      "La búsqueda en vivo no está disponible temporalmente. Revisa la clave de AMap o la red e inténtalo otra vez.",
+    "home.searchFailed": "No se pudo buscar. Inténtalo otra vez.",
+    "home.locationDenied":
+      "Se denegó el permiso de ubicación. Permite la ubicación en tu navegador e inténtalo otra vez.",
+    "home.locationUnavailableDetailed":
+      "Tu ubicación actual no está disponible. Revisa la red o los servicios de ubicación e inténtalo otra vez.",
+    "home.locationTimeout": "La ubicación tardó demasiado. Inténtalo otra vez.",
+    "home.locationFailed": "No se pudo obtener la ubicación. Inténtalo otra vez.",
+    "home.locationUnsupported": "Este navegador no admite ubicación.",
     "home.unsupported": (region, supported) =>
       `No se encontraron baños con inodoro para viajeros cerca de ${region}. Intenta otra vez cerca o elige una vista manual: ${supported}.`,
     "home.reportSeated": "Reportar un baño con inodoro",

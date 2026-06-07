@@ -14,7 +14,6 @@ import type { ToiletDTO } from "@/lib/amap";
 import { wgs84ToGcj02 } from "@/lib/amap";
 import { AppShell } from "@/components/AppShell";
 import { ToiletCard } from "@/components/ToiletCard";
-import { MapPreview } from "@/components/MapPreview";
 import { SeatMapLogo } from "@/components/SeatMapLogo";
 import { StripeEmbeddedCheckout, PaymentTestModeBanner } from "@/components/StripeEmbeddedCheckout";
 import { getStoredValue, removeStoredValue, setStoredValue } from "@/lib/client-storage";
@@ -26,7 +25,7 @@ import {
   restoreHomeScrollY,
   writeHomeScrollY,
 } from "@/lib/home-scroll";
-import { useT } from "@/lib/i18n";
+import { type TranslationKey, useT } from "@/lib/i18n";
 import { getStripeEnvironmentForSessionId } from "@/lib/stripe";
 import {
   Dialog,
@@ -123,28 +122,30 @@ const PASS_PLANS = [
   },
 ];
 
-function friendlySearchError(error: unknown) {
+type Translate = (key: TranslationKey, ...args: Array<string | number>) => string;
+
+function friendlySearchError(error: unknown, t: Translate) {
   const message = error instanceof Error ? error.message : "";
   if (/not configured|Missing Supabase|environment variable/i.test(message)) {
-    return "Search is not configured yet. Add the required service keys and try again.";
+    return t("home.searchNotConfigured");
   }
   if (/fetch failed|AMap request failed|AMap HTTP|AMap error/i.test(message)) {
-    return "Live search is temporarily unavailable. Check the AMap service key or network, then try again.";
+    return t("home.searchUnavailable");
   }
-  return message || "Search failed. Please try again.";
+  return message || t("home.searchFailed");
 }
 
-function geolocationErrorMessage(error: GeolocationPositionError) {
+function geolocationErrorMessage(error: GeolocationPositionError, t: Translate) {
   if (error.code === error.PERMISSION_DENIED) {
-    return "Location permission was denied. Allow location in your browser, then try again.";
+    return t("home.locationDenied");
   }
   if (error.code === error.POSITION_UNAVAILABLE) {
-    return "Your current location is unavailable. Check network/location services, then try again.";
+    return t("home.locationUnavailableDetailed");
   }
   if (error.code === error.TIMEOUT) {
-    return "Location timed out. Please try again.";
+    return t("home.locationTimeout");
   }
-  return "Location failed. Please try again.";
+  return t("home.locationFailed");
 }
 
 function createShareToken() {
@@ -503,8 +504,8 @@ function HomePage() {
     const url = new URL(window.location.origin);
     url.searchParams.set(SHARE_PARAM, code);
     const shareData = {
-      title: "SeatMap",
-      text: "Open my SeatMap invite link.",
+      title: t("home.shareTitle"),
+      text: t("home.shareText"),
       url: url.toString(),
     };
 
@@ -576,7 +577,7 @@ function HomePage() {
         supportedRegions,
       });
     } catch (e) {
-      const message = friendlySearchError(e);
+      const message = friendlySearchError(e, t);
       setErrorMsg(message);
       setStatus("ready");
       writeLastSearchState({
@@ -639,7 +640,7 @@ function HomePage() {
     setMapCenter(null);
     setErrorMsg(null);
     if (!navigator.geolocation) {
-      setErrorMsg("This browser does not support location.");
+      setErrorMsg(t("home.locationUnsupported"));
       setStatus("location_error");
       return;
     }
@@ -650,7 +651,7 @@ function HomePage() {
       },
       (error) => {
         if (error.code === error.PERMISSION_DENIED) setLocationPermission("denied");
-        setErrorMsg(geolocationErrorMessage(error));
+        setErrorMsg(geolocationErrorMessage(error, t));
         setStatus("location_error");
       },
       { enableHighAccuracy: false, maximumAge: 60_000, timeout: 8000 },
@@ -697,7 +698,7 @@ function HomePage() {
             ) : (
               <Share2 className="size-3" aria-hidden />
             )}
-            {shareBusy ? t("home.checking") : "Share"}
+            {shareBusy ? t("home.checking") : t("home.share")}
           </button>
         </div>
       </header>
@@ -726,11 +727,7 @@ function HomePage() {
                 ) : (
                   <Search className="size-5" aria-hidden />
                 )}
-                {status === "location_error"
-                  ? t("home.tryLocation")
-                  : searchMode === "nursery" && status === "locating"
-                    ? "Finding nearby nursery rooms"
-                    : t("home.findNearby")}
+                {status === "location_error" ? t("home.tryLocation") : t("home.findNearby")}
               </span>
               <span className="text-xs font-medium text-primary-foreground/80 uppercase tracking-widest">
                 {status === "location_error" ? t("home.requestLocation") : t("home.searchRadius")}
@@ -754,74 +751,8 @@ function HomePage() {
               <Baby className="size-5" aria-hidden />
             )}
           </span>
-          <span className="leading-tight">Nursery room</span>
+          <span className="leading-tight">{t("home.nurseryRoom")}</span>
         </button>
-      </section>
-
-      {/* Map status */}
-      <section className="px-6 mt-8">
-        <div className="flex justify-between items-end mb-3">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-            {t("home.mapCheck")}
-          </h2>
-          <span className="text-[10px] bg-secondary px-2 py-1 rounded text-secondary-foreground font-bold tracking-wider uppercase">
-            {region
-              ? `${region} · CN`
-              : status === "idle"
-                ? t("home.tapToLocate")
-                : status === "locating"
-                  ? t("home.checking")
-                  : status === "location_error"
-                    ? t("home.locationNeeded")
-                    : t("home.currentSearchArea")}
-          </span>
-        </div>
-        {mapCenter ? (
-          <MapPreview
-            lat={mapCenter.lat}
-            lng={mapCenter.lng}
-            label={mapCenter.label === "You" ? t("home.you") : mapCenter.label}
-            eyebrow={region ? `${region} · CN` : t("home.currentSearchArea")}
-            title={
-              status === "ready"
-                ? t("home.openedResultsNearYou", toilets.length)
-                : status === "unsupported"
-                  ? t("home.areaNotOpen", region ?? t("home.thisArea"))
-                  : t("home.checkingCity")
-            }
-            subtitle={
-              status === "unsupported"
-                ? `Opened cities: ${supportedRegions}`
-                : t("home.mapPreviewCurrent")
-            }
-          />
-        ) : (
-          <div className="rounded-2xl border border-dashed border-border bg-card p-4">
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 grid size-9 place-items-center rounded-xl bg-primary/10 text-primary">
-                <MapPin className="size-4" aria-hidden />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-card-foreground">
-                  {status === "location_error"
-                    ? t("home.locationUnavailable")
-                    : t("home.noMapBeforeLocation")}
-                </p>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  {status === "location_error"
-                    ? (errorMsg ?? t("home.turnOnLocation"))
-                    : t("home.noMapHint")}
-                </p>
-                {locationPermission === "denied" && (
-                  <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-                    If your browser has blocked location, open site settings and allow location for
-                    SeatMap.
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </section>
 
       {status !== "location_error" && (
@@ -830,7 +761,7 @@ function HomePage() {
             <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               {status === "ready"
                 ? searchMode === "nursery"
-                  ? "Nearby Nursery Rooms"
+                  ? t("home.nearbyNurseryRooms")
                   : t("home.nearestOptions")
                 : status === "unsupported"
                   ? t("home.serviceNotOpen")
@@ -861,7 +792,7 @@ function HomePage() {
           ) : status === "unsupported" ? (
             <div className="rounded-2xl border border-dashed border-border p-6 text-center bg-card">
               <p className="text-sm text-muted-foreground">
-                {t("home.unsupported", region ?? "This area", supportedRegions)}
+                {t("home.unsupported", region ?? t("home.thisArea"), supportedRegions)}
               </p>
               <Link
                 to="/report"
