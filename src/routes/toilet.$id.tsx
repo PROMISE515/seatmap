@@ -84,14 +84,19 @@ function ToiletNotFound() {
 }
 
 function formatDetailLocation(toilet: ToiletDTO) {
-  const distance = toilet.distanceM > 0 ? `${toilet.distanceM}m away` : "Distance unavailable";
-  if (!toilet.floor) return distance;
+  const parts: string[] = [];
+  if (toilet.distanceM > 0) parts.push(`${toilet.distanceM}m away`);
 
-  const floor = toilet.floor.includes("~")
-    ? `Floors ${toilet.floor.replace("~", " to ")}`
-    : `Floor ${toilet.floor}`;
+  if (toilet.floor) {
+    parts.push(
+      toilet.floor.includes("~")
+        ? `Floors ${toilet.floor.replace("~", " to ")}`
+        : `Floor ${toilet.floor}`,
+    );
+  }
 
-  return `${distance} · ${floor}`;
+  if (parts.length > 0) return parts.join(" · ");
+  return toilet.address || null;
 }
 
 function ToiletDetail() {
@@ -192,10 +197,12 @@ function ToiletDetail() {
 
       <section className="px-6 mt-6">
         <h1 className="text-2xl font-extrabold tracking-tight text-brand-dark">{toilet.name}</h1>
-        <p className="mt-1 text-sm text-muted-foreground flex items-center gap-1.5">
-          <MapPin className="size-3.5" aria-hidden />
-          {formatDetailLocation(toilet)}
-        </p>
+        {formatDetailLocation(toilet) && (
+          <p className="mt-1 text-sm text-muted-foreground flex items-center gap-1.5">
+            <MapPin className="size-3.5" aria-hidden />
+            {formatDetailLocation(toilet)}
+          </p>
+        )}
       </section>
 
       <section className="px-6 mt-8">
