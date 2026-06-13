@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { Baby, Loader2, MapPin, Search, Share2 } from "lucide-react";
 import { toast } from "sonner";
+import { redeemInviteCode } from "@/lib/invite-codes.functions";
 import { filterBlacklistedToiletIds, findNearbyToilets } from "@/lib/toilets.functions";
 import { verifyPassSession } from "@/lib/payments.functions";
 import {
@@ -254,6 +255,8 @@ function HomePage() {
   );
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [shareBusy, setShareBusy] = useState(false);
+  const [inviteCode, setInviteCode] = useState("");
+  const [inviteBusy, setInviteBusy] = useState(false);
   const [hasActivePass, setHasActivePass] = useState(false);
   const [passSessionId, setPassSessionId] = useState<string | null>(null);
   const [locationPermission, setLocationPermission] = useState<
@@ -269,6 +272,7 @@ function HomePage() {
   const claimReferral = useServerFn(claimShareReferral);
   const getReferralCredits = useServerFn(getShareReferralCredits);
   const verifyPass = useServerFn(verifyPassSession);
+  const redeemInvite = useServerFn(redeemInviteCode);
   const shouldRestoreScrollRef = useRef(false);
   const restoredScrollRef = useRef(false);
   const isRestoringScrollRef = useRef(false);
@@ -535,6 +539,35 @@ function HomePage() {
       }
     } finally {
       setShareBusy(false);
+    }
+  };
+
+  const handleRedeemInvite = async () => {
+    const code = inviteCode.trim();
+    if (!code || inviteBusy) return;
+
+    setInviteBusy(true);
+    try {
+      const visitorId = getOrCreateStoredToken(SHARE_VISITOR_ID_KEY);
+      const result = await redeemInvite({ data: { code, visitorId } });
+      if (!result.ok) {
+        toast(t("home.inviteInvalid"));
+        return;
+      }
+
+      setStoredValue(PASS_EXPIRES_AT_KEY, String(result.expiresAtMs));
+      setStoredValue(SEARCH_COUNT_KEY, "0");
+      setHasActivePass(true);
+      setPassSessionId(null);
+      setInviteCode("");
+      setShowPaywall(false);
+      toast(t("home.inviteSuccess"), {
+        description: t("home.inviteSuccessDescription"),
+      });
+    } catch {
+      toast(t("home.inviteFailed"));
+    } finally {
+      setInviteBusy(false);
     }
   };
 
@@ -859,6 +892,43 @@ function HomePage() {
                 </div>
               </button>
             ))}
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <p className="text-sm font-extrabold text-brand-dark">{t("home.inviteTitle")}</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              {t("home.inviteDescription")}
+            </p>
+            <div className="mt-3 flex gap-2">
+              <input
+                value={inviteCode}
+                onChange={(event) => setInviteCode(event.target.value.toUpperCase())}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") void handleRedeemInvite();
+                }}
+                placeholder={t("home.invitePlaceholder")}
+                className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3 py-3 text-sm font-bold uppercase tracking-wider text-foreground outline-none transition placeholder:normal-case placeholder:tracking-normal placeholder:text-muted-foreground focus:border-primary"
+                autoCapitalize="characters"
+                autoComplete="one-time-code"
+              />
+              <button
+                type="button"
+                onClick={handleRedeemInvite}
+                disabled={inviteBusy || !inviteCode.trim()}
+                className="inline-flex min-w-24 items-center justify-center rounded-xl bg-brand-dark px-4 py-3 text-xs font-bold uppercase tracking-widest text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+              >
+                {inviteBusy ? (
+                  <Loader2 className="size-4 animate-spin" aria-hidden />
+                ) : (
+                  t("home.inviteRedeem")
+                )}
+              </button>
+            </div>
+            {inviteBusy && (
+              <p className="mt-2 text-[11px] font-medium text-muted-foreground">
+                {t("home.inviteRedeeming")}
+              </p>
+            )}
           </div>
 
           <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-4">
