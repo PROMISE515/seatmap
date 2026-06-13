@@ -847,7 +847,7 @@ function HomePage() {
       )}
 
       <Dialog open={showPaywall} onOpenChange={setShowPaywall}>
-        <DialogContent className="max-w-[360px] rounded-3xl">
+        <DialogContent className="w-[calc(100vw-32px)] max-w-[380px] rounded-3xl px-5 py-6">
           <DialogHeader>
             <DialogTitle className="text-xl font-extrabold tracking-tight text-brand-dark">
               {t("home.paywallTitle")}
@@ -855,7 +855,7 @@ function HomePage() {
             <DialogDescription>{t("home.paywallDescription")}</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-2 my-2">
+          <div className="my-2 space-y-2">
             {PASS_PLANS.map((p) => (
               <button
                 key={p.days}
@@ -864,13 +864,13 @@ function HomePage() {
                   setShowPaywall(false);
                   setCheckoutPriceId(p.priceId);
                 }}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-left transition ${
+                className={`flex w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition ${
                   p.best
                     ? "border-primary bg-primary/5"
                     : "border-border bg-card hover:border-primary/40"
                 }`}
               >
-                <div>
+                <div className="min-w-0">
                   <p className="font-bold">{p.label}</p>
                   <p className="text-xs text-muted-foreground">
                     {t("home.unlimited")} ·{" "}
@@ -882,7 +882,7 @@ function HomePage() {
                     </p>
                   )}
                 </div>
-                <div className="text-right">
+                <div className="shrink-0 text-right">
                   <p className="font-extrabold text-brand-dark">{p.price}</p>
                   {p.best && (
                     <p className="text-[10px] font-bold uppercase tracking-wider text-primary">
@@ -899,7 +899,7 @@ function HomePage() {
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
               {t("home.inviteDescription")}
             </p>
-            <div className="mt-3 flex gap-2">
+            <div className="mt-3 grid grid-cols-[minmax(0,1fr)_112px] gap-2">
               <input
                 value={inviteCode}
                 onChange={(event) => setInviteCode(event.target.value.toUpperCase())}
@@ -907,7 +907,7 @@ function HomePage() {
                   if (event.key === "Enter") void handleRedeemInvite();
                 }}
                 placeholder={t("home.invitePlaceholder")}
-                className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3 py-3 text-sm font-bold uppercase tracking-wider text-foreground outline-none transition placeholder:normal-case placeholder:tracking-normal placeholder:text-muted-foreground focus:border-primary"
+                className="min-w-0 rounded-xl border border-border bg-background px-3 py-3 text-sm font-bold uppercase tracking-wider text-foreground outline-none transition placeholder:normal-case placeholder:tracking-normal placeholder:text-muted-foreground focus:border-primary"
                 autoCapitalize="characters"
                 autoComplete="one-time-code"
               />
@@ -915,7 +915,7 @@ function HomePage() {
                 type="button"
                 onClick={handleRedeemInvite}
                 disabled={inviteBusy || !inviteCode.trim()}
-                className="inline-flex min-w-24 items-center justify-center rounded-xl bg-brand-dark px-4 py-3 text-xs font-bold uppercase tracking-widest text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+                className="inline-flex w-full items-center justify-center rounded-xl bg-brand-dark px-3 py-3 text-xs font-bold uppercase tracking-widest text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
               >
                 {inviteBusy ? (
                   <Loader2 className="size-4 animate-spin" aria-hidden />

@@ -13,9 +13,98 @@ type RedeemedInviteRow = {
   max_redemptions: number;
 };
 
+export type AdminInviteCodeDTO = {
+  id: string;
+  code: string;
+  label: string;
+  passDays: number;
+  active: boolean;
+  maxRedemptions: number;
+  redeemedCount: number;
+  redeemedAt: string | null;
+  lastRedeemedAt: string | null;
+  expiresAt: string | null;
+  createdAt: string;
+};
+
+type InviteCodeRow = {
+  id: string;
+  code: string;
+  label: string | null;
+  pass_days: number;
+  active: boolean;
+  max_redemptions: number;
+  redeemed_count: number;
+  redeemed_at: string | null;
+  last_redeemed_at: string | null;
+  expires_at: string | null;
+  created_at: string;
+};
+
 function normalizeCode(code: string) {
   return code.trim().replace(/\s+/g, "").toUpperCase();
 }
+
+function adminTokenIsValid(token: string | undefined) {
+  const configured = process.env.ADMIN_TOKEN;
+  if (!configured) return process.env.NODE_ENV !== "production";
+  return token === configured;
+}
+
+function mapInviteCode(row: InviteCodeRow): AdminInviteCodeDTO {
+  return {
+    id: row.id,
+    code: row.code,
+    label: row.label ?? "",
+    passDays: row.pass_days,
+    active: row.active,
+    maxRedemptions: row.max_redemptions,
+    redeemedCount: row.redeemed_count,
+    redeemedAt: row.redeemed_at,
+    lastRedeemedAt: row.last_redeemed_at,
+    expiresAt: row.expires_at,
+    createdAt: row.created_at,
+  };
+}
+
+const inviteTable = () =>
+  (
+    supabaseAdmin as unknown as {
+      from: (table: "invite_codes") => {
+        select: (columns: string) => {
+          order: (
+            column: string,
+            options: { ascending: boolean },
+          ) => {
+            limit: (
+              count: number,
+            ) => Promise<{ data: InviteCodeRow[] | null; error: Error | null }>;
+          };
+        };
+        insert: (row: {
+          code: string;
+          label: string | null;
+          pass_days: number;
+          active: boolean;
+          max_redemptions: number;
+        }) => {
+          select: (columns: string) => {
+            single: () => Promise<{ data: InviteCodeRow | null; error: Error | null }>;
+          };
+        };
+        update: (row: { active: boolean; updated_at: string }) => {
+          eq: (
+            column: "id",
+            value: string,
+          ) => {
+            select: (columns: string) => {
+              single: () => Promise<{ data: InviteCodeRow | null; error: Error | null }>;
+            };
+          };
+        };
+      };
+    }
+  ).from("invite_codes");
 
 export const redeemInviteCode = createServerFn({ method: "POST" })
   .inputValidator((input) =>
@@ -64,5 +153,107 @@ export const redeemInviteCode = createServerFn({ method: "POST" })
       createdAtMs: now,
       expiresAtMs,
       lifetime: invite.pass_days >= 36500,
+    };
+  });
+
+export const getAdminInviteCodes = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        token: z.string().optional(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    if (!adminTokenIsValid(data.token)) {
+      return { authorized: false as const, inviteCodes: [] as AdminInviteCodeDTO[] };
+    }
+
+    const { data: rows, error } = await inviteTable()
+      .select(
+        "id, code, label, pass_days, active, max_redemptions, redeemed_count, redeemed_at, last_redeemed_at, expires_at, created_at",
+      )
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (error) throw error;
+    return {
+      authorized: true as const,
+      inviteCodes: (rows ?? []).map(mapInviteCode),
+    };
+  });
+
+export const createAdminInviteCode = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        token: z.string().optional(),
+        code: z
+          .string()
+          .min(3)
+          .max(64)
+          .regex(/^[A-Za-z0-9_-]+$/),
+        label: z.string().max(160).optional().default(""),
+        passDays: z.number().int().min(1).max(36500).default(36500),
+        maxRedemptions: z.number().int().min(1).max(1000).default(1),
+        active: z.boolean().default(true),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    if (!adminTokenIsValid(data.token)) {
+      return { authorized: false as const, inviteCode: null as AdminInviteCodeDTO | null };
+    }
+
+    const { data: row, error } = await inviteTable()
+      .insert({
+        code: normalizeCode(data.code),
+        label: data.label.trim() || null,
+        pass_days: data.passDays,
+        active: data.active,
+        max_redemptions: data.maxRedemptions,
+      })
+      .select(
+        "id, code, label, pass_days, active, max_redemptions, redeemed_count, redeemed_at, last_redeemed_at, expires_at, created_at",
+      )
+      .single();
+
+    if (error) throw error;
+    return {
+      authorized: true as const,
+      inviteCode: row ? mapInviteCode(row) : null,
+    };
+  });
+
+export const setAdminInviteCodeActive = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        token: z.string().optional(),
+        id: z.string().uuid(),
+        active: z.boolean(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    if (!adminTokenIsValid(data.token)) {
+      return { authorized: false as const, inviteCode: null as AdminInviteCodeDTO | null };
+    }
+
+    const { data: row, error } = await inviteTable()
+      .update({
+        active: data.active,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.id)
+      .select(
+        "id, code, label, pass_days, active, max_redemptions, redeemed_count, redeemed_at, last_redeemed_at, expires_at, created_at",
+      )
+      .single();
+
+    if (error) throw error;
+    return {
+      authorized: true as const,
+      inviteCode: row ? mapInviteCode(row) : null,
     };
   });
