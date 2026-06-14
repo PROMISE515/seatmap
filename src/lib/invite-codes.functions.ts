@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { randomBytes } from "node:crypto";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
@@ -43,6 +44,10 @@ type InviteCodeRow = {
 
 function normalizeCode(code: string) {
   return code.trim().replace(/\s+/g, "").toUpperCase();
+}
+
+function generateInviteCode() {
+  return `SEATMAP-${randomBytes(4).toString("hex").toUpperCase()}`;
 }
 
 function adminTokenIsValid(token: string | undefined) {
@@ -92,7 +97,7 @@ const inviteTable = () =>
             single: () => Promise<{ data: InviteCodeRow | null; error: Error | null }>;
           };
         };
-        update: (row: { active: boolean; updated_at: string }) => {
+        update: (row: { active?: boolean; label?: string | null; updated_at: string }) => {
           eq: (
             column: "id",
             value: string,
@@ -192,7 +197,8 @@ export const createAdminInviteCode = createServerFn({ method: "POST" })
           .string()
           .min(3)
           .max(64)
-          .regex(/^[A-Za-z0-9_-]+$/),
+          .regex(/^[A-Za-z0-9_-]+$/)
+          .optional(),
         label: z.string().max(160).optional().default(""),
         passDays: z.number().int().min(1).max(36500).default(36500),
         maxRedemptions: z.number().int().min(1).max(1000).default(1),
@@ -207,7 +213,7 @@ export const createAdminInviteCode = createServerFn({ method: "POST" })
 
     const { data: row, error } = await inviteTable()
       .insert({
-        code: normalizeCode(data.code),
+        code: data.code ? normalizeCode(data.code) : generateInviteCode(),
         label: data.label.trim() || null,
         pass_days: data.passDays,
         active: data.active,
@@ -243,6 +249,39 @@ export const setAdminInviteCodeActive = createServerFn({ method: "POST" })
     const { data: row, error } = await inviteTable()
       .update({
         active: data.active,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.id)
+      .select(
+        "id, code, label, pass_days, active, max_redemptions, redeemed_count, redeemed_at, last_redeemed_at, expires_at, created_at",
+      )
+      .single();
+
+    if (error) throw error;
+    return {
+      authorized: true as const,
+      inviteCode: row ? mapInviteCode(row) : null,
+    };
+  });
+
+export const setAdminInviteCodeLabel = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        token: z.string().optional(),
+        id: z.string().uuid(),
+        label: z.string().max(160).optional().default(""),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    if (!adminTokenIsValid(data.token)) {
+      return { authorized: false as const, inviteCode: null as AdminInviteCodeDTO | null };
+    }
+
+    const { data: row, error } = await inviteTable()
+      .update({
+        label: data.label.trim() || null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", data.id)
