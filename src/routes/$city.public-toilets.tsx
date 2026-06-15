@@ -35,10 +35,25 @@ export const Route = createFileRoute("/$city/public-toilets")({
           type: "application/ld+json",
           children: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: [
-              { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
-              { "@type": "ListItem", position: 2, name: city.name, item: url },
+            "@graph": [
+              {
+                "@type": "BreadcrumbList",
+                itemListElement: [
+                  { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+                  { "@type": "ListItem", position: 2, name: city.name, item: url },
+                ],
+              },
+              {
+                "@type": "FAQPage",
+                mainEntity: getCitySeoFaqs(city.name).map((faq) => ({
+                  "@type": "Question",
+                  name: faq.question,
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: faq.answer,
+                  },
+                })),
+              },
             ],
           }),
         },
@@ -84,6 +99,7 @@ function CityPage() {
   const { t } = useT();
   const { city } = Route.useLoaderData();
   const toilets = getCuratedCityToilets(city.slug, city.name);
+  const faqs = getCitySeoFaqs(city.name);
 
   return (
     <AppShell>
@@ -213,9 +229,60 @@ function CityPage() {
         </ul>
       </section>
 
+      <section className="px-6 mt-10">
+        <h2 className="text-base font-extrabold text-brand-dark mb-3">
+          Western toilet tips for {city.name}
+        </h2>
+        <div className="space-y-4">
+          {faqs.map((faq) => (
+            <article key={faq.question}>
+              <h3 className="text-sm font-extrabold text-foreground">{faq.question}</h3>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{faq.answer}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="px-6 mt-10">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
+          SeatMap guides
+        </h2>
+        <div className="grid gap-2">
+          <Link
+            to="/toilet-finder-china"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            Toilet finder for China
+          </Link>
+          <Link
+            to="/toilets-in-china"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            Toilets in China guide
+          </Link>
+        </div>
+      </section>
+
       <footer className="px-6 mt-10 pb-4 text-[11px] text-muted-foreground">
         {t("city.footer", city.name)}
       </footer>
     </AppShell>
   );
+}
+
+function getCitySeoFaqs(cityName: string) {
+  return [
+    {
+      question: `Where can I find a western toilet in ${cityName}?`,
+      answer: `In ${cityName}, start with large malls, international hotels, modern museums, transport hubs, and bigger coffee chains. SeatMap highlights nearby venue candidates where a seated toilet is more likely.`,
+    },
+    {
+      question: `Are public toilets in ${cityName} usually seated toilets?`,
+      answer: `Some public toilets in ${cityName} have seated stalls, but availability can vary. If you need a western toilet quickly, indoor commercial venues are usually more reliable than small standalone public toilets.`,
+    },
+    {
+      question: `Can SeatMap navigate me to a toilet in ${cityName}?`,
+      answer: `Yes. Use the live search on the SeatMap home page to get nearby candidates, then start navigation with Apple Maps, Google Maps, or AMap depending on what works best on your phone.`,
+    },
+  ];
 }

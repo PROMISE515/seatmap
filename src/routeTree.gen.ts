@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ToiletsInChinaRouteImport } from './routes/toilets-in-china'
+import { Route as ToiletFinderChinaRouteImport } from './routes/toilet-finder-china'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as PassRouteImport } from './routes/pass'
@@ -20,6 +22,16 @@ import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as CityPublicToiletsRouteImport } from './routes/$city.public-toilets'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api.stripe.webhook'
 
+const ToiletsInChinaRoute = ToiletsInChinaRouteImport.update({
+  id: '/toilets-in-china',
+  path: '/toilets-in-china',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ToiletFinderChinaRoute = ToiletFinderChinaRouteImport.update({
+  id: '/toilet-finder-china',
+  path: '/toilet-finder-china',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SavedRoute = SavedRouteImport.update({
   id: '/saved',
   path: '/saved',
@@ -77,6 +89,8 @@ export interface FileRoutesByFullPath {
   '/pass': typeof PassRoute
   '/report': typeof ReportRoute
   '/saved': typeof SavedRoute
+  '/toilet-finder-china': typeof ToiletFinderChinaRoute
+  '/toilets-in-china': typeof ToiletsInChinaRoute
   '/$city/public-toilets': typeof CityPublicToiletsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -89,6 +103,8 @@ export interface FileRoutesByTo {
   '/pass': typeof PassRoute
   '/report': typeof ReportRoute
   '/saved': typeof SavedRoute
+  '/toilet-finder-china': typeof ToiletFinderChinaRoute
+  '/toilets-in-china': typeof ToiletsInChinaRoute
   '/$city/public-toilets': typeof CityPublicToiletsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -102,6 +118,8 @@ export interface FileRoutesById {
   '/pass': typeof PassRoute
   '/report': typeof ReportRoute
   '/saved': typeof SavedRoute
+  '/toilet-finder-china': typeof ToiletFinderChinaRoute
+  '/toilets-in-china': typeof ToiletsInChinaRoute
   '/$city/public-toilets': typeof CityPublicToiletsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -116,6 +134,8 @@ export interface FileRouteTypes {
     | '/pass'
     | '/report'
     | '/saved'
+    | '/toilet-finder-china'
+    | '/toilets-in-china'
     | '/$city/public-toilets'
     | '/admin/reports'
     | '/checkout/return'
@@ -128,6 +148,8 @@ export interface FileRouteTypes {
     | '/pass'
     | '/report'
     | '/saved'
+    | '/toilet-finder-china'
+    | '/toilets-in-china'
     | '/$city/public-toilets'
     | '/admin/reports'
     | '/checkout/return'
@@ -140,6 +162,8 @@ export interface FileRouteTypes {
     | '/pass'
     | '/report'
     | '/saved'
+    | '/toilet-finder-china'
+    | '/toilets-in-china'
     | '/$city/public-toilets'
     | '/admin/reports'
     | '/checkout/return'
@@ -153,6 +177,8 @@ export interface RootRouteChildren {
   PassRoute: typeof PassRoute
   ReportRoute: typeof ReportRoute
   SavedRoute: typeof SavedRoute
+  ToiletFinderChinaRoute: typeof ToiletFinderChinaRoute
+  ToiletsInChinaRoute: typeof ToiletsInChinaRoute
   CityPublicToiletsRoute: typeof CityPublicToiletsRoute
   AdminReportsRoute: typeof AdminReportsRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
@@ -162,6 +188,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/toilets-in-china': {
+      id: '/toilets-in-china'
+      path: '/toilets-in-china'
+      fullPath: '/toilets-in-china'
+      preLoaderRoute: typeof ToiletsInChinaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/toilet-finder-china': {
+      id: '/toilet-finder-china'
+      path: '/toilet-finder-china'
+      fullPath: '/toilet-finder-china'
+      preLoaderRoute: typeof ToiletFinderChinaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/saved': {
       id: '/saved'
       path: '/saved'
@@ -241,6 +281,8 @@ const rootRouteChildren: RootRouteChildren = {
   PassRoute: PassRoute,
   ReportRoute: ReportRoute,
   SavedRoute: SavedRoute,
+  ToiletFinderChinaRoute: ToiletFinderChinaRoute,
+  ToiletsInChinaRoute: ToiletsInChinaRoute,
   CityPublicToiletsRoute: CityPublicToiletsRoute,
   AdminReportsRoute: AdminReportsRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,

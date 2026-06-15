@@ -847,6 +847,42 @@ function HomePage() {
         </section>
       )}
 
+      <section className="px-6 mt-8">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
+          Traveler guides
+        </h2>
+        <div className="grid gap-2">
+          <Link
+            to="/toilet-finder-china"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            Toilet finder for China
+          </Link>
+          <Link
+            to="/toilets-in-china"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            Toilets in China guide
+          </Link>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          {[
+            { label: "Hong Kong", to: "/hong-kong/public-toilets" },
+            { label: "Macau", to: "/macau/public-toilets" },
+            { label: "Chengdu", to: "/chengdu/public-toilets" },
+            { label: "Chongqing", to: "/chongqing/public-toilets" },
+          ].map((city) => (
+            <Link
+              key={city.to}
+              to={city.to}
+              className="rounded-xl border border-border bg-card px-3 py-2.5 text-sm font-semibold text-foreground hover:border-primary/40"
+            >
+              {city.label}
+            </Link>
+          ))}
+        </div>
+      </section>
+
       <Dialog open={showPaywall} onOpenChange={setShowPaywall}>
         <DialogContent className="w-[calc(100vw-32px)] max-w-[380px] rounded-3xl px-5 py-6">
           <DialogHeader>
