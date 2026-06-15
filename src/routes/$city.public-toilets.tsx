@@ -6,8 +6,7 @@ import { MapPreview } from "@/components/MapPreview";
 import { getCityBySlug } from "@/lib/cities";
 import { getCuratedCityToilets } from "@/lib/curated-city-toilets";
 import { useT } from "@/lib/i18n";
-
-const SITE = "https://swift-restroom-finder.lovable.app";
+import { SITE_URL } from "@/lib/site";
 
 export const Route = createFileRoute("/$city/public-toilets")({
   loader: ({ params }) => {
@@ -20,7 +19,7 @@ export const Route = createFileRoute("/$city/public-toilets")({
     const { city } = loaderData;
     const title = `Public Toilets in ${city.name} — Western Restrooms | SeatMap`;
     const description = `Curated seated-toilet candidates in ${city.name}, ${city.country}, focused on malls, hotels, and traveler-friendly venues.`;
-    const url = `${SITE}/${params.city}/public-toilets`;
+    const url = `${SITE_URL}/${params.city}/public-toilets`;
     return {
       meta: [
         { title },
@@ -38,7 +37,7 @@ export const Route = createFileRoute("/$city/public-toilets")({
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             itemListElement: [
-              { "@type": "ListItem", position: 1, name: "Home", item: SITE },
+              { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
               { "@type": "ListItem", position: 2, name: city.name, item: url },
             ],
           }),

@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { verifyPassSession } from "@/lib/payments.functions";
 import { getStripeEnvironmentForSessionId } from "@/lib/stripe";
 import { removeStoredValue, setStoredValue } from "@/lib/client-storage";
+import { SITE_URL } from "@/lib/site";
 
 export const Route = createFileRoute("/pass")({
   validateSearch: (search: Record<string, unknown>): { sid?: string } => ({
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/pass")({
       },
       { name: "robots", content: "noindex" },
     ],
-    links: [{ rel: "canonical", href: "https://swift-restroom-finder.lovable.app/pass" }],
+    links: [{ rel: "canonical", href: `${SITE_URL}/pass` }],
   }),
   component: PassPage,
 });

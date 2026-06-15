@@ -4,6 +4,7 @@ import { Copy, Check, Star, AlertTriangle } from "lucide-react";
 import { verifyPassSession } from "@/lib/payments.functions";
 import { getStripeEnvironmentForSessionId } from "@/lib/stripe";
 import { removeStoredValue, setStoredValue } from "@/lib/client-storage";
+import { SITE_URL } from "@/lib/site";
 
 export const Route = createFileRoute("/checkout/return")({
   validateSearch: (search: Record<string, unknown>): { session_id?: string } => ({
@@ -25,9 +26,7 @@ export const Route = createFileRoute("/checkout/return")({
       },
       { name: "robots", content: "noindex" },
     ],
-    links: [
-      { rel: "canonical", href: "https://swift-restroom-finder.lovable.app/checkout/return" },
-    ],
+    links: [{ rel: "canonical", href: `${SITE_URL}/checkout/return` }],
   }),
   component: CheckoutReturn,
 });

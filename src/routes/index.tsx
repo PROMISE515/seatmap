@@ -27,6 +27,7 @@ import {
   writeHomeScrollY,
 } from "@/lib/home-scroll";
 import { type TranslationKey, useT } from "@/lib/i18n";
+import { SITE_URL } from "@/lib/site";
 import { getStripeEnvironmentForSessionId } from "@/lib/stripe";
 import {
   Dialog,
@@ -53,7 +54,7 @@ export const Route = createFileRoute("/")({
         content: "A calm safety button for travelers in China. Find a seated toilet, fast.",
       },
     ],
-    links: [{ rel: "canonical", href: "https://swift-restroom-finder.lovable.app/" }],
+    links: [{ rel: "canonical", href: `${SITE_URL}/` }],
     scripts: [
       {
         type: "application/ld+json",
@@ -62,17 +63,17 @@ export const Route = createFileRoute("/")({
           "@graph": [
             {
               "@type": "Organization",
-              "@id": "https://swift-restroom-finder.lovable.app/#organization",
+              "@id": `${SITE_URL}/#organization`,
               name: "SeatMap",
-              url: "https://swift-restroom-finder.lovable.app",
+              url: SITE_URL,
             },
             {
               "@type": "WebSite",
-              "@id": "https://swift-restroom-finder.lovable.app/#website",
-              url: "https://swift-restroom-finder.lovable.app",
+              "@id": `${SITE_URL}/#website`,
+              url: SITE_URL,
               name: "SeatMap",
               description: "Find nearby seated toilets in China for travelers.",
-              publisher: { "@id": "https://swift-restroom-finder.lovable.app/#organization" },
+              publisher: { "@id": `${SITE_URL}/#organization` },
             },
           ],
         }),

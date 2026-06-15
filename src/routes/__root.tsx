@@ -10,6 +10,7 @@ import {
 import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { useLocale } from "@/lib/i18n";
+import { SITE_URL } from "@/lib/site";
 
 import appCss from "../styles.css?url";
 
@@ -85,6 +86,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-title", content: "SeatMap" },
       { title: "SeatMap — Reliable Western Toilets for Travelers" },
       { property: "og:site_name", content: "SeatMap" },
+      { property: "og:url", content: SITE_URL },
       { property: "og:title", content: "SeatMap — Reliable Western Toilets for Travelers" },
       { name: "twitter:title", content: "SeatMap — Reliable Western Toilets for Travelers" },
       {
