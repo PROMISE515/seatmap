@@ -2,12 +2,18 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+import { cities } from "./lib/cities";
+import { SITE_URL } from "./lib/site";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
 };
 
 let serverEntryPromise: Promise<ServerEntry> | undefined;
+
+const STATIC_SEO_HEADERS = {
+  "cache-control": "public, max-age=3600",
+};
 
 async function getServerEntry(): Promise<ServerEntry> {
   if (!serverEntryPromise) {
@@ -23,6 +29,66 @@ function brandedErrorResponse(): Response {
     status: 500,
     headers: { "content-type": "text/html; charset=utf-8" },
   });
+}
+
+function buildRobotsTxt(): string {
+  return `User-agent: *
+Allow: /
+
+Sitemap: ${SITE_URL}/sitemap.xml
+`;
+}
+
+function buildSitemapXml(): string {
+  const today = new Date().toISOString().slice(0, 10);
+  const urls = [
+    { loc: `${SITE_URL}/`, priority: "1.0" },
+    ...cities.map((city) => ({
+      loc: `${SITE_URL}/${city.slug}/public-toilets`,
+      priority: "0.9",
+    })),
+  ];
+
+  const entries = urls
+    .map(
+      ({ loc, priority }) => `  <url>
+    <loc>${loc}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>${priority}</priority>
+  </url>`,
+    )
+    .join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${entries}
+</urlset>
+`;
+}
+
+function seoStaticResponse(request: Request): Response | null {
+  const { pathname } = new URL(request.url);
+
+  if (pathname === "/robots.txt") {
+    return new Response(buildRobotsTxt(), {
+      headers: {
+        ...STATIC_SEO_HEADERS,
+        "content-type": "text/plain; charset=utf-8",
+      },
+    });
+  }
+
+  if (pathname === "/sitemap.xml") {
+    return new Response(buildSitemapXml(), {
+      headers: {
+        ...STATIC_SEO_HEADERS,
+        "content-type": "application/xml; charset=utf-8",
+      },
+    });
+  }
+
+  return null;
 }
 
 function isCatastrophicSsrErrorBody(body: string, responseStatus: number): boolean {
@@ -69,6 +135,9 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const staticResponse = seoStaticResponse(request);
+      if (staticResponse) return staticResponse;
+
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);
