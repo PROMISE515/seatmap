@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
-import { ArrowLeft, MapPin, Check, Sparkles } from "lucide-react";
+import { ArrowLeft, MapPin, Check, Sparkles, Search } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { ToiletCard } from "@/components/ToiletCard";
 import { MapPreview } from "@/components/MapPreview";
@@ -125,6 +125,13 @@ function CityPage() {
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             {t("city.previewExplain", city.name)}
           </p>
+          <Link
+            to="/"
+            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-extrabold text-primary-foreground shadow-brand transition active:scale-[0.98]"
+          >
+            <Search className="size-4" aria-hidden />
+            {t("city.liveSearchCta")}
+          </Link>
         </div>
       </section>
 
@@ -173,7 +180,19 @@ function CityPage() {
           ))
         ) : (
           <div className="rounded-2xl border border-dashed border-border p-6 text-center bg-card">
-            <p className="text-sm text-muted-foreground">{t("city.noPublic", city.name)}</p>
+            <p className="text-sm font-bold text-card-foreground">
+              {t("city.noCuratedTitle", city.name)}
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              {t("city.noCuratedBody", city.name)}
+            </p>
+            <Link
+              to="/"
+              className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-background px-4 py-3 text-sm font-bold text-primary hover:bg-primary/10"
+            >
+              <Search className="size-4" aria-hidden />
+              {t("city.liveSearchCta")}
+            </Link>
           </div>
         )}
       </section>

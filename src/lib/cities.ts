@@ -151,6 +151,84 @@ export const cities: City[] = [
     radius: 8000,
   },
   {
+    slug: "suzhou",
+    name: "Suzhou",
+    nameLocal: "苏州",
+    country: "China",
+    countryCode: "CN",
+    intro:
+      "Suzhou is a common Shanghai side trip, and seated-toilet candidates are strongest around malls, hotels, and garden-adjacent commercial areas.",
+    travelerTip:
+      "Prioritize Suzhou Center, Times Square, large hotels, and shopping areas before smaller old-town public toilets.",
+    neighborhoods: [
+      "Suzhou Center",
+      "Guanqian Street",
+      "Pingjiang Road",
+      "Jinji Lake",
+      "Humble Administrator's Garden",
+    ],
+    centerLat: 31.2989,
+    centerLng: 120.5853,
+    radius: 6000,
+  },
+  {
+    slug: "nanjing",
+    name: "Nanjing",
+    nameLocal: "南京",
+    country: "China",
+    countryCode: "CN",
+    intro:
+      "Nanjing combines heritage sites, student areas, and business districts, so SeatMap focuses on reliable indoor venues near the main traveler routes.",
+    travelerTip:
+      "Deji Plaza, Xinjiekou, major hotels, and malls near tourist districts are safer first checks for seated toilets.",
+    neighborhoods: ["Xinjiekou", "Confucius Temple", "Deji Plaza", "Fuzimiao", "Xuanwu Lake"],
+    centerLat: 32.0603,
+    centerLng: 118.7969,
+    radius: 6000,
+  },
+  {
+    slug: "xiamen",
+    name: "Xiamen",
+    nameLocal: "厦门",
+    country: "China",
+    countryCode: "CN",
+    intro:
+      "Xiamen is a coastal leisure city where seated-toilet confidence is better around malls, ferry areas, hotels, and international chains.",
+    travelerTip:
+      "Look first around SM City, MixC, Zhongshan Road, ferry terminals, and larger hotels before small scenic-area toilets.",
+    neighborhoods: [
+      "Zhongshan Road",
+      "Gulangyu ferry area",
+      "SM City",
+      "MixC",
+      "Xiamen University area",
+    ],
+    centerLat: 24.4798,
+    centerLng: 118.0894,
+    radius: 6000,
+  },
+  {
+    slug: "guilin",
+    name: "Guilin",
+    nameLocal: "桂林",
+    country: "China",
+    countryCode: "CN",
+    intro:
+      "Guilin and Yangshuo are classic nature destinations, but travelers often need clearer guidance on where seated toilets are likely.",
+    travelerTip:
+      "Hotels, larger restaurants, malls, and visitor centers are better candidates than rural scenic-area public toilets.",
+    neighborhoods: [
+      "Two Rivers and Four Lakes",
+      "Zhengyang Pedestrian Street",
+      "Guilin Railway Station",
+      "Yangshuo West Street",
+      "Resort areas",
+    ],
+    centerLat: 25.2736,
+    centerLng: 110.29,
+    radius: 8000,
+  },
+  {
     slug: "hong-kong",
     name: "Hong Kong",
     nameLocal: "香港",
@@ -164,6 +242,108 @@ export const cities: City[] = [
     centerLat: 22.3193,
     centerLng: 114.1694,
     radius: 5000,
+  },
+  {
+    slug: "macau",
+    name: "Macau",
+    nameLocal: "澳门",
+    country: "China",
+    countryCode: "CN",
+    intro:
+      "Macau has strong international visitor demand, with seated toilets most likely inside malls, hotels, casinos, ferry terminals, and heritage-area commercial venues.",
+    travelerTip:
+      "Large integrated resorts, Senado Square malls, ferry terminals, and hotel lobbies are the safest first checks.",
+    neighborhoods: ["Senado Square", "Cotai", "Taipa", "Outer Harbour", "Macau Peninsula"],
+    centerLat: 22.1987,
+    centerLng: 113.5439,
+    radius: 5000,
+  },
+  {
+    slug: "sanya",
+    name: "Sanya",
+    nameLocal: "三亚",
+    country: "China",
+    countryCode: "CN",
+    intro:
+      "Sanya is a resort-heavy destination where travelers move between beaches, malls, hotels, and attractions, making reliable seated-toilet guidance useful.",
+    travelerTip:
+      "Hotel lobbies, beach resort malls, duty-free shopping areas, and larger cafes are safer than small beachside public toilets.",
+    neighborhoods: ["Sanya Bay", "Dadonghai", "Yalong Bay", "Haitang Bay", "Duty Free City"],
+    centerLat: 18.2528,
+    centerLng: 109.512,
+    radius: 8000,
+  },
+  {
+    slug: "kunming",
+    name: "Kunming",
+    nameLocal: "昆明",
+    country: "China",
+    countryCode: "CN",
+    intro:
+      "Kunming is the gateway to Yunnan routes, and seated-toilet candidates are strongest around central malls, hotels, and transport hubs.",
+    travelerTip:
+      "Nanping Street, Shuncheng, Tongde Kunming Plaza, railway station areas, and international hotels are good first checks.",
+    neighborhoods: [
+      "Nanping Street",
+      "Green Lake",
+      "Tongde Plaza",
+      "Kunming Railway Station",
+      "Dianchi area",
+    ],
+    centerLat: 25.0389,
+    centerLng: 102.7183,
+    radius: 7000,
+  },
+  {
+    slug: "lijiang",
+    name: "Lijiang",
+    nameLocal: "丽江",
+    country: "China",
+    countryCode: "CN",
+    intro:
+      "Lijiang is popular with foreign leisure travelers, but old-town routes can make clean seated toilets harder to identify quickly.",
+    travelerTip:
+      "Try larger hotels, shopping streets near the old town, visitor centers, and modern cafes before small alley public toilets.",
+    neighborhoods: [
+      "Lijiang Old Town",
+      "Shuhe Old Town",
+      "Dayan Old Town",
+      "Black Dragon Pool",
+      "Hotel areas",
+    ],
+    centerLat: 26.8721,
+    centerLng: 100.2296,
+    radius: 7000,
+  },
+  {
+    slug: "dali",
+    name: "Dali",
+    nameLocal: "大理",
+    country: "China",
+    countryCode: "CN",
+    intro:
+      "Dali attracts foreign backpackers and leisure travelers, especially around old-town and lake routes where restroom reliability can vary.",
+    travelerTip:
+      "Larger hotels, old-town commercial streets, cafes, and shopping areas are better first checks than small scenic public toilets.",
+    neighborhoods: ["Dali Old Town", "Erhai Lake", "Xiaguan", "Foreigner Street", "Cangshan area"],
+    centerLat: 25.6065,
+    centerLng: 100.2676,
+    radius: 7000,
+  },
+  {
+    slug: "qingdao",
+    name: "Qingdao",
+    nameLocal: "青岛",
+    country: "China",
+    countryCode: "CN",
+    intro:
+      "Qingdao is a coastal city with summer tourism, historic districts, and mall-heavy areas where seated-toilet candidates are easier to find.",
+    travelerTip:
+      "MixC, Hisense Plaza, May Fourth Square, large hotels, and mall-linked cafes are stronger first checks.",
+    neighborhoods: ["May Fourth Square", "MixC", "Taidong", "Old Town", "Badaguan"],
+    centerLat: 36.0671,
+    centerLng: 120.3826,
+    radius: 7000,
   },
 ];
 

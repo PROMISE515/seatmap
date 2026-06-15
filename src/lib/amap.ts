@@ -84,6 +84,18 @@ const CITY_EN: Record<string, string> = {
   西安: "Xi'an",
   苏州市: "Suzhou",
   苏州: "Suzhou",
+  厦门市: "Xiamen",
+  厦门: "Xiamen",
+  桂林市: "Guilin",
+  桂林: "Guilin",
+  三亚市: "Sanya",
+  三亚: "Sanya",
+  昆明市: "Kunming",
+  昆明: "Kunming",
+  丽江市: "Lijiang",
+  丽江: "Lijiang",
+  大理市: "Dali",
+  大理: "Dali",
   天津市: "Tianjin",
   天津: "Tianjin",
   武汉市: "Wuhan",
@@ -92,6 +104,8 @@ const CITY_EN: Record<string, string> = {
   张家界: "Zhangjiajie",
   香港: "Hong Kong",
   香港特别行政区: "Hong Kong",
+  澳门: "Macau",
+  澳门特别行政区: "Macau",
 };
 
 // Map Chinese province names to English display labels.
