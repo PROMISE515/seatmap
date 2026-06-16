@@ -14,7 +14,7 @@ export const Route = createFileRoute("/complaint")({
     amapId: typeof search.amapId === "string" ? search.amapId : undefined,
   }),
   head: () => ({
-    meta: [{ title: "Report this place — SeatMap" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Report this place — Western Toilet Map" }, { name: "robots", content: "noindex" }],
   }),
   component: ComplaintPage,
 });

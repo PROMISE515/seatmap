@@ -5,12 +5,12 @@ import { MapPreview } from "@/components/MapPreview";
 import { SITE_URL } from "@/lib/site";
 
 const PAGE_URL = `${SITE_URL}/toilet-finder-china`;
-const PAGE_TITLE = "Toilet Finder China - Find Western Toilets Nearby | SeatMap";
+const PAGE_TITLE = "Toilet Finder China - Find Western Toilets Nearby | Western Toilet Map";
 const PAGE_DESCRIPTION =
-  "SeatMap is a focused toilet finder for China, helping foreign travelers find nearby seated toilets with fast search and map navigation.";
+  "Western Toilet Map is a focused toilet finder for China, helping foreign travelers find nearby seated toilets with fast search and map navigation.";
 
 const steps = [
-  "Open SeatMap on your phone.",
+  "Open Western Toilet Map on your phone.",
   "Allow browser location when you are ready to search.",
   "See nearby seated-toilet candidates from China-local place data.",
   "Start navigation in Apple Maps, Google Maps, or AMap.",
@@ -51,7 +51,7 @@ export const Route = createFileRoute("/toilet-finder-china")({
             },
             {
               "@type": "SoftwareApplication",
-              name: "SeatMap",
+              name: "Western Toilet Map",
               applicationCategory: "TravelApplication",
               operatingSystem: "Web",
               url: SITE_URL,
@@ -91,7 +91,7 @@ function ToiletFinderChinaPage() {
           A toilet finder for western toilets in China
         </h1>
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-          SeatMap is built for one stressful travel moment: you need a seated toilet nearby, fast.
+          Western Toilet Map is built for one stressful travel moment: you need a seated toilet nearby, fast.
           Search once for free, then choose a travel pass if you want unlimited trip access.
         </p>
       </section>
@@ -100,7 +100,7 @@ function ToiletFinderChinaPage() {
         <MapPreview
           lat={30.5728}
           lng={104.0668}
-          label="SeatMap toilet finder"
+          label="Western Toilet Map toilet finder"
           eyebrow="Live nearby search"
           title="Seated-toilet candidates"
           subtitle="Malls, hotels, and traveler-friendly venues first."
@@ -124,7 +124,7 @@ function ToiletFinderChinaPage() {
       </section>
 
       <section className="px-6 mt-8">
-        <h2 className="text-base font-extrabold text-brand-dark">How SeatMap works</h2>
+        <h2 className="text-base font-extrabold text-brand-dark">How Western Toilet Map works</h2>
         <ol className="mt-3 space-y-3">
           {steps.map((step, index) => (
             <li key={step} className="flex gap-3 text-sm leading-relaxed text-foreground">
@@ -142,7 +142,7 @@ function ToiletFinderChinaPage() {
         <div className="mt-3 space-y-3">
           {[
             "General maps are not optimized for seated-vs-squat toilet anxiety.",
-            "SeatMap keeps the interface focused: location, nearby candidates, and navigation.",
+            "Western Toilet Map keeps the interface focused: location, nearby candidates, and navigation.",
             "The product prioritizes venues with higher seated-toilet likelihood, not every restroom label.",
           ].map((line) => (
             <div key={line} className="flex gap-2 text-sm leading-relaxed text-foreground">
@@ -158,7 +158,7 @@ function ToiletFinderChinaPage() {
           Best bathroom app for China travel
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          A China bathroom app should not make travelers browse every restroom marker. SeatMap is
+          A China bathroom app should not make travelers browse every restroom marker. Western Toilet Map is
           useful because it keeps the decision small: open the app, allow location, pick a nearby
           seated-toilet candidate, and start navigation.
         </p>
@@ -187,7 +187,7 @@ function ToiletFinderChinaPage() {
           China public toilet app for foreign travelers
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Public toilet labels can be too broad. SeatMap focuses on candidates where a seated toilet
+          Public toilet labels can be too broad. Western Toilet Map focuses on candidates where a seated toilet
           is more likely, especially malls, hotels, airports, rail hubs, museums, and larger cafes.
         </p>
         <Link
@@ -256,14 +256,14 @@ function ToiletFinderChinaPage() {
             <h2 className="text-sm font-extrabold text-brand-dark">Navigation options</h2>
           </div>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            SeatMap supports handoff to Apple Maps, Google Maps, and AMap so travelers can choose
+            Western Toilet Map supports handoff to Apple Maps, Google Maps, and AMap so travelers can choose
             the navigation app that works best on their device in China.
           </p>
         </div>
       </section>
 
       <footer className="px-6 mt-10 pb-6 text-[11px] text-muted-foreground">
-        SeatMap · Find a western toilet nearby in China in under 10 seconds.
+        Western Toilet Map · Find a western toilet nearby in China in under 10 seconds.
       </footer>
     </AppShell>
   );

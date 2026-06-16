@@ -5,9 +5,9 @@ import { MapPreview } from "@/components/MapPreview";
 import { SITE_URL } from "@/lib/site";
 
 const PAGE_URL = `${SITE_URL}/china-public-toilet-app`;
-const PAGE_TITLE = "China Public Toilet App for Foreign Travelers | SeatMap";
+const PAGE_TITLE = "China Public Toilet App for Foreign Travelers | Western Toilet Map";
 const PAGE_DESCRIPTION =
-  "SeatMap is a China public toilet app for foreign travelers who need nearby seated-toilet candidates, map support, and navigation in major China travel cities.";
+  "Western Toilet Map is a China public toilet app for foreign travelers who need nearby seated-toilet candidates, map support, and navigation in major China travel cities.";
 
 const publicToiletNeeds = [
   {
@@ -16,7 +16,7 @@ const publicToiletNeeds = [
   },
   {
     title: "Indoor venues can be better than street toilets",
-    body: "SeatMap prioritizes malls, hotels, airports, rail hubs, museums, and larger cafes because they are usually better bets for seated toilets.",
+    body: "Western Toilet Map prioritizes malls, hotels, airports, rail hubs, museums, and larger cafes because they are usually better bets for seated toilets.",
   },
   {
     title: "Navigation needs local options",
@@ -35,14 +35,14 @@ const cityLinks = [
 
 const faqs = [
   {
-    question: "Is SeatMap a public toilet app for China?",
+    question: "Is Western Toilet Map a public toilet app for China?",
     answer:
-      "Yes. SeatMap focuses on helping foreign travelers find nearby public-toilet candidates where a seated toilet is more likely, then start navigation quickly.",
+      "Yes. Western Toilet Map focuses on helping foreign travelers find nearby public-toilet candidates where a seated toilet is more likely, then start navigation quickly.",
   },
   {
-    question: "Does SeatMap show every public toilet?",
+    question: "Does Western Toilet Map show every public toilet?",
     answer:
-      "SeatMap is intentionally focused. It is more useful to prioritize traveler-friendly seated-toilet candidates than to show every possible restroom label.",
+      "Western Toilet Map is intentionally focused. It is more useful to prioritize traveler-friendly seated-toilet candidates than to show every possible restroom label.",
   },
   {
     question: "Which China cities should tourists prepare for first?",
@@ -77,7 +77,7 @@ export const Route = createFileRoute("/china-public-toilet-app")({
             },
             {
               "@type": "SoftwareApplication",
-              name: "SeatMap",
+              name: "Western Toilet Map",
               applicationCategory: "TravelApplication",
               operatingSystem: "Web",
               url: SITE_URL,
@@ -130,7 +130,7 @@ function ChinaPublicToiletAppPage() {
         </h1>
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
           Public toilet data is useful, but travelers usually need a more specific answer: where is
-          the nearest likely seated toilet? SeatMap keeps the search focused on that question.
+          the nearest likely seated toilet? Western Toilet Map keeps the search focused on that question.
         </p>
       </section>
 
@@ -139,7 +139,7 @@ function ChinaPublicToiletAppPage() {
           lat={22.5431}
           lng={114.0579}
           label="China public toilet app"
-          eyebrow="SeatMap search"
+          eyebrow="Western Toilet Map search"
           title="Public-toilet candidates"
           subtitle="Prioritize seated-toilet likelihood and simple navigation."
         />
@@ -179,7 +179,7 @@ function ChinaPublicToiletAppPage() {
       </section>
 
       <section className="px-6 mt-8">
-        <h2 className="text-base font-extrabold text-brand-dark">What SeatMap optimizes for</h2>
+        <h2 className="text-base font-extrabold text-brand-dark">What Western Toilet Map optimizes for</h2>
         <div className="mt-3 space-y-3">
           {[
             "Fast nearby discovery when the traveler is already outside.",
@@ -242,7 +242,7 @@ function ChinaPublicToiletAppPage() {
       </section>
 
       <footer className="px-6 mt-10 pb-6 text-[11px] text-muted-foreground">
-        SeatMap · Public toilet search for English-speaking China travelers.
+        Western Toilet Map · Public toilet search for English-speaking China travelers.
       </footer>
     </AppShell>
   );

@@ -9,7 +9,7 @@ import { getSavedToilets, removeSavedToilet } from "@/lib/saved-toilets";
 
 export const Route = createFileRoute("/saved")({
   head: () => ({
-    meta: [{ title: "Saved Toilets — SeatMap" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Saved Toilets — Western Toilet Map" }, { name: "robots", content: "noindex" }],
   }),
   component: SavedPage,
 });

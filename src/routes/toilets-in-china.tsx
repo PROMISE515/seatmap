@@ -5,15 +5,15 @@ import { MapPreview } from "@/components/MapPreview";
 import { SITE_URL } from "@/lib/site";
 
 const GUIDE_URL = `${SITE_URL}/toilets-in-china`;
-const GUIDE_TITLE = "Toilets in China for Tourists - Western Toilet Guide | SeatMap";
+const GUIDE_TITLE = "Toilets in China for Tourists - Western Toilet Guide | Western Toilet Map";
 const GUIDE_DESCRIPTION =
-  "A practical guide to public toilets in China for foreign travelers: where to find seated toilets, when to expect squat toilets, and how SeatMap helps nearby.";
+  "A practical guide to public toilets in China for foreign travelers: where to find seated toilets, when to expect squat toilets, and how Western Toilet Map helps nearby.";
 
 const quickRules = [
   "Malls and international hotels are usually safer first checks than small street toilets.",
   "Tourist attractions may have both squat and seated stalls, but signage is often inconsistent.",
   "Coffee chains, airport terminals, rail stations, and newer commercial complexes are good backups.",
-  "Use SeatMap when you need the nearest seated-toilet candidate instead of general bathroom advice.",
+  "Use Western Toilet Map when you need the nearest seated-toilet candidate instead of general bathroom advice.",
 ];
 
 const cityLinks = [
@@ -34,12 +34,12 @@ const faqs = [
   {
     question: "Where should a foreign tourist look first for a western toilet in China?",
     answer:
-      "Start with large malls, international hotels, airports, rail stations, modern museums, and larger coffee chains. SeatMap focuses on nearby places where a seated toilet is more likely.",
+      "Start with large malls, international hotels, airports, rail stations, modern museums, and larger coffee chains. Western Toilet Map focuses on nearby places where a seated toilet is more likely.",
   },
   {
     question: "Can Google Maps reliably find toilets in China?",
     answer:
-      "Google Maps can be limited in mainland China. SeatMap uses China-local place data and keeps the experience focused on fast toilet discovery and navigation options.",
+      "Google Maps can be limited in mainland China. Western Toilet Map uses China-local place data and keeps the experience focused on fast toilet discovery and navigation options.",
   },
 ];
 
@@ -68,7 +68,7 @@ export const Route = createFileRoute("/toilets-in-china")({
               mainEntityOfPage: GUIDE_URL,
               publisher: {
                 "@type": "Organization",
-                name: "SeatMap",
+                name: "Western Toilet Map",
                 url: SITE_URL,
               },
             },
@@ -115,7 +115,7 @@ function ToiletsInChinaPage() {
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
           China is not hard to travel, but bathrooms can still surprise first-time visitors. The
           simple rule: when you need a western toilet, look for reliable indoor venues first, then
-          use SeatMap for nearby seated-toilet candidates.
+          use Western Toilet Map for nearby seated-toilet candidates.
         </p>
       </section>
 
@@ -124,7 +124,7 @@ function ToiletsInChinaPage() {
           lat={31.2304}
           lng={121.4737}
           label="China toilet guide"
-          eyebrow="SeatMap search"
+          eyebrow="Western Toilet Map search"
           title="Find nearby western toilets"
           subtitle="Use live location when you need the closest option."
         />
@@ -199,7 +199,7 @@ function ToiletsInChinaPage() {
             "Carry tissues and hand sanitizer because public toilet supplies can vary.",
             "Check malls, hotel lobbies, airports, rail hubs, museums, and large cafes first.",
             "When a venue has multiple stalls, look for seated-toilet icons before joining a line.",
-            "Use SeatMap when you need a nearby seated-toilet candidate quickly.",
+            "Use Western Toilet Map when you need a nearby seated-toilet candidate quickly.",
           ].map((tip) => (
             <div key={tip} className="flex gap-2 text-sm leading-relaxed text-foreground">
               <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
@@ -274,7 +274,7 @@ function ToiletsInChinaPage() {
       </section>
 
       <footer className="px-6 mt-10 pb-6 text-[11px] text-muted-foreground">
-        SeatMap helps foreign travelers find seated toilets nearby in China.
+        Western Toilet Map helps foreign travelers find seated toilets nearby in China.
       </footer>
     </AppShell>
   );

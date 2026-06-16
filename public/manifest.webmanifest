@@ -1,6 +1,6 @@
 {
-  "name": "SeatMap",
-  "short_name": "SeatMap",
+  "name": "Western Toilet Map",
+  "short_name": "Toilet Map",
   "description": "Find nearby clean Western toilets, fast.",
   "start_url": "/",
   "display": "standalone",

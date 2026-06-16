@@ -16,9 +16,9 @@ export const Route = createFileRoute("/checkout/return")({
       {
         name: "description",
         content:
-          "Your SeatMap Travel Pass is active. Save your private access link to use it on other devices.",
+          "Your Western Toilet Map Travel Pass is active. Save your private access link to use it on other devices.",
       },
-      { property: "og:title", content: "Your SeatMap Travel Pass is active" },
+      { property: "og:title", content: "Your Western Toilet Map Travel Pass is active" },
       {
         property: "og:description",
         content:
@@ -141,7 +141,7 @@ function CheckoutReturn() {
           to="/"
           className="block w-full text-center px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm uppercase tracking-widest"
         >
-          Back to SeatMap
+          Back to Western Toilet Map
         </Link>
       </div>
     </div>

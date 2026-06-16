@@ -5,9 +5,9 @@ import { MapPreview } from "@/components/MapPreview";
 import { SITE_URL } from "@/lib/site";
 
 const PAGE_URL = `${SITE_URL}/squat-toilets-china`;
-const PAGE_TITLE = "Squat Toilets in China - Practical Guide for Tourists | SeatMap";
+const PAGE_TITLE = "Squat Toilets in China - Practical Guide for Tourists | Western Toilet Map";
 const PAGE_DESCRIPTION =
-  "A practical guide to squat toilets in China for first-time visitors, including where they are common, how to avoid them, and when to use SeatMap to find a seated toilet.";
+  "A practical guide to squat toilets in China for first-time visitors, including where they are common, how to avoid them, and when to use Western Toilet Map to find a seated toilet.";
 
 const commonPlaces = [
   "Older standalone public toilets",
@@ -18,7 +18,7 @@ const commonPlaces = [
 
 const avoidSteps = [
   "Search nearby malls, hotels, airports, rail stations, museums, and larger cafes first.",
-  "Use SeatMap before you are desperate so you can choose a better route.",
+  "Use Western Toilet Map before you are desperate so you can choose a better route.",
   "In a venue with multiple stalls, check for seated-stall icons before joining a line.",
   "If the first option is unclear, navigate to the next indoor candidate instead of walking randomly.",
 ];
@@ -46,7 +46,7 @@ const faqs = [
   {
     question: "What should I do in an emergency?",
     answer:
-      "Open SeatMap, allow location, pick the closest likely seated-toilet candidate, and start navigation. Speed matters more than reading long advice in that moment.",
+      "Open Western Toilet Map, allow location, pick the closest likely seated-toilet candidate, and start navigation. Speed matters more than reading long advice in that moment.",
   },
 ];
 
@@ -75,7 +75,7 @@ export const Route = createFileRoute("/squat-toilets-china")({
               mainEntityOfPage: PAGE_URL,
               publisher: {
                 "@type": "Organization",
-                name: "SeatMap",
+                name: "Western Toilet Map",
                 url: SITE_URL,
               },
             },
@@ -121,7 +121,7 @@ function SquatToiletsChinaPage() {
         </h1>
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
           Squat toilets are part of travel in China, but you do not have to rely on luck. Know where
-          they are more common, where seated toilets are more likely, and when to use SeatMap to
+          they are more common, where seated toilets are more likely, and when to use Western Toilet Map to
           find a better nearby option.
         </p>
       </section>
@@ -131,7 +131,7 @@ function SquatToiletsChinaPage() {
           lat={34.3416}
           lng={108.9398}
           label="Squat toilet backup plan"
-          eyebrow="SeatMap travel guide"
+          eyebrow="Western Toilet Map travel guide"
           title="Find a seated option nearby"
           subtitle="Use indoor venue candidates when squat toilets are a concern."
         />
@@ -243,7 +243,7 @@ function SquatToiletsChinaPage() {
       </section>
 
       <footer className="px-6 mt-10 pb-6 text-[11px] text-muted-foreground">
-        SeatMap · Find a seated toilet nearby in China in under 10 seconds.
+        Western Toilet Map · Find a seated toilet nearby in China in under 10 seconds.
       </footer>
     </AppShell>
   );

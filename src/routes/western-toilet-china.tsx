@@ -5,9 +5,9 @@ import { MapPreview } from "@/components/MapPreview";
 import { SITE_URL } from "@/lib/site";
 
 const PAGE_URL = `${SITE_URL}/western-toilet-china`;
-const PAGE_TITLE = "Western Toilets in China - Where Tourists Can Find Seated Toilets | SeatMap";
+const PAGE_TITLE = "Western Toilets in China - Where Tourists Can Find Seated Toilets | Western Toilet Map";
 const PAGE_DESCRIPTION =
-  "A practical guide to finding western toilets in China, including the best venue types, city tips, and how SeatMap helps foreign travelers find seated toilets fast.";
+  "A practical guide to finding western toilets in China, including the best venue types, city tips, and how Western Toilet Map helps foreign travelers find seated toilets fast.";
 
 const bestPlaces = [
   {
@@ -46,7 +46,7 @@ const faqs = [
   {
     question: "What should I search for if I need a seated toilet?",
     answer:
-      "Search around malls, hotels, airports, rail stations, museums, and larger cafes first. SeatMap is designed to reduce that search to nearby seated-toilet candidates.",
+      "Search around malls, hotels, airports, rail stations, museums, and larger cafes first. Western Toilet Map is designed to reduce that search to nearby seated-toilet candidates.",
   },
   {
     question: "Can I avoid squat toilets completely in China?",
@@ -80,7 +80,7 @@ export const Route = createFileRoute("/western-toilet-china")({
               mainEntityOfPage: PAGE_URL,
               publisher: {
                 "@type": "Organization",
-                name: "SeatMap",
+                name: "Western Toilet Map",
                 url: SITE_URL,
               },
             },
@@ -127,7 +127,7 @@ function WesternToiletChinaPage() {
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
           China has both squat and seated toilets. If you are a foreign traveler who needs a
           western toilet quickly, your best odds are modern indoor venues first, then a focused
-          nearby search with SeatMap.
+          nearby search with Western Toilet Map.
         </p>
       </section>
 
@@ -136,7 +136,7 @@ function WesternToiletChinaPage() {
           lat={22.3193}
           lng={114.1694}
           label="Western toilet search"
-          eyebrow="SeatMap guide"
+          eyebrow="Western Toilet Map guide"
           title="Find seated-toilet candidates"
           subtitle="Malls, hotels, airports, and traveler-friendly venues first."
         />
@@ -179,7 +179,7 @@ function WesternToiletChinaPage() {
           {[
             "Choose indoor commercial venues before small standalone public toilets.",
             "In tourist areas, check maps for malls and hotel clusters before walking far.",
-            "If you are in discomfort, use SeatMap first and navigate directly.",
+            "If you are in discomfort, use Western Toilet Map first and navigate directly.",
             "Keep Hong Kong and Macau in your search plan; both are strong seated-toilet destinations.",
           ].map((rule) => (
             <div key={rule} className="flex gap-2 text-sm leading-relaxed text-foreground">
@@ -237,7 +237,7 @@ function WesternToiletChinaPage() {
       </section>
 
       <footer className="px-6 mt-10 pb-6 text-[11px] text-muted-foreground">
-        SeatMap helps foreign travelers find western toilets nearby in China.
+        Western Toilet Map helps foreign travelers find western toilets nearby in China.
       </footer>
     </AppShell>
   );

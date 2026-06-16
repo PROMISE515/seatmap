@@ -5,9 +5,9 @@ import { MapPreview } from "@/components/MapPreview";
 import { SITE_URL } from "@/lib/site";
 
 const PAGE_URL = `${SITE_URL}/china-bathroom-tips`;
-const PAGE_TITLE = "China Bathroom Tips for Tourists - Practical Restroom Guide | SeatMap";
+const PAGE_TITLE = "China Bathroom Tips for Tourists - Practical Restroom Guide | Western Toilet Map";
 const PAGE_DESCRIPTION =
-  "Practical China bathroom tips for foreign tourists: where to look first, what to carry, how to avoid squat toilets, and how SeatMap helps find seated toilets nearby.";
+  "Practical China bathroom tips for foreign tourists: where to look first, what to carry, how to avoid squat toilets, and how Western Toilet Map helps find seated toilets nearby.";
 
 const tips = [
   {
@@ -24,7 +24,7 @@ const tips = [
   },
   {
     title: "Use local map coverage",
-    body: "In mainland China, China-local place data can be more useful than a generic global map. SeatMap keeps that data focused on one travel need.",
+    body: "In mainland China, China-local place data can be more useful than a generic global map. Western Toilet Map keeps that data focused on one travel need.",
   },
 ];
 
@@ -51,7 +51,7 @@ const faqs = [
   {
     question: "How can I find a seated toilet quickly?",
     answer:
-      "Open SeatMap, allow location, choose a nearby seated-toilet candidate, and start navigation. It is built for the emergency travel moment.",
+      "Open Western Toilet Map, allow location, choose a nearby seated-toilet candidate, and start navigation. It is built for the emergency travel moment.",
   },
 ];
 
@@ -80,7 +80,7 @@ export const Route = createFileRoute("/china-bathroom-tips")({
               mainEntityOfPage: PAGE_URL,
               publisher: {
                 "@type": "Organization",
-                name: "SeatMap",
+                name: "Western Toilet Map",
                 url: SITE_URL,
               },
             },
@@ -126,7 +126,7 @@ function ChinaBathroomTipsPage() {
         </h1>
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
           Bathrooms in China are manageable when you know where to look. The safest pattern is
-          simple: prioritize modern indoor venues, carry a small backup kit, and use SeatMap when
+          simple: prioritize modern indoor venues, carry a small backup kit, and use Western Toilet Map when
           you need a seated toilet nearby.
         </p>
       </section>
@@ -138,7 +138,7 @@ function ChinaBathroomTipsPage() {
           label="China bathroom tips"
           eyebrow="Travel restroom plan"
           title="Find a better nearby option"
-          subtitle="Use malls, hotels, airports, and SeatMap before it becomes urgent."
+          subtitle="Use malls, hotels, airports, and Western Toilet Map before it becomes urgent."
         />
       </section>
 
@@ -179,7 +179,7 @@ function ChinaBathroomTipsPage() {
           {[
             "If a venue looks modern and busy, it is usually a better first choice.",
             "Do not assume every tourist attraction has a seated toilet in the nearest restroom.",
-            "Use SeatMap when you need speed, not when you have time to read long travel advice.",
+            "Use Western Toilet Map when you need speed, not when you have time to read long travel advice.",
           ].map((rule) => (
             <div key={rule} className="flex gap-2 text-sm leading-relaxed text-foreground">
               <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
@@ -236,7 +236,7 @@ function ChinaBathroomTipsPage() {
       </section>
 
       <footer className="px-6 mt-10 pb-6 text-[11px] text-muted-foreground">
-        SeatMap · Bathroom confidence for foreign travelers in China.
+        Western Toilet Map · Bathroom confidence for foreign travelers in China.
       </footer>
     </AppShell>
   );

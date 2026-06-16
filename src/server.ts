@@ -3,7 +3,7 @@ import "./lib/error-capture";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 import { cities } from "./lib/cities";
-import { SITE_URL } from "./lib/site";
+import { LEGACY_SITE_HOSTS, SITE_HOST, SITE_URL } from "./lib/site";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -98,6 +98,15 @@ function seoStaticResponse(request: Request): Response | null {
   return null;
 }
 
+function canonicalHostRedirect(request: Request): Response | null {
+  const url = new URL(request.url);
+  if (!LEGACY_SITE_HOSTS.has(url.hostname)) return null;
+
+  url.protocol = "https:";
+  url.hostname = SITE_HOST;
+  return Response.redirect(url.toString(), 308);
+}
+
 function isCatastrophicSsrErrorBody(body: string, responseStatus: number): boolean {
   let payload: unknown;
   try {
@@ -142,6 +151,9 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const redirectResponse = canonicalHostRedirect(request);
+      if (redirectResponse) return redirectResponse;
+
       const staticResponse = seoStaticResponse(request);
       if (staticResponse) return staticResponse;
 

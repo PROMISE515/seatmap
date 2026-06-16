@@ -12,12 +12,12 @@ export const Route = createFileRoute("/pass")({
   }),
   head: () => ({
     meta: [
-      { title: "Restore your Travel Pass — SeatMap" },
+      { title: "Restore your Travel Pass — Western Toilet Map" },
       {
         name: "description",
-        content: "Restore your SeatMap Travel Pass on a new device using your private access link.",
+        content: "Restore your Western Toilet Map Travel Pass on a new device using your private access link.",
       },
-      { property: "og:title", content: "Restore your SeatMap Travel Pass" },
+      { property: "og:title", content: "Restore your Western Toilet Map Travel Pass" },
       {
         property: "og:description",
         content:
@@ -71,7 +71,7 @@ function PassPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-background">
-      <h1 className="sr-only">Restore your SeatMap Travel Pass</h1>
+      <h1 className="sr-only">Restore your Western Toilet Map Travel Pass</h1>
 
       {state.kind === "loading" && (
         <>
@@ -91,7 +91,7 @@ function PassPage() {
             to="/"
             className="mt-5 inline-flex w-full max-w-xs items-center justify-center rounded-xl bg-primary px-6 py-3 text-sm font-bold uppercase tracking-widest text-primary-foreground"
           >
-            Continue to SeatMap
+            Continue to Western Toilet Map
           </Link>
         </>
       )}
@@ -121,7 +121,7 @@ function PassPage() {
             to="/"
             className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm uppercase tracking-widest"
           >
-            Back to SeatMap
+            Back to Western Toilet Map
           </Link>
         </>
       )}

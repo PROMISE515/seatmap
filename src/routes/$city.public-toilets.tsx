@@ -17,7 +17,7 @@ export const Route = createFileRoute("/$city/public-toilets")({
   head: ({ params, loaderData }) => {
     if (!loaderData) return { meta: [] };
     const { city } = loaderData;
-    const title = `Public Toilets in ${city.name} — Western Restrooms | SeatMap`;
+    const title = `Public Toilets in ${city.name} — Western Restrooms | Western Toilet Map`;
     const description = `Curated seated-toilet candidates in ${city.name}, ${city.country}, focused on malls, hotels, and traveler-friendly venues.`;
     const url = `${SITE_URL}/${params.city}/public-toilets`;
     return {
@@ -245,7 +245,7 @@ function CityPage() {
 
       <section className="px-6 mt-10">
         <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
-          SeatMap guides
+          Western Toilet Map guides
         </h2>
         <div className="grid gap-2">
           <Link
@@ -274,15 +274,15 @@ function getCitySeoFaqs(cityName: string) {
   return [
     {
       question: `Where can I find a western toilet in ${cityName}?`,
-      answer: `In ${cityName}, start with large malls, international hotels, modern museums, transport hubs, and bigger coffee chains. SeatMap highlights nearby venue candidates where a seated toilet is more likely.`,
+      answer: `In ${cityName}, start with large malls, international hotels, modern museums, transport hubs, and bigger coffee chains. Western Toilet Map highlights nearby venue candidates where a seated toilet is more likely.`,
     },
     {
       question: `Are public toilets in ${cityName} usually seated toilets?`,
       answer: `Some public toilets in ${cityName} have seated stalls, but availability can vary. If you need a western toilet quickly, indoor commercial venues are usually more reliable than small standalone public toilets.`,
     },
     {
-      question: `Can SeatMap navigate me to a toilet in ${cityName}?`,
-      answer: `Yes. Use the live search on the SeatMap home page to get nearby candidates, then start navigation with Apple Maps, Google Maps, or AMap depending on what works best on your phone.`,
+      question: `Can Western Toilet Map navigate me to a toilet in ${cityName}?`,
+      answer: `Yes. Use the live search on the Western Toilet Map home page to get nearby candidates, then start navigation with Apple Maps, Google Maps, or AMap depending on what works best on your phone.`,
     },
   ];
 }

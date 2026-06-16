@@ -42,13 +42,16 @@ export const Route = createFileRoute("/")({
   codeSplitGroupings: [["loader", "component"]],
   head: () => ({
     meta: [
-      { title: "SeatMap — Find a western toilet nearby in China" },
+      { title: "Western Toilet Map — Find a western toilet nearby in China" },
       {
         name: "description",
         content:
-          "SeatMap helps foreign travelers find nearby seated toilets in China in 10 seconds. Fast, calm, reliable.",
+          "Western Toilet Map helps foreign travelers find nearby seated toilets in China in 10 seconds. Fast, calm, reliable.",
       },
-      { property: "og:title", content: "SeatMap — Find a western toilet nearby in China" },
+      {
+        property: "og:title",
+        content: "Western Toilet Map — Find a western toilet nearby in China",
+      },
       {
         property: "og:description",
         content: "A calm safety button for travelers in China. Find a seated toilet, fast.",
@@ -64,14 +67,14 @@ export const Route = createFileRoute("/")({
             {
               "@type": "Organization",
               "@id": `${SITE_URL}/#organization`,
-              name: "SeatMap",
+              name: "Western Toilet Map",
               url: SITE_URL,
             },
             {
               "@type": "WebSite",
               "@id": `${SITE_URL}/#website`,
               url: SITE_URL,
-              name: "SeatMap",
+              name: "Western Toilet Map",
               description: "Find nearby seated toilets in China for travelers.",
               publisher: { "@id": `${SITE_URL}/#organization` },
             },
@@ -715,8 +718,9 @@ function HomePage() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <SeatMapLogo className="size-10 shrink-0" />
-              <h1 className="text-xl font-extrabold tracking-tight text-brand-dark uppercase">
-                SeatMap <span className="sr-only">— Find seated toilets nearby in China</span>
+              <h1 className="text-lg font-extrabold tracking-tight text-brand-dark uppercase leading-tight">
+                Western Toilet Map{" "}
+                <span className="sr-only">— Find seated toilets nearby in China</span>
               </h1>
             </div>
             <p className="text-sm text-muted-foreground font-medium">{t("home.subtitle")}</p>
@@ -1031,8 +1035,8 @@ function HomePage() {
               Use your current location
             </DialogTitle>
             <DialogDescription>
-              SeatMap needs your location to sort nearby places by walking distance and open the
-              right navigation destination.
+              Western Toilet Map needs your location to sort nearby places by walking distance and
+              open the right navigation destination.
             </DialogDescription>
           </DialogHeader>
 

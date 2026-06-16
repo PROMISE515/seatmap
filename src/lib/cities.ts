@@ -22,7 +22,7 @@ export const cities: City[] = [
     country: "China",
     countryCode: "CN",
     intro:
-      "Shanghai is the safest first city for SeatMap: luxury malls, international hotels, and coffee chains are dense around the main traveler areas.",
+      "Shanghai is the safest first city for Western Toilet Map: luxury malls, international hotels, and coffee chains are dense around the main traveler areas.",
     travelerTip:
       "In Shanghai, IFC, K11, Plaza 66, Taikoo Li Qiantan, and international hotel lobbies are usually better than street-side public toilets.",
     neighborhoods: ["Lujiazui", "Jing'an", "Xintiandi", "The Bund", "Former French Concession"],
@@ -82,7 +82,7 @@ export const cities: City[] = [
     country: "China",
     countryCode: "CN",
     intro:
-      "Chongqing is dense and vertical, so SeatMap prioritizes indoor venues where travelers are more likely to find clean seated toilets.",
+      "Chongqing is dense and vertical, so Western Toilet Map prioritizes indoor venues where travelers are more likely to find clean seated toilets.",
     travelerTip:
       "Try Raffles City, Jiefangbei malls, high-end hotels, and large coffee chains before standalone public toilets.",
     neighborhoods: ["Jiefangbei", "Raffles City", "Hongyadong", "Guanyinqiao", "Nanbin Road"],
@@ -97,7 +97,7 @@ export const cities: City[] = [
     country: "China",
     countryCode: "CN",
     intro:
-      "Shenzhen has many modern malls and hotels, making it a strong SeatMap city for reliable seated-restroom candidates.",
+      "Shenzhen has many modern malls and hotels, making it a strong Western Toilet Map city for reliable seated-restroom candidates.",
     travelerTip:
       "MixC, Coco Park, OCT Harbour, hotel lobbies, and coffee chains around Futian and Nanshan are strong first stops.",
     neighborhoods: ["Futian", "Nanshan", "Coco Park", "MixC", "OCT Harbour"],
@@ -178,7 +178,7 @@ export const cities: City[] = [
     country: "China",
     countryCode: "CN",
     intro:
-      "Nanjing combines heritage sites, student areas, and business districts, so SeatMap focuses on reliable indoor venues near the main traveler routes.",
+      "Nanjing combines heritage sites, student areas, and business districts, so Western Toilet Map focuses on reliable indoor venues near the main traveler routes.",
     travelerTip:
       "Deji Plaza, Xinjiekou, major hotels, and malls near tourist districts are safer first checks for seated toilets.",
     neighborhoods: ["Xinjiekou", "Confucius Temple", "Deji Plaza", "Fuzimiao", "Xuanwu Lake"],
