@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Check, MapPin, Search, ShieldCheck } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { MapPreview } from "@/components/MapPreview";
-import { SITE_URL } from "@/lib/site";
+import { SeoReviewNote } from "@/components/SeoReviewNote";
+import { SEO_LAST_REVIEWED_ISO, SITE_URL } from "@/lib/site";
 
 const GUIDE_URL = `${SITE_URL}/toilets-in-china`;
 const GUIDE_TITLE = "Toilets in China for Tourists - Western Toilet Guide | Western Toilet Map";
@@ -66,6 +67,7 @@ export const Route = createFileRoute("/toilets-in-china")({
               headline: "Toilets in China for tourists",
               description: GUIDE_DESCRIPTION,
               mainEntityOfPage: GUIDE_URL,
+              dateModified: SEO_LAST_REVIEWED_ISO,
               publisher: {
                 "@type": "Organization",
                 name: "Western Toilet Map",
@@ -117,6 +119,13 @@ function ToiletsInChinaPage() {
           simple rule: when you need a western toilet, look for reliable indoor venues first, then
           use Western Toilet Map for nearby seated-toilet candidates.
         </p>
+      </section>
+
+      <section className="px-6 mt-4">
+        <SeoReviewNote
+          source="Traveler restroom patterns, China-local place categories, and city guide coverage."
+          cadence="Reviewed after city-list, domain, or toilet-search coverage updates."
+        />
       </section>
 
       <section className="px-6 mt-6">

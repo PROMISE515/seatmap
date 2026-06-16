@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, CheckCircle2, MapPin, Navigation, Search } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { MapPreview } from "@/components/MapPreview";
-import { SITE_URL } from "@/lib/site";
+import { SeoReviewNote } from "@/components/SeoReviewNote";
+import { SEO_LAST_REVIEWED_ISO, SITE_URL } from "@/lib/site";
 
 const PAGE_URL = `${SITE_URL}/toilet-finder-china`;
 const PAGE_TITLE = "Toilet Finder China - Find Western Toilets Nearby | Western Toilet Map";
@@ -48,6 +49,7 @@ export const Route = createFileRoute("/toilet-finder-china")({
               name: PAGE_TITLE,
               description: PAGE_DESCRIPTION,
               url: PAGE_URL,
+              dateModified: SEO_LAST_REVIEWED_ISO,
             },
             {
               "@type": "SoftwareApplication",
@@ -56,6 +58,7 @@ export const Route = createFileRoute("/toilet-finder-china")({
               operatingSystem: "Web",
               url: SITE_URL,
               description: PAGE_DESCRIPTION,
+              dateModified: SEO_LAST_REVIEWED_ISO,
               offers: {
                 "@type": "Offer",
                 price: "0",
@@ -94,6 +97,13 @@ function ToiletFinderChinaPage() {
           Western Toilet Map is built for one stressful travel moment: you need a seated toilet nearby, fast.
           Search once for free, then choose a travel pass if you want unlimited trip access.
         </p>
+      </section>
+
+      <section className="px-6 mt-4">
+        <SeoReviewNote
+          source="China-local place data, product search behavior, and first-wave city pages."
+          cadence="Updated when the app domain, city coverage, or nearby-search logic changes."
+        />
       </section>
 
       <section className="px-6 mt-6">

@@ -7,6 +7,7 @@ Western Toilet Map is a mobile-first web app designed as a calm "safety button" 
 ## Pages
 
 - [Home](/): Tap to find verified Western toilets within 1 km, sorted by walking distance.
+- [Press & Partners](/press): Official product description, suggested anchor text, and link targets for travel writers and partners.
 
 ## Optional
 

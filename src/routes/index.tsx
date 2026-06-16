@@ -898,6 +898,12 @@ function HomePage() {
           >
             China public toilet app
           </Link>
+          <Link
+            to="/press"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            Press and travel partner kit
+          </Link>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
           {[

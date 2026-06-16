@@ -15,6 +15,7 @@ import { Route as ToiletFinderChinaRouteImport } from './routes/toilet-finder-ch
 import { Route as SquatToiletsChinaRouteImport } from './routes/squat-toilets-china'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as ReportRouteImport } from './routes/report'
+import { Route as PressRouteImport } from './routes/press'
 import { Route as PassRouteImport } from './routes/pass'
 import { Route as ComplaintRouteImport } from './routes/complaint'
 import { Route as ChinaPublicToiletAppRouteImport } from './routes/china-public-toilet-app'
@@ -55,6 +56,11 @@ const SavedRoute = SavedRouteImport.update({
 const ReportRoute = ReportRouteImport.update({
   id: '/report',
   path: '/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PressRoute = PressRouteImport.update({
+  id: '/press',
+  path: '/press',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PassRoute = PassRouteImport.update({
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/china-public-toilet-app': typeof ChinaPublicToiletAppRoute
   '/complaint': typeof ComplaintRoute
   '/pass': typeof PassRoute
+  '/press': typeof PressRoute
   '/report': typeof ReportRoute
   '/saved': typeof SavedRoute
   '/squat-toilets-china': typeof SquatToiletsChinaRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/china-public-toilet-app': typeof ChinaPublicToiletAppRoute
   '/complaint': typeof ComplaintRoute
   '/pass': typeof PassRoute
+  '/press': typeof PressRoute
   '/report': typeof ReportRoute
   '/saved': typeof SavedRoute
   '/squat-toilets-china': typeof SquatToiletsChinaRoute
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/china-public-toilet-app': typeof ChinaPublicToiletAppRoute
   '/complaint': typeof ComplaintRoute
   '/pass': typeof PassRoute
+  '/press': typeof PressRoute
   '/report': typeof ReportRoute
   '/saved': typeof SavedRoute
   '/squat-toilets-china': typeof SquatToiletsChinaRoute
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/china-public-toilet-app'
     | '/complaint'
     | '/pass'
+    | '/press'
     | '/report'
     | '/saved'
     | '/squat-toilets-china'
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/china-public-toilet-app'
     | '/complaint'
     | '/pass'
+    | '/press'
     | '/report'
     | '/saved'
     | '/squat-toilets-china'
@@ -218,6 +229,7 @@ export interface FileRouteTypes {
     | '/china-public-toilet-app'
     | '/complaint'
     | '/pass'
+    | '/press'
     | '/report'
     | '/saved'
     | '/squat-toilets-china'
@@ -238,6 +250,7 @@ export interface RootRouteChildren {
   ChinaPublicToiletAppRoute: typeof ChinaPublicToiletAppRoute
   ComplaintRoute: typeof ComplaintRoute
   PassRoute: typeof PassRoute
+  PressRoute: typeof PressRoute
   ReportRoute: typeof ReportRoute
   SavedRoute: typeof SavedRoute
   SquatToiletsChinaRoute: typeof SquatToiletsChinaRoute
@@ -293,6 +306,13 @@ declare module '@tanstack/react-router' {
       path: '/report'
       fullPath: '/report'
       preLoaderRoute: typeof ReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/press': {
+      id: '/press'
+      path: '/press'
+      fullPath: '/press'
+      preLoaderRoute: typeof PressRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pass': {
@@ -382,6 +402,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChinaPublicToiletAppRoute: ChinaPublicToiletAppRoute,
   ComplaintRoute: ComplaintRoute,
   PassRoute: PassRoute,
+  PressRoute: PressRoute,
   ReportRoute: ReportRoute,
   SavedRoute: SavedRoute,
   SquatToiletsChinaRoute: SquatToiletsChinaRoute,

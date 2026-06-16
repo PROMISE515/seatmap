@@ -3,10 +3,11 @@ import { ArrowLeft, MapPin, Check, Sparkles, Search } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { ToiletCard } from "@/components/ToiletCard";
 import { MapPreview } from "@/components/MapPreview";
+import { SeoReviewNote } from "@/components/SeoReviewNote";
 import { getCityBySlug } from "@/lib/cities";
 import { getCuratedCityToilets } from "@/lib/curated-city-toilets";
 import { useT } from "@/lib/i18n";
-import { SITE_URL } from "@/lib/site";
+import { SEO_LAST_REVIEWED_ISO, SITE_URL } from "@/lib/site";
 
 export const Route = createFileRoute("/$city/public-toilets")({
   loader: ({ params }) => {
@@ -42,6 +43,14 @@ export const Route = createFileRoute("/$city/public-toilets")({
                   { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
                   { "@type": "ListItem", position: 2, name: city.name, item: url },
                 ],
+              },
+              {
+                "@type": "WebPage",
+                "@id": url,
+                name: title,
+                description,
+                url,
+                dateModified: SEO_LAST_REVIEWED_ISO,
               },
               {
                 "@type": "FAQPage",
@@ -122,6 +131,13 @@ function CityPage() {
         </h1>
         <p className="mt-1 text-sm font-semibold text-primary">{t("city.tagline")}</p>
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">{city.intro}</p>
+      </section>
+
+      <section className="px-6 mt-4">
+        <SeoReviewNote
+          source={`${city.name} city coverage, curated venue candidates, and China-local place data.`}
+          cadence="Reviewed when city coverage, domain configuration, or search-source logic changes."
+        />
       </section>
 
       <section className="px-6 mt-6">

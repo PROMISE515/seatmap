@@ -50,6 +50,7 @@ function buildSitemapXml(): string {
     { loc: `${SITE_URL}/china-bathroom-tips`, priority: "0.85" },
     { loc: `${SITE_URL}/bathroom-app-china`, priority: "0.85" },
     { loc: `${SITE_URL}/china-public-toilet-app`, priority: "0.85" },
+    { loc: `${SITE_URL}/press`, priority: "0.5" },
     ...cities.map((city) => ({
       loc: `${SITE_URL}/${city.slug}/public-toilets`,
       priority: "0.9",
