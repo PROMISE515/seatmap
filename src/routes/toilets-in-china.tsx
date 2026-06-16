@@ -186,6 +186,35 @@ function ToiletsInChinaPage() {
         </div>
       </section>
 
+      <section id="bathroom-tips" className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          China bathroom tips for tourists
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          The safest bathroom plan in China is practical, not complicated. Carry a small backup kit,
+          choose modern indoor venues first, and avoid waiting until you are already in discomfort.
+        </p>
+        <div className="mt-3 space-y-3">
+          {[
+            "Carry tissues and hand sanitizer because public toilet supplies can vary.",
+            "Check malls, hotel lobbies, airports, rail hubs, museums, and large cafes first.",
+            "When a venue has multiple stalls, look for seated-toilet icons before joining a line.",
+            "Use SeatMap when you need a nearby seated-toilet candidate quickly.",
+          ].map((tip) => (
+            <div key={tip} className="flex gap-2 text-sm leading-relaxed text-foreground">
+              <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+              <p>{tip}</p>
+            </div>
+          ))}
+        </div>
+        <Link
+          to="/china-bathroom-tips"
+          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-background px-4 py-3 text-sm font-bold text-primary hover:bg-primary/10"
+        >
+          Read China bathroom tips
+        </Link>
+      </section>
+
       <section className="px-6 mt-8">
         <h2 className="text-base font-extrabold text-brand-dark">City guides</h2>
         <div className="mt-3 grid grid-cols-2 gap-2">
@@ -216,6 +245,18 @@ function ToiletsInChinaPage() {
             className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
           >
             Squat toilets in China
+          </Link>
+          <Link
+            to="/china-bathroom-tips"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            China bathroom tips
+          </Link>
+          <Link
+            to="/bathroom-app-china"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            Bathroom app for China
           </Link>
         </div>
       </section>

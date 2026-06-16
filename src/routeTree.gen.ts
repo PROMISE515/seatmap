@@ -17,6 +17,9 @@ import { Route as SavedRouteImport } from './routes/saved'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as PassRouteImport } from './routes/pass'
 import { Route as ComplaintRouteImport } from './routes/complaint'
+import { Route as ChinaPublicToiletAppRouteImport } from './routes/china-public-toilet-app'
+import { Route as ChinaBathroomTipsRouteImport } from './routes/china-bathroom-tips'
+import { Route as BathroomAppChinaRouteImport } from './routes/bathroom-app-china'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ToiletIdRouteImport } from './routes/toilet.$id'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
@@ -64,6 +67,21 @@ const ComplaintRoute = ComplaintRouteImport.update({
   path: '/complaint',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChinaPublicToiletAppRoute = ChinaPublicToiletAppRouteImport.update({
+  id: '/china-public-toilet-app',
+  path: '/china-public-toilet-app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChinaBathroomTipsRoute = ChinaBathroomTipsRouteImport.update({
+  id: '/china-bathroom-tips',
+  path: '/china-bathroom-tips',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BathroomAppChinaRoute = BathroomAppChinaRouteImport.update({
+  id: '/bathroom-app-china',
+  path: '/bathroom-app-china',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -97,6 +115,9 @@ const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/bathroom-app-china': typeof BathroomAppChinaRoute
+  '/china-bathroom-tips': typeof ChinaBathroomTipsRoute
+  '/china-public-toilet-app': typeof ChinaPublicToiletAppRoute
   '/complaint': typeof ComplaintRoute
   '/pass': typeof PassRoute
   '/report': typeof ReportRoute
@@ -113,6 +134,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/bathroom-app-china': typeof BathroomAppChinaRoute
+  '/china-bathroom-tips': typeof ChinaBathroomTipsRoute
+  '/china-public-toilet-app': typeof ChinaPublicToiletAppRoute
   '/complaint': typeof ComplaintRoute
   '/pass': typeof PassRoute
   '/report': typeof ReportRoute
@@ -130,6 +154,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/bathroom-app-china': typeof BathroomAppChinaRoute
+  '/china-bathroom-tips': typeof ChinaBathroomTipsRoute
+  '/china-public-toilet-app': typeof ChinaPublicToiletAppRoute
   '/complaint': typeof ComplaintRoute
   '/pass': typeof PassRoute
   '/report': typeof ReportRoute
@@ -148,6 +175,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/bathroom-app-china'
+    | '/china-bathroom-tips'
+    | '/china-public-toilet-app'
     | '/complaint'
     | '/pass'
     | '/report'
@@ -164,6 +194,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/bathroom-app-china'
+    | '/china-bathroom-tips'
+    | '/china-public-toilet-app'
     | '/complaint'
     | '/pass'
     | '/report'
@@ -180,6 +213,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/bathroom-app-china'
+    | '/china-bathroom-tips'
+    | '/china-public-toilet-app'
     | '/complaint'
     | '/pass'
     | '/report'
@@ -197,6 +233,9 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BathroomAppChinaRoute: typeof BathroomAppChinaRoute
+  ChinaBathroomTipsRoute: typeof ChinaBathroomTipsRoute
+  ChinaPublicToiletAppRoute: typeof ChinaPublicToiletAppRoute
   ComplaintRoute: typeof ComplaintRoute
   PassRoute: typeof PassRoute
   ReportRoute: typeof ReportRoute
@@ -270,6 +309,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ComplaintRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/china-public-toilet-app': {
+      id: '/china-public-toilet-app'
+      path: '/china-public-toilet-app'
+      fullPath: '/china-public-toilet-app'
+      preLoaderRoute: typeof ChinaPublicToiletAppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/china-bathroom-tips': {
+      id: '/china-bathroom-tips'
+      path: '/china-bathroom-tips'
+      fullPath: '/china-bathroom-tips'
+      preLoaderRoute: typeof ChinaBathroomTipsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bathroom-app-china': {
+      id: '/bathroom-app-china'
+      path: '/bathroom-app-china'
+      fullPath: '/bathroom-app-china'
+      preLoaderRoute: typeof BathroomAppChinaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -317,6 +377,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BathroomAppChinaRoute: BathroomAppChinaRoute,
+  ChinaBathroomTipsRoute: ChinaBathroomTipsRoute,
+  ChinaPublicToiletAppRoute: ChinaPublicToiletAppRoute,
   ComplaintRoute: ComplaintRoute,
   PassRoute: PassRoute,
   ReportRoute: ReportRoute,

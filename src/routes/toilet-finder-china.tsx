@@ -153,6 +153,51 @@ function ToiletFinderChinaPage() {
         </div>
       </section>
 
+      <section id="bathroom-app" className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          Best bathroom app for China travel
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          A China bathroom app should not make travelers browse every restroom marker. SeatMap is
+          useful because it keeps the decision small: open the app, allow location, pick a nearby
+          seated-toilet candidate, and start navigation.
+        </p>
+        <div className="mt-3 space-y-3">
+          {[
+            "Built for the emergency moment, not general city browsing.",
+            "English-first guidance for foreign visitors who may not read Chinese restroom labels.",
+            "One free emergency search before choosing unlimited trip access.",
+          ].map((line) => (
+            <div key={line} className="flex gap-2 text-sm leading-relaxed text-foreground">
+              <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+              <p>{line}</p>
+            </div>
+          ))}
+        </div>
+        <Link
+          to="/bathroom-app-china"
+          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-background px-4 py-3 text-sm font-bold text-primary hover:bg-primary/10"
+        >
+          Read the bathroom app guide
+        </Link>
+      </section>
+
+      <section id="public-toilet-app" className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          China public toilet app for foreign travelers
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Public toilet labels can be too broad. SeatMap focuses on candidates where a seated toilet
+          is more likely, especially malls, hotels, airports, rail hubs, museums, and larger cafes.
+        </p>
+        <Link
+          to="/china-public-toilet-app"
+          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-background px-4 py-3 text-sm font-bold text-primary hover:bg-primary/10"
+        >
+          Read the public toilet app guide
+        </Link>
+      </section>
+
       <section className="px-6 mt-8">
         <h2 className="text-base font-extrabold text-brand-dark">Helpful China toilet guides</h2>
         <div className="mt-3 grid gap-2">
@@ -167,6 +212,18 @@ function ToiletFinderChinaPage() {
             className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
           >
             Squat toilets in China
+          </Link>
+          <Link
+            to="/bathroom-app-china"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            Bathroom app for China
+          </Link>
+          <Link
+            to="/china-public-toilet-app"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            China public toilet app
           </Link>
         </div>
       </section>
@@ -192,7 +249,7 @@ function ToiletFinderChinaPage() {
         </div>
       </section>
 
-      <section className="px-6 mt-8">
+      <section id="navigation" className="px-6 mt-8">
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
           <div className="flex items-center gap-2">
             <Navigation className="size-4 text-primary" aria-hidden />

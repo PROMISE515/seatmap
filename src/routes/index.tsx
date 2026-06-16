@@ -876,6 +876,24 @@ function HomePage() {
           >
             Squat toilets in China
           </Link>
+          <Link
+            to="/china-bathroom-tips"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            China bathroom tips
+          </Link>
+          <Link
+            to="/bathroom-app-china"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            Bathroom app for China
+          </Link>
+          <Link
+            to="/china-public-toilet-app"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            China public toilet app
+          </Link>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
           {[
