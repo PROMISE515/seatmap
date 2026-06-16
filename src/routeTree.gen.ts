@@ -9,8 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WesternToiletChinaRouteImport } from './routes/western-toilet-china'
 import { Route as ToiletsInChinaRouteImport } from './routes/toilets-in-china'
 import { Route as ToiletFinderChinaRouteImport } from './routes/toilet-finder-china'
+import { Route as SquatToiletsChinaRouteImport } from './routes/squat-toilets-china'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as PassRouteImport } from './routes/pass'
@@ -22,6 +24,11 @@ import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as CityPublicToiletsRouteImport } from './routes/$city.public-toilets'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api.stripe.webhook'
 
+const WesternToiletChinaRoute = WesternToiletChinaRouteImport.update({
+  id: '/western-toilet-china',
+  path: '/western-toilet-china',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ToiletsInChinaRoute = ToiletsInChinaRouteImport.update({
   id: '/toilets-in-china',
   path: '/toilets-in-china',
@@ -30,6 +37,11 @@ const ToiletsInChinaRoute = ToiletsInChinaRouteImport.update({
 const ToiletFinderChinaRoute = ToiletFinderChinaRouteImport.update({
   id: '/toilet-finder-china',
   path: '/toilet-finder-china',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SquatToiletsChinaRoute = SquatToiletsChinaRouteImport.update({
+  id: '/squat-toilets-china',
+  path: '/squat-toilets-china',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SavedRoute = SavedRouteImport.update({
@@ -89,8 +101,10 @@ export interface FileRoutesByFullPath {
   '/pass': typeof PassRoute
   '/report': typeof ReportRoute
   '/saved': typeof SavedRoute
+  '/squat-toilets-china': typeof SquatToiletsChinaRoute
   '/toilet-finder-china': typeof ToiletFinderChinaRoute
   '/toilets-in-china': typeof ToiletsInChinaRoute
+  '/western-toilet-china': typeof WesternToiletChinaRoute
   '/$city/public-toilets': typeof CityPublicToiletsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -103,8 +117,10 @@ export interface FileRoutesByTo {
   '/pass': typeof PassRoute
   '/report': typeof ReportRoute
   '/saved': typeof SavedRoute
+  '/squat-toilets-china': typeof SquatToiletsChinaRoute
   '/toilet-finder-china': typeof ToiletFinderChinaRoute
   '/toilets-in-china': typeof ToiletsInChinaRoute
+  '/western-toilet-china': typeof WesternToiletChinaRoute
   '/$city/public-toilets': typeof CityPublicToiletsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -118,8 +134,10 @@ export interface FileRoutesById {
   '/pass': typeof PassRoute
   '/report': typeof ReportRoute
   '/saved': typeof SavedRoute
+  '/squat-toilets-china': typeof SquatToiletsChinaRoute
   '/toilet-finder-china': typeof ToiletFinderChinaRoute
   '/toilets-in-china': typeof ToiletsInChinaRoute
+  '/western-toilet-china': typeof WesternToiletChinaRoute
   '/$city/public-toilets': typeof CityPublicToiletsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -134,8 +152,10 @@ export interface FileRouteTypes {
     | '/pass'
     | '/report'
     | '/saved'
+    | '/squat-toilets-china'
     | '/toilet-finder-china'
     | '/toilets-in-china'
+    | '/western-toilet-china'
     | '/$city/public-toilets'
     | '/admin/reports'
     | '/checkout/return'
@@ -148,8 +168,10 @@ export interface FileRouteTypes {
     | '/pass'
     | '/report'
     | '/saved'
+    | '/squat-toilets-china'
     | '/toilet-finder-china'
     | '/toilets-in-china'
+    | '/western-toilet-china'
     | '/$city/public-toilets'
     | '/admin/reports'
     | '/checkout/return'
@@ -162,8 +184,10 @@ export interface FileRouteTypes {
     | '/pass'
     | '/report'
     | '/saved'
+    | '/squat-toilets-china'
     | '/toilet-finder-china'
     | '/toilets-in-china'
+    | '/western-toilet-china'
     | '/$city/public-toilets'
     | '/admin/reports'
     | '/checkout/return'
@@ -177,8 +201,10 @@ export interface RootRouteChildren {
   PassRoute: typeof PassRoute
   ReportRoute: typeof ReportRoute
   SavedRoute: typeof SavedRoute
+  SquatToiletsChinaRoute: typeof SquatToiletsChinaRoute
   ToiletFinderChinaRoute: typeof ToiletFinderChinaRoute
   ToiletsInChinaRoute: typeof ToiletsInChinaRoute
+  WesternToiletChinaRoute: typeof WesternToiletChinaRoute
   CityPublicToiletsRoute: typeof CityPublicToiletsRoute
   AdminReportsRoute: typeof AdminReportsRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
@@ -188,6 +214,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/western-toilet-china': {
+      id: '/western-toilet-china'
+      path: '/western-toilet-china'
+      fullPath: '/western-toilet-china'
+      preLoaderRoute: typeof WesternToiletChinaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/toilets-in-china': {
       id: '/toilets-in-china'
       path: '/toilets-in-china'
@@ -200,6 +233,13 @@ declare module '@tanstack/react-router' {
       path: '/toilet-finder-china'
       fullPath: '/toilet-finder-china'
       preLoaderRoute: typeof ToiletFinderChinaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/squat-toilets-china': {
+      id: '/squat-toilets-china'
+      path: '/squat-toilets-china'
+      fullPath: '/squat-toilets-china'
+      preLoaderRoute: typeof SquatToiletsChinaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/saved': {
@@ -281,8 +321,10 @@ const rootRouteChildren: RootRouteChildren = {
   PassRoute: PassRoute,
   ReportRoute: ReportRoute,
   SavedRoute: SavedRoute,
+  SquatToiletsChinaRoute: SquatToiletsChinaRoute,
   ToiletFinderChinaRoute: ToiletFinderChinaRoute,
   ToiletsInChinaRoute: ToiletsInChinaRoute,
+  WesternToiletChinaRoute: WesternToiletChinaRoute,
   CityPublicToiletsRoute: CityPublicToiletsRoute,
   AdminReportsRoute: AdminReportsRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,

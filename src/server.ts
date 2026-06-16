@@ -43,6 +43,10 @@ function buildSitemapXml(): string {
   const today = new Date().toISOString().slice(0, 10);
   const urls = [
     { loc: `${SITE_URL}/`, priority: "1.0" },
+    { loc: `${SITE_URL}/toilet-finder-china`, priority: "0.9" },
+    { loc: `${SITE_URL}/toilets-in-china`, priority: "0.9" },
+    { loc: `${SITE_URL}/western-toilet-china`, priority: "0.9" },
+    { loc: `${SITE_URL}/squat-toilets-china`, priority: "0.9" },
     ...cities.map((city) => ({
       loc: `${SITE_URL}/${city.slug}/public-toilets`,
       priority: "0.9",

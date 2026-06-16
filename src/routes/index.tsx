@@ -864,6 +864,18 @@ function HomePage() {
           >
             Toilets in China guide
           </Link>
+          <Link
+            to="/western-toilet-china"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            Western toilets in China
+          </Link>
+          <Link
+            to="/squat-toilets-china"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            Squat toilets in China
+          </Link>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
           {[
