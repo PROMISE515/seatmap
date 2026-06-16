@@ -87,19 +87,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Western Toilet Map — Reliable Western Toilets for Travelers" },
       { property: "og:site_name", content: "Western Toilet Map" },
       { property: "og:url", content: SITE_URL },
-      { property: "og:title", content: "Western Toilet Map — Reliable Western Toilets for Travelers" },
-      { name: "twitter:title", content: "Western Toilet Map — Reliable Western Toilets for Travelers" },
+      {
+        property: "og:title",
+        content: "Western Toilet Map — Reliable Western Toilets for Travelers",
+      },
+      {
+        name: "twitter:title",
+        content: "Western Toilet Map — Reliable Western Toilets for Travelers",
+      },
       {
         name: "description",
-        content: "Western Toilet Map helps travelers quickly find nearby, reliable Western-style toilets.",
+        content:
+          "Western Toilet Map helps travelers quickly find nearby, reliable Western-style toilets.",
       },
       {
         property: "og:description",
-        content: "Western Toilet Map helps travelers quickly find nearby, reliable Western-style toilets.",
+        content:
+          "Western Toilet Map helps travelers quickly find nearby, reliable Western-style toilets.",
       },
       {
         name: "twitter:description",
-        content: "Western Toilet Map helps travelers quickly find nearby, reliable Western-style toilets.",
+        content:
+          "Western Toilet Map helps travelers quickly find nearby, reliable Western-style toilets.",
       },
       {
         property: "og:image",

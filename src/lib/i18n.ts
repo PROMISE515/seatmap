@@ -94,7 +94,8 @@ const translations = {
     "home.inviteRedeem": "Redeem",
     "home.inviteRedeeming": "Redeeming...",
     "home.inviteSuccess": "Invite redeemed",
-    "home.inviteSuccessDescription": "Your Western Toilet Map Travel Pass is active on this device.",
+    "home.inviteSuccessDescription":
+      "Your Western Toilet Map Travel Pass is active on this device.",
     "home.inviteInvalid": "Invite code is invalid or already used.",
     "home.inviteFailed": "Could not redeem invite code. Please try again.",
     "home.earnSearch": "Earn one free search",
@@ -114,7 +115,8 @@ const translations = {
     "home.openedSeatMap": "Thanks for opening Western Toilet Map",
     "home.friendEarned": "Your friend earned one extra free search.",
     "home.rewardSaveFailed": "Share reward could not be saved",
-    "home.rewardSaveFailedDescription": "Western Toilet Map still works, but the referral was not recorded.",
+    "home.rewardSaveFailedDescription":
+      "Western Toilet Map still works, but the referral was not recorded.",
     "home.freeSearchEarned": "Free search earned",
     "home.sharedSearches": (count) =>
       `You have ${count} shared free ${Number(count) === 1 ? "search" : "searches"}.`,
@@ -190,7 +192,8 @@ const translations = {
     "city.reason2": "Prioritizes malls, hotels, and traveler-friendly indoor venues",
     "city.reason3": "Free-entry options are highlighted when available",
     "city.reason4": "Live AMap results are cached for fast repeat searches",
-    "city.footer": (city) => `Western Toilet Map · Find a seated toilet in ${city} in under 10 seconds.`,
+    "city.footer": (city) =>
+      `Western Toilet Map · Find a seated toilet in ${city} in under 10 seconds.`,
   },
   es: {
     "nav.nearby": "Cerca",
@@ -264,7 +267,8 @@ const translations = {
     "home.inviteRedeem": "Canjear",
     "home.inviteRedeeming": "Canjeando...",
     "home.inviteSuccess": "Invitación canjeada",
-    "home.inviteSuccessDescription": "Tu pase de Western Toilet Map está activo en este dispositivo.",
+    "home.inviteSuccessDescription":
+      "Tu pase de Western Toilet Map está activo en este dispositivo.",
     "home.inviteInvalid": "El código no es válido o ya fue usado.",
     "home.inviteFailed": "No se pudo canjear el código. Inténtalo otra vez.",
     "home.earnSearch": "Gana una búsqueda gratis",
@@ -284,7 +288,8 @@ const translations = {
     "home.openedSeatMap": "Gracias por abrir Western Toilet Map",
     "home.friendEarned": "Tu amigo ganó una búsqueda gratis extra.",
     "home.rewardSaveFailed": "No se pudo guardar la recompensa",
-    "home.rewardSaveFailedDescription": "Western Toilet Map funciona igual, pero no se registró el referido.",
+    "home.rewardSaveFailedDescription":
+      "Western Toilet Map funciona igual, pero no se registró el referido.",
     "home.freeSearchEarned": "Búsqueda gratis ganada",
     "home.sharedSearches": (count) =>
       `Tienes ${count} ${Number(count) === 1 ? "búsqueda gratis compartida" : "búsquedas gratis compartidas"}.`,
@@ -354,7 +359,8 @@ const translations = {
     "city.liveLocations": (count) => `${count} lugares seleccionados`,
     "city.liveFromAmap": "Lista seleccionada de vista previa",
     "city.noPublic": (city) => `No se encontraron baños públicos en ${city}.`,
-    "city.noCuratedTitle": (city) => `La búsqueda en vivo de Western Toilet Map está disponible en ${city}`,
+    "city.noCuratedTitle": (city) =>
+      `La búsqueda en vivo de Western Toilet Map está disponible en ${city}`,
     "city.noCuratedBody": (city) =>
       `Aún no publicamos una lista fija de vista previa para ${city}. Usa la búsqueda principal para obtener candidatos de baños con inodoro desde AMap según tu ubicación actual.`,
     "city.whyUse": (city) => `Por qué usar Western Toilet Map en ${city}`,

@@ -127,9 +127,9 @@ function BathroomAppChinaPage() {
           A bathroom app for China travel when you need a seated toilet fast
         </h1>
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-          Western Toilet Map is a focused bathroom app for foreign visitors in China. Open it, allow location,
-          scan nearby seated-toilet candidates, and start navigation without digging through a
-          general map.
+          Western Toilet Map is a focused bathroom app for foreign visitors in China. Open it, allow
+          location, scan nearby seated-toilet candidates, and start navigation without digging
+          through a general map.
         </p>
       </section>
 
@@ -161,7 +161,9 @@ function BathroomAppChinaPage() {
       </section>
 
       <section className="px-6 mt-8">
-        <h2 className="text-base font-extrabold text-brand-dark">Why use a focused bathroom app?</h2>
+        <h2 className="text-base font-extrabold text-brand-dark">
+          Why use a focused bathroom app?
+        </h2>
         <div className="mt-3 space-y-3">
           {appReasons.map((reason) => (
             <div key={reason} className="flex gap-2 text-sm leading-relaxed text-foreground">
@@ -229,8 +231,8 @@ function BathroomAppChinaPage() {
             <h2 className="text-sm font-extrabold text-brand-dark">Built for the travel moment</h2>
           </div>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Western Toilet Map is not trying to be a full city guide. It solves one high-stress problem:
-            finding a nearby seated toilet quickly enough to be useful.
+            Western Toilet Map is not trying to be a full city guide. It solves one high-stress
+            problem: finding a nearby seated toilet quickly enough to be useful.
           </p>
         </div>
       </section>

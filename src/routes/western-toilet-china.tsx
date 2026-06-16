@@ -6,7 +6,8 @@ import { SeoReviewNote } from "@/components/SeoReviewNote";
 import { SEO_LAST_REVIEWED_ISO, SITE_URL } from "@/lib/site";
 
 const PAGE_URL = `${SITE_URL}/western-toilet-china`;
-const PAGE_TITLE = "Western Toilets in China - Where Tourists Can Find Seated Toilets | Western Toilet Map";
+const PAGE_TITLE =
+  "Western Toilets in China - Where Tourists Can Find Seated Toilets | Western Toilet Map";
 const PAGE_DESCRIPTION =
   "A practical guide to finding western toilets in China, including the best venue types, city tips, and how Western Toilet Map helps foreign travelers find seated toilets fast.";
 
@@ -127,9 +128,9 @@ function WesternToiletChinaPage() {
           Western toilets in China: where tourists can find seated toilets
         </h1>
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-          China has both squat and seated toilets. If you are a foreign traveler who needs a
-          western toilet quickly, your best odds are modern indoor venues first, then a focused
-          nearby search with Western Toilet Map.
+          China has both squat and seated toilets. If you are a foreign traveler who needs a western
+          toilet quickly, your best odds are modern indoor venues first, then a focused nearby
+          search with Western Toilet Map.
         </p>
       </section>
 

@@ -5,7 +5,8 @@ import { MapPreview } from "@/components/MapPreview";
 import { SITE_URL } from "@/lib/site";
 
 const PAGE_URL = `${SITE_URL}/china-bathroom-tips`;
-const PAGE_TITLE = "China Bathroom Tips for Tourists - Practical Restroom Guide | Western Toilet Map";
+const PAGE_TITLE =
+  "China Bathroom Tips for Tourists - Practical Restroom Guide | Western Toilet Map";
 const PAGE_DESCRIPTION =
   "Practical China bathroom tips for foreign tourists: where to look first, what to carry, how to avoid squat toilets, and how Western Toilet Map helps find seated toilets nearby.";
 
@@ -126,8 +127,8 @@ function ChinaBathroomTipsPage() {
         </h1>
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
           Bathrooms in China are manageable when you know where to look. The safest pattern is
-          simple: prioritize modern indoor venues, carry a small backup kit, and use Western Toilet Map when
-          you need a seated toilet nearby.
+          simple: prioritize modern indoor venues, carry a small backup kit, and use Western Toilet
+          Map when you need a seated toilet nearby.
         </p>
       </section>
 

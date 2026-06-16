@@ -94,8 +94,9 @@ function ToiletFinderChinaPage() {
           A toilet finder for western toilets in China
         </h1>
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-          Western Toilet Map is built for one stressful travel moment: you need a seated toilet nearby, fast.
-          Search once for free, then choose a travel pass if you want unlimited trip access.
+          Western Toilet Map is built for one stressful travel moment: you need a seated toilet
+          nearby, fast. Search once for free, then choose a travel pass if you want unlimited trip
+          access.
         </p>
       </section>
 
@@ -168,9 +169,9 @@ function ToiletFinderChinaPage() {
           Best bathroom app for China travel
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          A China bathroom app should not make travelers browse every restroom marker. Western Toilet Map is
-          useful because it keeps the decision small: open the app, allow location, pick a nearby
-          seated-toilet candidate, and start navigation.
+          A China bathroom app should not make travelers browse every restroom marker. Western
+          Toilet Map is useful because it keeps the decision small: open the app, allow location,
+          pick a nearby seated-toilet candidate, and start navigation.
         </p>
         <div className="mt-3 space-y-3">
           {[
@@ -197,8 +198,9 @@ function ToiletFinderChinaPage() {
           China public toilet app for foreign travelers
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Public toilet labels can be too broad. Western Toilet Map focuses on candidates where a seated toilet
-          is more likely, especially malls, hotels, airports, rail hubs, museums, and larger cafes.
+          Public toilet labels can be too broad. Western Toilet Map focuses on candidates where a
+          seated toilet is more likely, especially malls, hotels, airports, rail hubs, museums, and
+          larger cafes.
         </p>
         <Link
           to="/china-public-toilet-app"
@@ -266,8 +268,8 @@ function ToiletFinderChinaPage() {
             <h2 className="text-sm font-extrabold text-brand-dark">Navigation options</h2>
           </div>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Western Toilet Map supports handoff to Apple Maps, Google Maps, and AMap so travelers can choose
-            the navigation app that works best on their device in China.
+            Western Toilet Map supports handoff to Apple Maps, Google Maps, and AMap so travelers
+            can choose the navigation app that works best on their device in China.
           </p>
         </div>
       </section>

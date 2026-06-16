@@ -15,7 +15,8 @@ export const Route = createFileRoute("/pass")({
       { title: "Restore your Travel Pass — Western Toilet Map" },
       {
         name: "description",
-        content: "Restore your Western Toilet Map Travel Pass on a new device using your private access link.",
+        content:
+          "Restore your Western Toilet Map Travel Pass on a new device using your private access link.",
       },
       { property: "og:title", content: "Restore your Western Toilet Map Travel Pass" },
       {

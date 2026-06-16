@@ -219,7 +219,9 @@ function AdminReportsPage() {
       <div className="mx-auto max-w-5xl">
         <header className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-primary">Western Toilet Map 后台</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-primary">
+              Western Toilet Map 后台
+            </p>
             <h1 className="mt-1 text-2xl font-extrabold text-brand-dark">地点举报</h1>
           </div>
           <button

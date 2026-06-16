@@ -18,7 +18,10 @@ export const Route = createFileRoute("/report")({
     amapId: typeof search.amapId === "string" ? search.amapId : undefined,
   }),
   head: () => ({
-    meta: [{ title: "Review a Toilet — Western Toilet Map" }, { name: "robots", content: "noindex" }],
+    meta: [
+      { title: "Review a Toilet — Western Toilet Map" },
+      { name: "robots", content: "noindex" },
+    ],
   }),
   component: ReportPage,
 });

@@ -16,7 +16,10 @@ export const Route = createFileRoute("/toilet/$id")({
   head: ({ params }) => ({
     meta: [
       { title: `Toilet ${params.id} — Western Toilet Map` },
-      { name: "description", content: "Traveler-friendly seated toilet near you on Western Toilet Map." },
+      {
+        name: "description",
+        content: "Traveler-friendly seated toilet near you on Western Toilet Map.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),

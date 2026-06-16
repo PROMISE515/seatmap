@@ -121,8 +121,8 @@ function SquatToiletsChinaPage() {
         </h1>
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
           Squat toilets are part of travel in China, but you do not have to rely on luck. Know where
-          they are more common, where seated toilets are more likely, and when to use Western Toilet Map to
-          find a better nearby option.
+          they are more common, where seated toilets are more likely, and when to use Western Toilet
+          Map to find a better nearby option.
         </p>
       </section>
 

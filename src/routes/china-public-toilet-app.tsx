@@ -130,7 +130,8 @@ function ChinaPublicToiletAppPage() {
         </h1>
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
           Public toilet data is useful, but travelers usually need a more specific answer: where is
-          the nearest likely seated toilet? Western Toilet Map keeps the search focused on that question.
+          the nearest likely seated toilet? Western Toilet Map keeps the search focused on that
+          question.
         </p>
       </section>
 
@@ -179,7 +180,9 @@ function ChinaPublicToiletAppPage() {
       </section>
 
       <section className="px-6 mt-8">
-        <h2 className="text-base font-extrabold text-brand-dark">What Western Toilet Map optimizes for</h2>
+        <h2 className="text-base font-extrabold text-brand-dark">
+          What Western Toilet Map optimizes for
+        </h2>
         <div className="mt-3 space-y-3">
           {[
             "Fast nearby discovery when the traveler is already outside.",
