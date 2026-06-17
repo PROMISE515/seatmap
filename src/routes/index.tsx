@@ -27,7 +27,7 @@ import {
   writeHomeScrollY,
 } from "@/lib/home-scroll";
 import { type TranslationKey, useT } from "@/lib/i18n";
-import { SITE_URL } from "@/lib/site";
+import { SITE_LOGO_URL, SITE_URL } from "@/lib/site";
 import { getStripeEnvironmentForSessionId } from "@/lib/stripe";
 import {
   Dialog,
@@ -69,6 +69,12 @@ export const Route = createFileRoute("/")({
               "@id": `${SITE_URL}/#organization`,
               name: "Western Toilet Map",
               url: SITE_URL,
+              logo: {
+                "@type": "ImageObject",
+                url: SITE_LOGO_URL,
+                width: 1254,
+                height: 1254,
+              },
             },
             {
               "@type": "WebSite",

@@ -10,7 +10,7 @@ import {
 import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { useLocale } from "@/lib/i18n";
-import { SITE_URL } from "@/lib/site";
+import { SITE_ICON_URL, SITE_LOGO_URL, SITE_URL } from "@/lib/site";
 
 import appCss from "../styles.css?url";
 
@@ -125,9 +125,46 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "icon", href: "/favicon.ico", sizes: "any" },
+      { rel: "shortcut icon", href: "/favicon.ico" },
+      { rel: "icon", type: "image/png", sizes: "48x48", href: "/icons/favicon-48.png" },
       { rel: "icon", type: "image/png", sizes: "64x64", href: "/favicon.png" },
+      { rel: "icon", type: "image/png", sizes: "96x96", href: "/icons/favicon-96.png" },
+      { rel: "icon", type: "image/png", sizes: "192x192", href: "/icons/favicon-192.png" },
+      { rel: "icon", type: "image/png", sizes: "512x512", href: "/icons/favicon-512.png" },
+      { rel: "icon", type: "image/svg+xml", href: "/icon.svg" },
       { rel: "apple-touch-icon", sizes: "180x180", href: "/icons/apple-touch-icon.png" },
       { rel: "manifest", href: "/manifest.webmanifest" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              "@id": `${SITE_URL}/#organization`,
+              name: "Western Toilet Map",
+              url: SITE_URL,
+              logo: {
+                "@type": "ImageObject",
+                url: SITE_LOGO_URL,
+                width: 1254,
+                height: 1254,
+              },
+              image: SITE_ICON_URL,
+            },
+            {
+              "@type": "WebSite",
+              "@id": `${SITE_URL}/#website`,
+              url: SITE_URL,
+              name: "Western Toilet Map",
+              publisher: { "@id": `${SITE_URL}/#organization` },
+            },
+          ],
+        }),
+      },
     ],
   }),
   shellComponent: RootShell,

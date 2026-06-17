@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, ExternalLink, Link2, MapPin, Megaphone, ShieldCheck } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { SeoReviewNote } from "@/components/SeoReviewNote";
-import { SEO_LAST_REVIEWED_ISO, SITE_URL } from "@/lib/site";
+import { SEO_LAST_REVIEWED_ISO, SITE_LOGO_URL, SITE_URL } from "@/lib/site";
 
 const PAGE_URL = `${SITE_URL}/press`;
 const PAGE_TITLE = "Western Toilet Map Press & Travel Partner Kit";
@@ -72,6 +72,12 @@ export const Route = createFileRoute("/press")({
               "@id": `${SITE_URL}/#organization`,
               name: "Western Toilet Map",
               url: SITE_URL,
+              logo: {
+                "@type": "ImageObject",
+                url: SITE_LOGO_URL,
+                width: 1254,
+                height: 1254,
+              },
               description:
                 "Western Toilet Map helps foreign travelers in China find nearby seated toilet candidates quickly.",
             },
