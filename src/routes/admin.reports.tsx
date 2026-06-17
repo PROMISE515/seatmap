@@ -1,6 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Ban, Check, Copy, Gift, Loader2, Pencil, Power, ShieldAlert, X } from "lucide-react";
+import {
+  Ban,
+  Check,
+  Copy,
+  Gift,
+  KeyRound,
+  Loader2,
+  Pencil,
+  Power,
+  ShieldAlert,
+  X,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   createAdminInviteCode,
@@ -36,8 +47,10 @@ function AdminReportsPage() {
   const createInviteCode = useServerFn(createAdminInviteCode);
   const updateInviteCodeActive = useServerFn(setAdminInviteCodeActive);
   const updateInviteCodeLabel = useServerFn(setAdminInviteCodeLabel);
-  const [authorized, setAuthorized] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [adminPassword, setAdminPassword] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
   const [busyAmapId, setBusyAmapId] = useState<string | null>(null);
   const [busyInviteId, setBusyInviteId] = useState<string | null>(null);
   const [complaints, setComplaints] = useState<AdminComplaintDTO[]>([]);
@@ -53,26 +66,43 @@ function AdminReportsPage() {
   const [editingInviteLabel, setEditingInviteLabel] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const load = async () => {
+  const load = async (password = adminPassword) => {
+    if (!password) return;
     setLoading(true);
     setError(null);
     try {
       const [complaintResult, blacklistResult, inviteResult] = await Promise.all([
-        fetchComplaints({ data: { token } }),
-        fetchBlacklist({ data: { token } }),
-        fetchInviteCodes({ data: { token } }),
+        fetchComplaints({ data: { token, password } }),
+        fetchBlacklist({ data: { token, password } }),
+        fetchInviteCodes({ data: { token, password } }),
       ]);
-      setAuthorized(
-        complaintResult.authorized && blacklistResult.authorized && inviteResult.authorized,
-      );
+      const canAccess =
+        complaintResult.authorized && blacklistResult.authorized && inviteResult.authorized;
+      setAuthorized(canAccess);
+      if (!canAccess) {
+        setAdminPassword("");
+        setError("后台密码错误，或 ADMIN_TOKEN 不正确。");
+        return;
+      }
       setComplaints(complaintResult.complaints);
       setBlacklist(blacklistResult.blacklist);
       setInviteCodes(inviteResult.inviteCodes);
     } catch {
-      setError("无法加载举报列表，请检查 Supabase migration 和 ADMIN_TOKEN。");
+      setError("无法加载举报列表，请检查 Supabase migration、ADMIN_TOKEN 和 ADMIN_PASSWORD。");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAdminLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const password = passwordInput.trim();
+    if (!password) {
+      setError("请输入后台密码。");
+      return;
+    }
+    setAdminPassword(password);
+    await load(password);
   };
 
   const handleCreateInvite = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -83,6 +113,7 @@ function AdminReportsPage() {
       const result = await createInviteCode({
         data: {
           token,
+          password: adminPassword,
           label: newInviteLabel,
           passDays: newInvitePassDays,
           maxRedemptions: newInviteMaxRedemptions,
@@ -117,7 +148,7 @@ function AdminReportsPage() {
     setError(null);
     try {
       const result = await updateInviteCodeLabel({
-        data: { token, id: inviteCode.id, label: editingInviteLabel },
+        data: { token, password: adminPassword, id: inviteCode.id, label: editingInviteLabel },
       });
       if (!result.authorized) {
         setAuthorized(false);
@@ -148,7 +179,7 @@ function AdminReportsPage() {
     setError(null);
     try {
       const result = await updateInviteCodeActive({
-        data: { token, id: inviteCode.id, active: !inviteCode.active },
+        data: { token, password: adminPassword, id: inviteCode.id, active: !inviteCode.active },
       });
       if (!result.authorized) {
         setAuthorized(false);
@@ -163,8 +194,11 @@ function AdminReportsPage() {
   };
 
   useEffect(() => {
-    void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setAuthorized(false);
+    setAdminPassword("");
+    setPasswordInput("");
+    setLoading(false);
+    setError(null);
   }, [token]);
 
   const handleBlacklist = async (complaint: AdminComplaintDTO) => {
@@ -175,6 +209,7 @@ function AdminReportsPage() {
       const result = await saveBlacklist({
         data: {
           token,
+          password: adminPassword,
           amapId: complaint.amapId,
           placeName: complaint.toilet?.name || complaint.placeName,
           reason:
@@ -204,11 +239,50 @@ function AdminReportsPage() {
   if (!authorized) {
     return (
       <main className="min-h-screen bg-surface px-6 py-10">
-        <div className="mx-auto max-w-3xl rounded-lg border border-border bg-background p-6">
-          <h1 className="text-xl font-extrabold text-brand-dark">需要后台访问权限</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            请使用 <code className="font-mono">?token=ADMIN_TOKEN</code> 打开这个页面。
-          </p>
+        <div className="mx-auto max-w-md rounded-lg border border-border bg-background p-6 shadow-sm">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <KeyRound className="size-5" aria-hidden />
+            </span>
+            <div>
+              <h1 className="text-xl font-extrabold text-brand-dark">后台密码</h1>
+              <p className="mt-1 text-sm text-muted-foreground">请输入后台密码后继续。</p>
+            </div>
+          </div>
+
+          <form onSubmit={(event) => void handleAdminLogin(event)} className="mt-6 grid gap-3">
+            <label className="grid gap-1 text-xs font-bold text-muted-foreground">
+              密码
+              <input
+                type="password"
+                value={passwordInput}
+                onChange={(event) => setPasswordInput(event.target.value)}
+                autoComplete="current-password"
+                className="rounded-lg border border-border bg-surface px-3 py-3 text-sm text-foreground outline-none focus:border-primary"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={loading || !token}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-bold text-primary-foreground disabled:opacity-50"
+            >
+              {loading && <Loader2 className="size-4 animate-spin" aria-hidden />}
+              进入后台
+            </button>
+          </form>
+
+          {!token && (
+            <p className="mt-3 rounded-lg bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-700">
+              当前链接缺少 token，请使用 <code className="font-mono">?token=ADMIN_TOKEN</code>{" "}
+              打开。
+            </p>
+          )}
+
+          {error && (
+            <p className="mt-3 rounded-lg bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive">
+              {error}
+            </p>
+          )}
         </div>
       </main>
     );

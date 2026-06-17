@@ -50,10 +50,11 @@ function generateInviteCode() {
   return `SEATMAP-${randomBytes(4).toString("hex").toUpperCase()}`;
 }
 
-function adminTokenIsValid(token: string | undefined) {
-  const configured = process.env.ADMIN_TOKEN;
-  if (!configured) return process.env.NODE_ENV !== "production";
-  return token === configured;
+function adminCredentialsAreValid(token: string | undefined, password: string | undefined) {
+  const configuredToken = process.env.ADMIN_TOKEN;
+  const configuredPassword = process.env.ADMIN_PASSWORD;
+  if (!configuredToken && !configuredPassword) return process.env.NODE_ENV !== "production";
+  return token === configuredToken && password === configuredPassword;
 }
 
 function mapInviteCode(row: InviteCodeRow): AdminInviteCodeDTO {
@@ -166,11 +167,12 @@ export const getAdminInviteCodes = createServerFn({ method: "POST" })
     z
       .object({
         token: z.string().optional(),
+        password: z.string().optional(),
       })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    if (!adminTokenIsValid(data.token)) {
+    if (!adminCredentialsAreValid(data.token, data.password)) {
       return { authorized: false as const, inviteCodes: [] as AdminInviteCodeDTO[] };
     }
 
@@ -193,6 +195,7 @@ export const createAdminInviteCode = createServerFn({ method: "POST" })
     z
       .object({
         token: z.string().optional(),
+        password: z.string().optional(),
         code: z
           .string()
           .min(3)
@@ -207,7 +210,7 @@ export const createAdminInviteCode = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    if (!adminTokenIsValid(data.token)) {
+    if (!adminCredentialsAreValid(data.token, data.password)) {
       return { authorized: false as const, inviteCode: null as AdminInviteCodeDTO | null };
     }
 
@@ -236,13 +239,14 @@ export const setAdminInviteCodeActive = createServerFn({ method: "POST" })
     z
       .object({
         token: z.string().optional(),
+        password: z.string().optional(),
         id: z.string().uuid(),
         active: z.boolean(),
       })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    if (!adminTokenIsValid(data.token)) {
+    if (!adminCredentialsAreValid(data.token, data.password)) {
       return { authorized: false as const, inviteCode: null as AdminInviteCodeDTO | null };
     }
 
@@ -269,13 +273,14 @@ export const setAdminInviteCodeLabel = createServerFn({ method: "POST" })
     z
       .object({
         token: z.string().optional(),
+        password: z.string().optional(),
         id: z.string().uuid(),
         label: z.string().max(160).optional().default(""),
       })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    if (!adminTokenIsValid(data.token)) {
+    if (!adminCredentialsAreValid(data.token, data.password)) {
       return { authorized: false as const, inviteCode: null as AdminInviteCodeDTO | null };
     }
 

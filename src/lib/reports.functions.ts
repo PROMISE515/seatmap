@@ -98,10 +98,11 @@ function distanceMeters(a: { lat: number; lng: number }, b: { lat: number; lng: 
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-function adminTokenIsValid(token: string | undefined) {
-  const configured = process.env.ADMIN_TOKEN;
-  if (!configured) return process.env.NODE_ENV !== "production";
-  return token === configured;
+function adminCredentialsAreValid(token: string | undefined, password: string | undefined) {
+  const configuredToken = process.env.ADMIN_TOKEN;
+  const configuredPassword = process.env.ADMIN_PASSWORD;
+  if (!configuredToken && !configuredPassword) return process.env.NODE_ENV !== "production";
+  return token === configuredToken && password === configuredPassword;
 }
 
 export const submitToiletReport = createServerFn({ method: "POST" })
@@ -237,11 +238,12 @@ export const getAdminComplaints = createServerFn({ method: "POST" })
     z
       .object({
         token: z.string().optional(),
+        password: z.string().optional(),
       })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    if (!adminTokenIsValid(data.token)) {
+    if (!adminCredentialsAreValid(data.token, data.password)) {
       return { authorized: false as const, complaints: [] as AdminComplaintDTO[] };
     }
 
@@ -306,6 +308,7 @@ export const blacklistPlace = createServerFn({ method: "POST" })
     z
       .object({
         token: z.string().optional(),
+        password: z.string().optional(),
         amapId: z.string().min(1).max(128),
         placeName: z.string().min(1).max(240),
         reason: z.string().max(500).optional().default("Complaint review"),
@@ -313,7 +316,7 @@ export const blacklistPlace = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    if (!adminTokenIsValid(data.token)) return { authorized: false as const };
+    if (!adminCredentialsAreValid(data.token, data.password)) return { authorized: false as const };
 
     const { error } = await supabaseAdmin.from("toilet_blacklist").upsert(
       {
@@ -336,11 +339,12 @@ export const getAdminBlacklist = createServerFn({ method: "POST" })
     z
       .object({
         token: z.string().optional(),
+        password: z.string().optional(),
       })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    if (!adminTokenIsValid(data.token)) {
+    if (!adminCredentialsAreValid(data.token, data.password)) {
       return { authorized: false as const, blacklist: [] as AdminBlacklistDTO[] };
     }
 
