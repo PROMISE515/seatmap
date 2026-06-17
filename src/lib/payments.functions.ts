@@ -7,7 +7,7 @@ import {
   getSubscriptionPeriod,
   upsertPassFromCheckoutSession,
 } from "@/lib/passes.server";
-import { SITE_URL } from "@/lib/site";
+import { PREVIOUS_SITE_URL, SITE_URL } from "@/lib/site";
 
 const LIFETIME_PASS_DAYS = 36500;
 
@@ -31,7 +31,7 @@ const PLANS: Record<string, { days: number; priceEnvKey: string; lookupKey: stri
 
 const DEFAULT_ALLOWED_RETURN_ORIGINS = [
   SITE_URL,
-  "https://seatmapchina.com",
+  PREVIOUS_SITE_URL,
   "https://swift-restroom-finder.lovable.app",
   "https://id-preview--b5949848-4b7a-43e1-928d-0803c9866044.lovable.app",
 ];
