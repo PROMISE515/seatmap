@@ -10,7 +10,22 @@ const PAGE_URL = `${SITE_URL}/western-toilet-china`;
 const PAGE_TITLE =
   "Western Toilets in China - Where Tourists Can Find Seated Toilets | Western Toilet Map";
 const PAGE_DESCRIPTION =
-  "A practical guide to finding western toilets in China, including the best venue types, city tips, and how Western Toilet Map helps foreign travelers find seated toilets fast.";
+  "A practical guide to western toilets in China: where seated toilets are common, where squat toilets are still likely, and how tourists can find a nearby option fast.";
+
+const directAnswers = [
+  {
+    title: "Are there western toilets in China?",
+    body: "Yes. Western seated toilets are common in airports, major rail hubs, modern malls, international hotels, newer museums, and many premium commercial buildings.",
+  },
+  {
+    title: "Are they everywhere?",
+    body: "No. Older public toilets, smaller restaurants, parks, rest stops, and some scenic-area facilities can still be squat-only or mixed.",
+  },
+  {
+    title: "What is the safest first move?",
+    body: "Look for the nearest modern indoor venue, then use a focused toilet finder when you need a specific nearby seated-toilet candidate.",
+  },
+];
 
 const bestPlaces = [
   {
@@ -53,6 +68,60 @@ const weakerPlaces = [
   "Remote rest stops where signage and supplies may vary.",
 ];
 
+const venueMatrix = [
+  {
+    venue: "Airport or high-speed rail station",
+    odds: "Strong",
+    guidance:
+      "Use these before long transfers. Newer terminals and large station halls usually have clearer restroom signs and more seated-stall options.",
+  },
+  {
+    venue: "Premium mall or department store",
+    odds: "Strong",
+    guidance:
+      "This is often the best city-center backup because there may be restrooms on multiple floors and inside connected buildings.",
+  },
+  {
+    venue: "International hotel lobby area",
+    odds: "Strong",
+    guidance:
+      "Useful near tourist districts, business areas, and late-night routes when smaller venues are closed or unreliable.",
+  },
+  {
+    venue: "Museum, gallery, or large attraction",
+    odds: "Medium",
+    guidance:
+      "Often better than outdoor public toilets, but peak queues and mixed squat/seated layouts can still happen.",
+  },
+  {
+    venue: "Street-side public toilet",
+    odds: "Mixed",
+    guidance:
+      "Can be convenient, but seated stalls, toilet paper, and cleanliness are less predictable than modern indoor venues.",
+  },
+];
+
+const regionNotes = [
+  {
+    title: "Mainland China",
+    body: "Large cities such as Shanghai, Beijing, Guangzhou, Shenzhen, Chengdu, Chongqing, and Xi'an have many modern venues, but older public toilets can still surprise visitors.",
+  },
+  {
+    title: "Hong Kong",
+    body: "Public-toilet coverage and seated toilets are generally easier for English-speaking travelers, especially around malls, MTR stations, ferry areas, and attractions.",
+  },
+  {
+    title: "Macau",
+    body: "Resort, ferry, casino, and Senado Square routes usually give travelers better seated-toilet odds than small side-street facilities.",
+  },
+];
+
+const accessibilityNotes = [
+  "Accessible stalls are often seated, but they may be locked, occupied, or located on a different floor.",
+  "Families, older travelers, and travelers with mobility needs should favor malls, hotels, airports, rail hubs, and museums before outdoor facilities.",
+  "If walking distance matters, compare nearby options first instead of assuming the closest public toilet is the best one.",
+];
+
 const faqs = [
   {
     question: "What does western toilet mean in China?",
@@ -65,9 +134,24 @@ const faqs = [
       "Western toilets are common in airports, newer malls, international hotels, and many modern commercial venues. They are less predictable in older public toilets, smaller restaurants, and some scenic areas.",
   },
   {
+    question: "Do hotels in China have western toilets?",
+    answer:
+      "Most international hotels and many modern city hotels have western seated toilets. Smaller guesthouses and older properties can vary, so check room details before booking if seated toilets are important.",
+  },
+  {
+    question: "Are train stations and airports good places to find western toilets?",
+    answer:
+      "Major airports and high-speed rail stations are usually stronger bets than small public toilets, especially in newer terminals and large station halls. Still, individual stalls can vary, so leave a little time before boarding.",
+  },
+  {
     question: "What should I search for if I need a seated toilet?",
     answer:
       "Search around malls, hotels, airports, rail stations, museums, and larger cafes first. Western Toilet Map is designed to reduce that search to nearby seated-toilet candidates.",
+  },
+  {
+    question: "Are Hong Kong and Macau easier for western toilets?",
+    answer:
+      "Hong Kong and Macau are generally easier for English-speaking travelers because many malls, transport hubs, resorts, and tourist districts have seated-toilet options. Western Toilet Map keeps both destinations in the city coverage.",
   },
   {
     question: "Can I avoid squat toilets completely in China?",
@@ -193,6 +277,18 @@ function WesternToiletChinaPage() {
       </section>
 
       <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">Direct answer for travelers</h2>
+        <div className="mt-4 grid gap-3">
+          {directAnswers.map((item) => (
+            <article key={item.title} className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-extrabold text-brand-dark">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section id="are-there-western-toilets" className="px-6 mt-8">
         <h2 className="text-base font-extrabold text-brand-dark">Best places to look first</h2>
         <div className="mt-4 grid gap-3">
           {bestPlaces.map((place) => (
@@ -207,7 +303,7 @@ function WesternToiletChinaPage() {
         </div>
       </section>
 
-      <section className="px-6 mt-8">
+      <section id="how-to-find-western-toilets" className="px-6 mt-8">
         <h2 className="text-base font-extrabold text-brand-dark">Quick traveler rules</h2>
         <div className="mt-3 space-y-3">
           {[
@@ -220,6 +316,29 @@ function WesternToiletChinaPage() {
               <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
               <p>{rule}</p>
             </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          Western toilet odds by venue type
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          If you only have a few minutes, do not search every bathroom equally. Rank nearby options
+          by how likely they are to have a seated stall and a predictable restroom layout.
+        </p>
+        <div className="mt-4 grid gap-3">
+          {venueMatrix.map((item) => (
+            <article key={item.venue} className="rounded-xl border border-border bg-card p-4">
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="text-sm font-extrabold text-brand-dark">{item.venue}</h3>
+                <span className="shrink-0 rounded-full bg-secondary px-2 py-1 text-[10px] font-extrabold text-secondary-foreground">
+                  {item.odds}
+                </span>
+              </div>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.guidance}</p>
+            </article>
           ))}
         </div>
       </section>
@@ -243,6 +362,30 @@ function WesternToiletChinaPage() {
         </div>
       </section>
 
+      <section id="accessibility" className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          Families, older travelers, and accessibility needs
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Travelers who cannot comfortably use squat toilets should plan more deliberately. The
+          closest bathroom is not always the best bathroom.
+        </p>
+        <div className="mt-3 space-y-3">
+          {accessibilityNotes.map((note) => (
+            <div key={note} className="flex gap-2 text-sm leading-relaxed text-foreground">
+              <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+              <p>{note}</p>
+            </div>
+          ))}
+        </div>
+        <Link
+          to="/toilet-finder-china"
+          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-background px-4 py-3 text-sm font-bold text-primary hover:bg-primary/10"
+        >
+          Find a western toilet fast
+        </Link>
+      </section>
+
       <section className="px-6 mt-8">
         <h2 className="text-base font-extrabold text-brand-dark">Places to treat as lower odds</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
@@ -255,6 +398,25 @@ function WesternToiletChinaPage() {
               <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
               <p>{place}</p>
             </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          Mainland China, Hong Kong, and Macau
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Western Toilet Map keeps Hong Kong and Macau in the China travel plan because many
+          visitors combine them with mainland routes. The search wording is slightly different by
+          place, but the user need is the same: a nearby seated toilet you can reach quickly.
+        </p>
+        <div className="mt-4 grid gap-3">
+          {regionNotes.map((note) => (
+            <article key={note.title} className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-extrabold text-brand-dark">{note.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{note.body}</p>
+            </article>
           ))}
         </div>
       </section>
