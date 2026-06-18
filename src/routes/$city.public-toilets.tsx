@@ -1,5 +1,14 @@
 import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
-import { ArrowLeft, MapPin, Check, Sparkles, Search } from "lucide-react";
+import {
+  ArrowLeft,
+  MapPin,
+  Check,
+  Sparkles,
+  Search,
+  Building2,
+  TrainFront,
+  Siren,
+} from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { ToiletCard } from "@/components/ToiletCard";
 import { MapPreview } from "@/components/MapPreview";
@@ -136,6 +145,7 @@ function CityPage() {
   const faqs = getCitySeoFaqs(city);
   const firstNeighborhoods = city.neighborhoods.slice(0, 3).join(", ");
   const citySearchCards = getCitySearchCards(city, toilets.length);
+  const cityUseSections = getCityUseSections(city, toilets);
 
   return (
     <AppShell>
@@ -239,6 +249,37 @@ function CityPage() {
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{card.body}</p>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          Practical search areas in {city.name}
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Use these sections as a quick route-planning checklist before opening live nearby search.
+          They are written for visitors who need a seated toilet without exploring a full city map.
+        </p>
+        <div className="mt-4 grid gap-3">
+          {cityUseSections.map((section) => {
+            const Icon = section.icon;
+
+            return (
+              <article key={section.title} className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Icon className="size-4" aria-hidden />
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-extrabold text-brand-dark">{section.title}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                      {section.body}
+                    </p>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
@@ -394,6 +435,89 @@ function getCitySearchCards(city: City, venueCount: number) {
       body: "After you choose a candidate, Western Toilet Map is designed to hand off to Apple Maps, Google Maps, or AMap depending on what works best on your phone.",
     },
   ];
+}
+
+function getCityUseSections(city: City, toilets: ReturnType<typeof getCuratedCityToilets>) {
+  const attractionAreas = city.neighborhoods.slice(0, 3).join(", ");
+  const transitCue = getCityTransitCue(city);
+  const indoorCue =
+    toilets.length > 0
+      ? toilets
+          .slice(0, 2)
+          .map((toilet) => toilet.name)
+          .join(" and ")
+      : `major malls and international hotels around ${city.neighborhoods.slice(0, 2).join(" and ")}`;
+
+  return [
+    {
+      title: "Attractions and walking routes",
+      icon: MapPin,
+      body: `Around ${attractionAreas}, plan for indoor venues just before or after the main attraction. Scenic-area toilets can be uneven, so use nearby malls, hotels, visitor centers, and larger restaurants as the first seated-toilet checks.`,
+    },
+    {
+      title: "Transit and arrival points",
+      icon: TrainFront,
+      body: transitCue,
+    },
+    {
+      title: "Malls, hotels, and reliable indoor venues",
+      icon: Building2,
+      body: `For ${city.name}, start with ${indoorCue}. These are better planning anchors than small standalone public toilets because staff, cleaning, signage, and seated stalls are more likely.`,
+    },
+    {
+      title: "Emergency search plan",
+      icon: Siren,
+      body: `If you need a toilet now, open live search, allow location, choose the closest practical candidate, and hand off to Apple Maps, Google Maps, or AMap. Use this page for planning and live search for the current street-level decision.`,
+    },
+  ];
+}
+
+function getCityTransitCue(city: City) {
+  const transitCues: Record<string, string> = {
+    shanghai:
+      "For Shanghai arrival or transfer moments, check metro-connected malls in Lujiazui, Jing'an, Xintiandi, and near major railway-station districts before relying on small public toilets.",
+    beijing:
+      "In Beijing, build toilet stops around Wangfujing, Sanlitun, Guomao, and large station-adjacent malls. Around major heritage sites, use nearby commercial buildings or hotel lobbies before long walks.",
+    chengdu:
+      "In Chengdu, use Chunxi Road, Taikoo Li, IFS, Tianfu Square, and larger metro-connected malls as transit-friendly bathroom anchors before heading to older alleys or panda-base routes.",
+    chongqing:
+      "In Chongqing, vertical streets make short distances misleading. Use Jiefangbei, Raffles City, Guanyinqiao, and major metro-connected malls as safer bathroom anchors before climbing between levels.",
+    "hong-kong":
+      "In Hong Kong, MTR-linked malls in Central, Admiralty, Tsim Sha Tsui, Causeway Bay, and Mong Kok are usually better than searching street-level public toilets while moving between stations.",
+    macau:
+      "In Macau, ferry terminals, integrated resorts in Cotai, Senado Square commercial areas, and large hotels are stronger arrival-day bathroom anchors than smaller heritage-lane facilities.",
+    xian: "In Xi'an, plan around Bell Tower, SKP, Qujiang, and larger hotel or mall zones before moving toward crowded old-town streets or attraction queues.",
+    guangzhou:
+      "In Guangzhou, Tianhe, Zhujiang New Town, Taikoo Hui, TeeMall, and Parc Central are practical transit-linked anchors for seated toilets between business, food, and sightseeing stops.",
+    shenzhen:
+      "In Shenzhen, Futian, Nanshan, Coco Park, MixC, and OCT Harbour offer better transit-linked options than small street facilities, especially during cross-border or day-trip movement.",
+    hangzhou:
+      "In Hangzhou, West Lake routes can involve long outdoor walks. Use Kerry Centre, Hubin in77, MixC, and larger hotels as bathroom anchors before lakeside or temple-area walks.",
+    zhangjiajie:
+      "In Zhangjiajie, keep hotel and visitor-center toilets in mind before scenic-area shuttle transfers. Mountain routes can leave fewer comfortable seated options once you are inside the park flow.",
+    suzhou:
+      "In Suzhou, Suzhou Center, Jinji Lake, Times Square, and Guanqian Street are better transit-friendly anchors before garden visits or old-town walks.",
+    nanjing:
+      "In Nanjing, Xinjiekou, Deji Plaza, Hexi CBD, and larger hotels work well as bathroom anchors before Confucius Temple, lake, or heritage-site routes.",
+    xiamen:
+      "In Xiamen, ferry areas, Zhongshan Road, SM City, MixC, and larger hotels are the best places to plan a seated-toilet stop before Gulangyu or coastal walks.",
+    guilin:
+      "In Guilin, use central hotels, larger restaurants, MixC, and station-adjacent venues before river cruises, Yangshuo transfers, or scenic-area routes.",
+    sanya:
+      "In Sanya, resort malls, duty-free complexes, airport areas, and larger hotels are better bathroom anchors before beach walks or long taxi transfers.",
+    kunming:
+      "In Kunming, Nanping Street, Green Lake, Tongde Plaza, and larger malls or hotels are practical anchors before older streets, parks, or transit connections.",
+    lijiang:
+      "In Lijiang, use larger hotels, visitor centers, and modern commercial streets before entering old-town lanes where restroom quality and seating can vary.",
+    dali: "In Dali, plan bathroom stops around Dali Old Town, larger hotels, Erhai Lake visitor areas, and modern commercial streets before long lakeside or village routes.",
+    qingdao:
+      "In Qingdao, May Fourth Square, MixC, waterfront malls, larger hotels, and station-adjacent venues are safer anchors before coastal walks or beer-street routes.",
+  };
+
+  return (
+    transitCues[city.slug] ??
+    `In ${city.name}, use large station areas, ferry or airport-adjacent venues, metro-linked malls, and hotel lobbies as bathroom anchors before long outdoor routes.`
+  );
 }
 
 function getCitySeoFaqs(city: City) {
