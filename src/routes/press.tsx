@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, ExternalLink, Link2, MapPin, Megaphone, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ExternalLink, Link2, Megaphone, ShieldCheck } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
+import { CityGuideLinks } from "@/components/CityGuideLinks";
 import { SeoReviewNote } from "@/components/SeoReviewNote";
 import { SEO_LAST_REVIEWED_ISO, SITE_LOGO_URL, SITE_URL } from "@/lib/site";
 
@@ -184,28 +185,10 @@ function PressPage() {
         </ul>
       </section>
 
-      <section className="px-6 mt-8">
-        <h2 className="text-base font-extrabold text-brand-dark">City pages to cite</h2>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {[
-            ["Hong Kong", "/hong-kong/public-toilets"],
-            ["Macau", "/macau/public-toilets"],
-            ["Shanghai", "/shanghai/public-toilets"],
-            ["Beijing", "/beijing/public-toilets"],
-            ["Chengdu", "/chengdu/public-toilets"],
-            ["Chongqing", "/chongqing/public-toilets"],
-          ].map(([label, href]) => (
-            <Link
-              key={href}
-              to={href}
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-3 text-sm font-bold text-foreground hover:border-primary/40"
-            >
-              <MapPin className="size-4 text-primary" aria-hidden />
-              {label}
-            </Link>
-          ))}
-        </div>
-      </section>
+      <CityGuideLinks
+        title="City pages to cite"
+        intro="Writers can cite destination-specific public-toilet pages for 20 popular China travel cities, including Hong Kong, Macau, Shanghai, Beijing, Chengdu, and Yunnan routes."
+      />
 
       <footer className="px-6 mt-10 pb-6 text-[11px] leading-relaxed text-muted-foreground">
         For accurate attribution, link to the most relevant guide page instead of using copied
