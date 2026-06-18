@@ -109,6 +109,7 @@ const OLD_LAST_SEARCH_STATE_KEYS = [
 ];
 const SHARE_PARAM = "seatmap_ref";
 const LAST_SEARCH_MAX_AGE_MS = 30 * 60 * 1000;
+const OPENED_CITY_PREVIEWS_LABEL = "Hong Kong, Macau, Shanghai, Beijing, Chengdu and more";
 
 const PASS_PLANS = [
   {
@@ -221,7 +222,7 @@ function readLastSearchState(): LastSearchState | null {
       region: parsed.region ?? null,
       mapCenter: parsed.mapCenter ?? null,
       errorMsg: parsed.errorMsg ?? null,
-      supportedRegions: parsed.supportedRegions ?? "Shanghai, Beijing and Qingdao",
+      supportedRegions: parsed.supportedRegions ?? OPENED_CITY_PREVIEWS_LABEL,
     };
   } catch {
     return null;
@@ -274,7 +275,7 @@ function HomePage() {
   >("unknown");
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   const [pendingLocationMode, setPendingLocationMode] = useState<SearchMode>("toilet");
-  const [supportedRegions, setSupportedRegions] = useState("Shanghai, Beijing and Qingdao");
+  const [supportedRegions, setSupportedRegions] = useState(OPENED_CITY_PREVIEWS_LABEL);
   const [searchMode, setSearchMode] = useState<SearchMode>("toilet");
   const findNearby = useServerFn(findNearbyToilets);
   const filterBlacklisted = useServerFn(filterBlacklistedToiletIds);
@@ -915,6 +916,8 @@ function HomePage() {
           {[
             { label: "Hong Kong", to: "/hong-kong/public-toilets" },
             { label: "Macau", to: "/macau/public-toilets" },
+            { label: "Shanghai", to: "/shanghai/public-toilets" },
+            { label: "Beijing", to: "/beijing/public-toilets" },
             { label: "Chengdu", to: "/chengdu/public-toilets" },
             { label: "Chongqing", to: "/chongqing/public-toilets" },
           ].map((city) => (
