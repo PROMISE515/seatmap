@@ -1,5 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, CheckCircle2, Search, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Droplets,
+  PackageCheck,
+  Search,
+  ShieldCheck,
+  Trash2,
+} from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { CityGuideLinks } from "@/components/CityGuideLinks";
 import { MapPreview } from "@/components/MapPreview";
@@ -30,6 +38,24 @@ const tips = [
   },
 ];
 
+const toiletPaperSections = [
+  {
+    title: "Carry tissues even in big cities",
+    icon: PackageCheck,
+    body: "Many malls, airports, and hotels provide paper, but smaller public toilets, parks, older transit areas, and crowded tourist routes can be inconsistent. A pocket pack of tissues is still the lowest-friction backup.",
+  },
+  {
+    title: "Do not count on soap everywhere",
+    icon: Droplets,
+    body: "Some restrooms have soap or sanitizer, and some do not. Carry a small sanitizer bottle or wipes when you expect long walking routes, day trips, or rural scenic areas.",
+  },
+  {
+    title: "Follow local signs for bins and flushing",
+    icon: Trash2,
+    body: "Plumbing expectations can vary by venue. If a restroom asks users to put paper in a bin, follow the local sign. In modern malls and hotels, flushing paper is usually less confusing, but signage still wins.",
+  },
+];
+
 const faqs = [
   {
     question: "Should tourists carry toilet paper in China?",
@@ -37,9 +63,24 @@ const faqs = [
       "Yes. Many modern venues provide paper, but tourists should still carry tissues and sanitizer because public toilet supplies can vary.",
   },
   {
+    question: "Do public toilets in China usually have toilet paper?",
+    answer:
+      "Some do, especially in modern malls, airports, hotels, and newer attractions, but it is not reliable enough for tourists to assume. Carry a small tissue pack as your backup.",
+  },
+  {
+    question: "Do bathrooms in China usually have soap?",
+    answer:
+      "Soap is common in better indoor venues but not guaranteed in all public toilets. A small sanitizer bottle or wet wipes can remove a lot of stress on long sightseeing days.",
+  },
+  {
     question: "Where should I look first for a cleaner bathroom in China?",
     answer:
       "Start with premium malls, international hotels, airports, major rail stations, modern museums, and larger coffee chains.",
+  },
+  {
+    question: "Can I flush toilet paper in China?",
+    answer:
+      "In many modern venues this is straightforward, but some restrooms ask users to place paper in a bin. Follow the posted sign or local instruction when one is visible.",
   },
   {
     question: "How can I find a seated toilet quickly?",
@@ -178,6 +219,72 @@ function ChinaBathroomTipsPage() {
               <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
               <p>{rule}</p>
             </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          Do public toilets in China have toilet paper?
+        </h2>
+        <div className="mt-3 space-y-3 text-sm leading-relaxed text-muted-foreground">
+          <p>
+            The safest answer for tourists is: sometimes, but do not rely on it. Better indoor
+            venues often provide toilet paper, while standalone public toilets and older facilities
+            can be less predictable.
+          </p>
+          <p>
+            Treat toilet paper like a travel essential, not a panic item. Keep tissues, sanitizer,
+            and a few wipes in the same pocket or pouch you use for passport copies, transit cards,
+            and day-trip basics.
+          </p>
+        </div>
+        <div className="mt-4 grid gap-3">
+          {toiletPaperSections.map((section) => {
+            const Icon = section.icon;
+
+            return (
+              <article key={section.title} className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Icon className="size-4" aria-hidden />
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-extrabold text-brand-dark">{section.title}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                      {section.body}
+                    </p>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          Where supplies are more predictable
+        </h2>
+        <div className="mt-3 grid gap-3">
+          {[
+            {
+              title: "More predictable",
+              body: "International hotels, premium malls, airports, larger railway stations, museums, and bigger cafes are better first checks for paper, soap, and seated stalls.",
+            },
+            {
+              title: "Less predictable",
+              body: "Standalone public toilets, older parks, small scenic-area toilets, long outdoor routes, and crowded festival areas are where your backup kit matters most.",
+            },
+            {
+              title: "Best emergency pattern",
+              body: "Open Western Toilet Map before the situation is urgent, choose a modern indoor candidate nearby, and keep tissues plus sanitizer as the backup layer.",
+            },
+          ].map((item) => (
+            <article key={item.title} className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-extrabold text-brand-dark">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+            </article>
           ))}
         </div>
       </section>
