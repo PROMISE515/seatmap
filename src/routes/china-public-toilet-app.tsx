@@ -1,5 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, Search, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  Building2,
+  Check,
+  MapPinned,
+  Search,
+  ShieldCheck,
+  TrainFront,
+} from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { CityGuideLinks } from "@/components/CityGuideLinks";
 import { MapPreview } from "@/components/MapPreview";
@@ -41,6 +49,39 @@ const publicMapDifferences = [
   },
 ];
 
+const publicToiletScenarios = [
+  {
+    title: "Tourist attraction exits",
+    icon: MapPinned,
+    body: "Attractions can have restroom signs, but the nearest signed public toilet may be crowded, squat-only, or outside the most convenient exit path. Check a stronger indoor fallback before the route gets long.",
+  },
+  {
+    title: "Rail stations and transit hubs",
+    icon: TrainFront,
+    body: "Major stations usually have restrooms, but luggage, crowds, and floor changes make speed matter. Western Toilet Map helps choose a candidate, then hands off to the navigation app that works best.",
+  },
+  {
+    title: "Malls, hotels, and indoor backups",
+    icon: Building2,
+    body: "Indoor venues are often better public-toilet backups for foreign travelers because seated stalls, supplies, accessibility, and staff help are more likely than at small street-side facilities.",
+  },
+];
+
+const regionNotes = [
+  {
+    title: "Mainland China",
+    body: "Use Western Toilet Map to shortlist seated-toilet candidates, then AMap can be useful for final local walking routes when Apple Maps or Google Maps feel incomplete.",
+  },
+  {
+    title: "Hong Kong",
+    body: "Public toilets are common in malls, MTR-linked buildings, ferry areas, and major districts. The planning page keeps Hong Kong in the same English-first travel workflow.",
+  },
+  {
+    title: "Macau",
+    body: "Senado Square, Cotai, ferry terminals, and casino/mall areas are usually better first checks than chasing every public-toilet marker on a broad map.",
+  },
+];
+
 const faqs = [
   {
     question: "Is Western Toilet Map a public toilet app for China?",
@@ -56,6 +97,21 @@ const faqs = [
     question: "Which China cities should tourists prepare for first?",
     answer:
       "Start with Hong Kong, Macau, Shanghai, Beijing, Chengdu, Chongqing, Guangzhou, Shenzhen, Xi'an, Hangzhou, and other major visitor cities.",
+  },
+  {
+    question: "Is a public toilet in China likely to have a seated toilet?",
+    answer:
+      "Some public toilets do, especially in modern indoor venues, airports, rail hubs, malls, and hotels. A public-toilet marker alone is not enough to guarantee a seated stall.",
+  },
+  {
+    question: "Should I search public toilets or western toilets in China?",
+    answer:
+      "Use public toilets when planning broadly, but search for western or seated-toilet candidates when the real need is avoiding a squat-only restroom.",
+  },
+  {
+    question: "Does the public toilet app cover Hong Kong and Macau?",
+    answer:
+      "Yes. Western Toilet Map keeps Hong Kong and Macau in the city coverage set because many foreign travelers combine them with mainland China trips.",
   },
 ];
 
@@ -229,6 +285,56 @@ function ChinaPublicToiletAppPage() {
               <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
               <p>{point}</p>
             </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          Public toilet search situations in China
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          A China public toilet app should help before the decision gets urgent. These are the
+          common moments where a tourist needs more than a generic restroom marker.
+        </p>
+        <div className="mt-4 grid gap-3">
+          {publicToiletScenarios.map((scenario) => {
+            const Icon = scenario.icon;
+
+            return (
+              <article key={scenario.title} className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Icon className="size-4" aria-hidden />
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-extrabold text-brand-dark">{scenario.title}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                      {scenario.body}
+                    </p>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          Mainland China, Hong Kong, and Macau
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Foreign travelers often move between regions with different map behavior and restroom
+          expectations. The search workflow stays English-first, but the navigation choice can
+          change by city.
+        </p>
+        <div className="mt-4 grid gap-3">
+          {regionNotes.map((region) => (
+            <article key={region.title} className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-extrabold text-brand-dark">{region.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{region.body}</p>
+            </article>
           ))}
         </div>
       </section>
