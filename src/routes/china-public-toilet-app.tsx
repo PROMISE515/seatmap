@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Check, MapPin, Search, ShieldCheck } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { MapPreview } from "@/components/MapPreview";
-import { SITE_URL } from "@/lib/site";
+import { SeoReviewNote } from "@/components/SeoReviewNote";
+import { SEO_LAST_REVIEWED_ISO, SITE_URL } from "@/lib/site";
 
 const PAGE_URL = `${SITE_URL}/china-public-toilet-app`;
 const PAGE_TITLE = "China Public Toilet App for Foreign Travelers | Western Toilet Map";
@@ -21,6 +22,21 @@ const publicToiletNeeds = [
   {
     title: "Navigation needs local options",
     body: "Foreign travelers may switch between Apple Maps, Google Maps, and AMap depending on what works best on their device in China.",
+  },
+];
+
+const publicMapDifferences = [
+  {
+    title: "Public toilet volume",
+    body: "A broad map can show many restroom labels, but volume is not the same as confidence for a foreign traveler who needs a seated toilet.",
+  },
+  {
+    title: "Venue-type confidence",
+    body: "Western Toilet Map favors places like malls, hotels, transport hubs, museums, and larger cafes because they are stronger traveler backups.",
+  },
+  {
+    title: "Fast next step",
+    body: "The goal is not to browse a dense map. Pick a nearby candidate, then hand off to the navigation app that works best on your phone.",
   },
 ];
 
@@ -74,6 +90,7 @@ export const Route = createFileRoute("/china-public-toilet-app")({
               name: PAGE_TITLE,
               description: PAGE_DESCRIPTION,
               url: PAGE_URL,
+              dateModified: SEO_LAST_REVIEWED_ISO,
             },
             {
               "@type": "SoftwareApplication",
@@ -82,6 +99,7 @@ export const Route = createFileRoute("/china-public-toilet-app")({
               operatingSystem: "Web",
               url: SITE_URL,
               description: PAGE_DESCRIPTION,
+              dateModified: SEO_LAST_REVIEWED_ISO,
               offers: {
                 "@type": "Offer",
                 price: "0",
@@ -135,6 +153,13 @@ function ChinaPublicToiletAppPage() {
         </p>
       </section>
 
+      <section className="px-6 mt-4">
+        <SeoReviewNote
+          source="China public-toilet search intent, product venue logic, and city-page coverage."
+          cadence="Updated when public-toilet search, city coverage, or seated-toilet labeling changes."
+        />
+      </section>
+
       <section className="px-6 mt-6">
         <MapPreview
           lat={22.5431}
@@ -173,6 +198,24 @@ function ChinaPublicToiletAppPage() {
                 <ShieldCheck className="size-4 text-primary" aria-hidden />
                 <h3 className="text-sm font-extrabold text-brand-dark">{item.title}</h3>
               </div>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          Public toilet map vs seated-toilet finder
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          For tourists, the best public toilet app in China is not just the one with the most map
+          pins. It is the one that helps choose a practical nearby option quickly.
+        </p>
+        <div className="mt-4 grid gap-3">
+          {publicMapDifferences.map((item) => (
+            <article key={item.title} className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-extrabold text-brand-dark">{item.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
             </article>
           ))}

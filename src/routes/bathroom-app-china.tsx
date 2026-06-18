@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, CheckCircle2, MapPin, Navigation, Search, ShieldCheck } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { MapPreview } from "@/components/MapPreview";
-import { SITE_URL } from "@/lib/site";
+import { SeoReviewNote } from "@/components/SeoReviewNote";
+import { SEO_LAST_REVIEWED_ISO, SITE_URL } from "@/lib/site";
 
 const PAGE_URL = `${SITE_URL}/bathroom-app-china`;
 const PAGE_TITLE = "Bathroom App for China Travel - Find Seated Toilets Fast | Western Toilet Map";
@@ -20,6 +21,21 @@ const navigationOptions = [
   "Apple Maps for iPhone travelers who prefer the native map handoff.",
   "Google Maps when it works for the traveler's device and route.",
   "AMap for stronger local China place and navigation coverage.",
+];
+
+const appChoiceRows = [
+  {
+    title: "Use a map app when",
+    body: "you already know the venue name, need full walking directions, or want a broader city route.",
+  },
+  {
+    title: "Use Western Toilet Map when",
+    body: "you need a nearby seated-toilet candidate quickly and do not want to compare every restroom marker yourself.",
+  },
+  {
+    title: "Use a China-local map when",
+    body: "the final walking route needs stronger mainland China navigation detail after you pick a toilet candidate.",
+  },
 ];
 
 const cityLinks = [
@@ -72,6 +88,7 @@ export const Route = createFileRoute("/bathroom-app-china")({
               name: PAGE_TITLE,
               description: PAGE_DESCRIPTION,
               url: PAGE_URL,
+              dateModified: SEO_LAST_REVIEWED_ISO,
             },
             {
               "@type": "SoftwareApplication",
@@ -80,6 +97,7 @@ export const Route = createFileRoute("/bathroom-app-china")({
               operatingSystem: "Web",
               url: SITE_URL,
               description: PAGE_DESCRIPTION,
+              dateModified: SEO_LAST_REVIEWED_ISO,
               offers: {
                 "@type": "Offer",
                 price: "0",
@@ -133,6 +151,13 @@ function BathroomAppChinaPage() {
         </p>
       </section>
 
+      <section className="px-6 mt-4">
+        <SeoReviewNote
+          source="Product behavior, navigation handoff, and app-intent keyword review."
+          cadence="Updated when app flow, map handoff, or China-local toilet search changes."
+        />
+      </section>
+
       <section className="px-6 mt-6">
         <MapPreview
           lat={30.5728}
@@ -170,6 +195,24 @@ function BathroomAppChinaPage() {
               <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
               <p>{reason}</p>
             </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          Choosing the best toilet app in China
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          The best bathroom app for China depends on the moment. Western Toilet Map is strongest
+          when the user has one job: find a seated-toilet candidate nearby and move.
+        </p>
+        <div className="mt-4 grid gap-3">
+          {appChoiceRows.map((row) => (
+            <article key={row.title} className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-extrabold text-brand-dark">{row.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{row.body}</p>
+            </article>
           ))}
         </div>
       </section>

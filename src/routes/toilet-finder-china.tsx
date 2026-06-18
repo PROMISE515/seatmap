@@ -26,6 +26,44 @@ const priorityCities = [
   { label: "Beijing", to: "/beijing/public-toilets", note: "Essential gateway city" },
 ];
 
+const comparisonRows = [
+  {
+    label: "Generic map apps",
+    body: "Helpful for directions, but restroom labels can be broad and may not explain whether a seated toilet is likely.",
+  },
+  {
+    label: "Generic toilet finder apps",
+    body: "Useful in some countries, but many are not built around China-local place data or the seated-vs-squat question.",
+  },
+  {
+    label: "Western Toilet Map",
+    body: "Focused on one China travel problem: nearby seated-toilet candidates, a simple list, and fast navigation handoff.",
+  },
+];
+
+const faqs = [
+  {
+    question: "What is the best toilet finder for China travel?",
+    answer:
+      "Western Toilet Map is built for foreign travelers who need a fast way to find nearby seated-toilet candidates in China, then open navigation in Apple Maps, Google Maps, or AMap.",
+  },
+  {
+    question: "Why not just search for public toilets in a map app?",
+    answer:
+      "A generic public toilet marker may not tell you whether the restroom is likely to have a seated toilet. Western Toilet Map narrows the decision to traveler-friendly candidates where seated stalls are more likely.",
+  },
+  {
+    question: "Does Western Toilet Map guarantee every toilet is western style?",
+    answer:
+      "No. It shows seated-toilet candidates based on venue type and place data. Travelers should treat results as strong leads and use venue labels or staff help when they arrive.",
+  },
+  {
+    question: "Can I use Western Toilet Map as a China restroom finder app?",
+    answer:
+      "Yes. It works in the browser as an English-first China restroom finder for travelers who want nearby options and quick navigation without installing a separate app.",
+  },
+];
+
 export const Route = createFileRoute("/toilet-finder-china")({
   head: () => ({
     meta: [
@@ -64,6 +102,18 @@ export const Route = createFileRoute("/toilet-finder-china")({
                 price: "0",
                 priceCurrency: "USD",
               },
+            },
+            {
+              "@type": "FAQPage",
+              "@id": `${PAGE_URL}#faq`,
+              mainEntity: faqs.map((faq) => ({
+                "@type": "Question",
+                name: faq.question,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: faq.answer,
+                },
+              })),
             },
           ],
         }),
@@ -155,6 +205,42 @@ function ToiletFinderChinaPage() {
             "General maps are not optimized for seated-vs-squat toilet anxiety.",
             "Western Toilet Map keeps the interface focused: location, nearby candidates, and navigation.",
             "The product prioritizes venues with higher seated-toilet likelihood, not every restroom label.",
+          ].map((line) => (
+            <div key={line} className="flex gap-2 text-sm leading-relaxed text-foreground">
+              <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+              <p>{line}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="restroom-finder" className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          China restroom finder vs map apps
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          A restroom finder for China has to answer a narrower question than "where is a bathroom?"
+          Travelers often need to know where a seated toilet is likely, which venue is worth walking
+          to, and which navigation app should open next.
+        </p>
+        <div className="mt-4 grid gap-3">
+          {comparisonRows.map((row) => (
+            <article key={row.label} className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-extrabold text-brand-dark">{row.label}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{row.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">When to use the toilet finder</h2>
+        <div className="mt-3 space-y-3">
+          {[
+            "Before leaving a hotel, station, or mall for a long walking route.",
+            "When a public toilet sign is nearby but you are not sure it has seated stalls.",
+            "When traveling with kids, older family members, luggage, or accessibility needs.",
+            "When you need a fast nearby option rather than a long guide about China bathrooms.",
           ].map((line) => (
             <div key={line} className="flex gap-2 text-sm leading-relaxed text-foreground">
               <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
@@ -271,6 +357,18 @@ function ToiletFinderChinaPage() {
             Western Toilet Map supports handoff to Apple Maps, Google Maps, and AMap so travelers
             can choose the navigation app that works best on their device in China.
           </p>
+        </div>
+      </section>
+
+      <section id="faq" className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">FAQ</h2>
+        <div className="mt-3 space-y-4">
+          {faqs.map((faq) => (
+            <article key={faq.question}>
+              <h3 className="text-sm font-extrabold text-foreground">{faq.question}</h3>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{faq.answer}</p>
+            </article>
+          ))}
         </div>
       </section>
 
