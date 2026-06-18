@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, CheckCircle2, MapPin, Navigation, Search } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Navigation, Search } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
+import { CityGuideLinks } from "@/components/CityGuideLinks";
 import { MapPreview } from "@/components/MapPreview";
 import { SeoReviewNote } from "@/components/SeoReviewNote";
 import { SEO_LAST_REVIEWED_ISO, SITE_URL } from "@/lib/site";
@@ -15,15 +16,6 @@ const steps = [
   "Allow browser location when you are ready to search.",
   "See nearby seated-toilet candidates from China-local place data.",
   "Start navigation in Apple Maps, Google Maps, or AMap.",
-];
-
-const priorityCities = [
-  { label: "Hong Kong", to: "/hong-kong/public-toilets", note: "Low-KD priority city" },
-  { label: "Macau", to: "/macau/public-toilets", note: "Low-KD priority city" },
-  { label: "Chengdu", to: "/chengdu/public-toilets", note: "Traveler-friendly malls" },
-  { label: "Chongqing", to: "/chongqing/public-toilets", note: "Strong first-wave target" },
-  { label: "Shanghai", to: "/shanghai/public-toilets", note: "Essential gateway city" },
-  { label: "Beijing", to: "/beijing/public-toilets", note: "Essential gateway city" },
 ];
 
 const comparisonRows = [
@@ -326,26 +318,10 @@ function ToiletFinderChinaPage() {
         </div>
       </section>
 
-      <section className="px-6 mt-8">
-        <h2 className="text-base font-extrabold text-brand-dark">First-wave city pages</h2>
-        <div className="mt-3 grid gap-2">
-          {priorityCities.map((city) => (
-            <Link
-              key={city.to}
-              to={city.to}
-              className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 hover:border-primary/40"
-            >
-              <span className="inline-flex min-w-0 items-center gap-2">
-                <MapPin className="size-4 shrink-0 text-primary" aria-hidden />
-                <span className="font-bold text-foreground">{city.label}</span>
-              </span>
-              <span className="max-w-[132px] text-right text-[10px] font-bold uppercase leading-tight tracking-wider text-muted-foreground">
-                {city.note}
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
+      <CityGuideLinks
+        title="Opened city pages"
+        intro="Planning pages are available for 20 popular China travel destinations, so tourists can check likely seated-toilet areas before using live search."
+      />
 
       <section id="navigation" className="px-6 mt-8">
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">

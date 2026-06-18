@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, MapPin, Search, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Check, Search, ShieldCheck } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
+import { CityGuideLinks } from "@/components/CityGuideLinks";
 import { MapPreview } from "@/components/MapPreview";
 import { SeoReviewNote } from "@/components/SeoReviewNote";
 import { SEO_LAST_REVIEWED_ISO, SITE_URL } from "@/lib/site";
@@ -38,15 +39,6 @@ const publicMapDifferences = [
     title: "Fast next step",
     body: "The goal is not to browse a dense map. Pick a nearby candidate, then hand off to the navigation app that works best on your phone.",
   },
-];
-
-const cityLinks = [
-  { label: "Hong Kong", to: "/hong-kong/public-toilets" },
-  { label: "Macau", to: "/macau/public-toilets" },
-  { label: "Shanghai", to: "/shanghai/public-toilets" },
-  { label: "Beijing", to: "/beijing/public-toilets" },
-  { label: "Guangzhou", to: "/guangzhou/public-toilets" },
-  { label: "Shenzhen", to: "/shenzhen/public-toilets" },
 ];
 
 const faqs = [
@@ -241,21 +233,7 @@ function ChinaPublicToiletAppPage() {
         </div>
       </section>
 
-      <section className="px-6 mt-8">
-        <h2 className="text-base font-extrabold text-brand-dark">City guides</h2>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {cityLinks.map((city) => (
-            <Link
-              key={city.to}
-              to={city.to}
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-3 text-sm font-bold text-foreground hover:border-primary/40"
-            >
-              <MapPin className="size-4 text-primary" aria-hidden />
-              {city.label}
-            </Link>
-          ))}
-        </div>
-      </section>
+      <CityGuideLinks intro="These public-toilet planning pages focus on traveler-friendly indoor areas where seated toilets are more likely." />
 
       <section className="px-6 mt-8">
         <h2 className="text-base font-extrabold text-brand-dark">Related guides</h2>

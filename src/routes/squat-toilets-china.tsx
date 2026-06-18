@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, CheckCircle2, MapPin, Search, ShieldAlert } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Search, ShieldAlert } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
+import { CityGuideLinks } from "@/components/CityGuideLinks";
 import { MapPreview } from "@/components/MapPreview";
 import { SITE_URL } from "@/lib/site";
 
@@ -21,15 +22,6 @@ const avoidSteps = [
   "Use Western Toilet Map before you are desperate so you can choose a better route.",
   "In a venue with multiple stalls, check for seated-stall icons before joining a line.",
   "If the first option is unclear, navigate to the next indoor candidate instead of walking randomly.",
-];
-
-const cityLinks = [
-  { label: "Hong Kong", to: "/hong-kong/public-toilets" },
-  { label: "Macau", to: "/macau/public-toilets" },
-  { label: "Shanghai", to: "/shanghai/public-toilets" },
-  { label: "Beijing", to: "/beijing/public-toilets" },
-  { label: "Xi'an", to: "/xian/public-toilets" },
-  { label: "Zhangjiajie", to: "/zhangjiajie/public-toilets" },
 ];
 
 const faqs = [
@@ -196,21 +188,7 @@ function SquatToiletsChinaPage() {
         </ol>
       </section>
 
-      <section className="px-6 mt-8">
-        <h2 className="text-base font-extrabold text-brand-dark">City guides</h2>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {cityLinks.map((city) => (
-            <Link
-              key={city.to}
-              to={city.to}
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-3 text-sm font-bold text-foreground hover:border-primary/40"
-            >
-              <MapPin className="size-4 text-primary" aria-hidden />
-              {city.label}
-            </Link>
-          ))}
-        </div>
-      </section>
+      <CityGuideLinks intro="If squat toilets are a concern, start with the destination city page and prioritize malls, hotels, transport hubs, and modern indoor venues." />
 
       <section className="px-6 mt-8">
         <h2 className="text-base font-extrabold text-brand-dark">Related guides</h2>

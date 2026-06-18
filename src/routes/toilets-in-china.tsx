@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, MapPin, Search, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Check, Search, ShieldCheck } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
+import { CityGuideLinks } from "@/components/CityGuideLinks";
 import { MapPreview } from "@/components/MapPreview";
 import { SeoReviewNote } from "@/components/SeoReviewNote";
 import { SEO_LAST_REVIEWED_ISO, SITE_URL } from "@/lib/site";
@@ -45,15 +46,6 @@ const searchMoments = [
     title: "Traveling with family or accessibility needs",
     body: "Prioritize seated-toilet candidates and modern venues before long walks, queues, or scenic-area visits.",
   },
-];
-
-const cityLinks = [
-  { label: "Shanghai", to: "/shanghai/public-toilets" },
-  { label: "Beijing", to: "/beijing/public-toilets" },
-  { label: "Hong Kong", to: "/hong-kong/public-toilets" },
-  { label: "Macau", to: "/macau/public-toilets" },
-  { label: "Chengdu", to: "/chengdu/public-toilets" },
-  { label: "Chongqing", to: "/chongqing/public-toilets" },
 ];
 
 const faqs = [
@@ -304,21 +296,7 @@ function ToiletsInChinaPage() {
         </Link>
       </section>
 
-      <section className="px-6 mt-8">
-        <h2 className="text-base font-extrabold text-brand-dark">City guides</h2>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {cityLinks.map((city) => (
-            <Link
-              key={city.to}
-              to={city.to}
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-3 text-sm font-bold text-foreground hover:border-primary/40"
-            >
-              <MapPin className="size-4 text-primary" aria-hidden />
-              {city.label}
-            </Link>
-          ))}
-        </div>
-      </section>
+      <CityGuideLinks intro="Start with the destination page for your China route, then use live search when you need the closest seated-toilet candidate." />
 
       <section className="px-6 mt-8">
         <h2 className="text-base font-extrabold text-brand-dark">Related toilet guides</h2>

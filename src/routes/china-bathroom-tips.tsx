@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, CheckCircle2, MapPin, Search, ShieldCheck } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Search, ShieldCheck } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
+import { CityGuideLinks } from "@/components/CityGuideLinks";
 import { MapPreview } from "@/components/MapPreview";
 import { SITE_URL } from "@/lib/site";
 
@@ -27,15 +28,6 @@ const tips = [
     title: "Use local map coverage",
     body: "In mainland China, China-local place data can be more useful than a generic global map. Western Toilet Map keeps that data focused on one travel need.",
   },
-];
-
-const cityLinks = [
-  { label: "Hong Kong", to: "/hong-kong/public-toilets" },
-  { label: "Macau", to: "/macau/public-toilets" },
-  { label: "Shanghai", to: "/shanghai/public-toilets" },
-  { label: "Beijing", to: "/beijing/public-toilets" },
-  { label: "Chengdu", to: "/chengdu/public-toilets" },
-  { label: "Xi'an", to: "/xian/public-toilets" },
 ];
 
 const faqs = [
@@ -190,21 +182,7 @@ function ChinaBathroomTipsPage() {
         </div>
       </section>
 
-      <section className="px-6 mt-8">
-        <h2 className="text-base font-extrabold text-brand-dark">City guides</h2>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {cityLinks.map((city) => (
-            <Link
-              key={city.to}
-              to={city.to}
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-3 text-sm font-bold text-foreground hover:border-primary/40"
-            >
-              <MapPin className="size-4 text-primary" aria-hidden />
-              {city.label}
-            </Link>
-          ))}
-        </div>
-      </section>
+      <CityGuideLinks intro="Check destination pages before long walking routes, especially when traveling with family, luggage, or accessibility needs." />
 
       <section className="px-6 mt-8">
         <h2 className="text-base font-extrabold text-brand-dark">Related guides</h2>
