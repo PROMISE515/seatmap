@@ -9,7 +9,22 @@ import { SEO_LAST_REVIEWED_ISO, SITE_URL } from "@/lib/site";
 const GUIDE_URL = `${SITE_URL}/toilets-in-china`;
 const GUIDE_TITLE = "Toilets in China for Tourists - Western Toilet Guide | Western Toilet Map";
 const GUIDE_DESCRIPTION =
-  "A practical guide to public toilets in China for foreign travelers: where to find seated toilets, when to expect squat toilets, and how Western Toilet Map helps nearby.";
+  "A practical guide to toilets in China for foreign travelers: public toilet expectations, squat vs seated toilets, toilet paper, hygiene tips, and how to find a nearby option fast.";
+
+const directAnswers = [
+  {
+    title: "China has both squat and seated toilets",
+    body: "Many public restrooms have mixed stall types. Modern malls, airports, rail hubs, hotels, and newer attractions are better bets for seated toilets.",
+  },
+  {
+    title: "Public toilets are useful but variable",
+    body: "Some city public toilets are clean and easy to use, while older street facilities may have fewer supplies, more squat stalls, or inconsistent signage.",
+  },
+  {
+    title: "Carry a small backup kit",
+    body: "Tissues and hand sanitizer are still worth carrying because toilet paper, soap, and hand dryers vary by venue and time of day.",
+  },
+];
 
 const quickRules = [
   "Malls and international hotels are usually safer first checks than small street toilets.",
@@ -33,6 +48,44 @@ const toiletTypes = [
   },
 ];
 
+const publicToiletExpectations = [
+  {
+    title: "Availability",
+    body: "Public toilets are common in large Chinese cities, transport hubs, parks, scenic areas, malls, and some pedestrian streets. The challenge is not always finding any toilet; it is finding a suitable seated toilet quickly.",
+  },
+  {
+    title: "Cost",
+    body: "Many public toilets are free. A small fee can still appear in older facilities, scenic areas, transport-adjacent areas, or privately managed sites, so carrying a little local payment flexibility helps.",
+  },
+  {
+    title: "Cleanliness",
+    body: "Cleanliness varies by city, venue type, maintenance cycle, and crowd level. Large indoor venues are usually more predictable than small older public restrooms.",
+  },
+  {
+    title: "Signage",
+    body: "Toilet signs may use icons, English, Chinese, or a mix. If you need a seated stall, check the stall icon or look for accessible/restroom family-room signs before joining a long line.",
+  },
+];
+
+const supplies = [
+  {
+    title: "Toilet paper",
+    body: "Do not assume every public toilet has toilet paper inside the stall. Some modern venues do; many travelers still carry tissues as a default.",
+  },
+  {
+    title: "Soap and sanitizer",
+    body: "Soap is common in better malls, hotels, airports, and museums, but it is not guaranteed everywhere. A pocket sanitizer is a low-effort backup.",
+  },
+  {
+    title: "Trash bins",
+    body: "Some restrooms use stall bins or shared bins. Follow the local setup in the stall rather than assuming the disposal pattern is the same as at home.",
+  },
+  {
+    title: "Water and hand dryers",
+    body: "Sinks are common, but dryers or paper towels can vary. Plan as if you may need to dry hands without paper towels.",
+  },
+];
+
 const searchMoments = [
   {
     title: "Planning before a day route",
@@ -45,6 +98,40 @@ const searchMoments = [
   {
     title: "Traveling with family or accessibility needs",
     body: "Prioritize seated-toilet candidates and modern venues before long walks, queues, or scenic-area visits.",
+  },
+];
+
+const venueDecisionGuide = [
+  {
+    situation: "You have 10 minutes before a train or ride",
+    move: "Use the station or terminal restroom first, then choose a mall or hotel backup only if the first option is crowded or squat-only.",
+  },
+  {
+    situation: "You are walking between attractions",
+    move: "Look for a mall, museum, hotel cluster, or larger cafe on the route instead of relying on the nearest street-side public toilet.",
+  },
+  {
+    situation: "You are with kids, older travelers, or mobility needs",
+    move: "Prioritize seated-toilet candidates, accessible stalls, and indoor venues even when they are slightly farther away.",
+  },
+  {
+    situation: "You are in Hong Kong or Macau",
+    move: "Search for public toilets around MTR/ferry areas, malls, resorts, and attractions; seated options are generally easier than in older mainland facilities.",
+  },
+];
+
+const regionPatterns = [
+  {
+    title: "Mainland gateway cities",
+    body: "Shanghai, Beijing, Guangzhou, Shenzhen, Chengdu, Chongqing, and Xi'an have many modern venues, but older neighborhoods and scenic-area restrooms can still be mixed.",
+  },
+  {
+    title: "Hong Kong",
+    body: "Public toilets, malls, MTR-linked buildings, ferry areas, and tourist districts are generally easier for English-speaking travelers to navigate.",
+  },
+  {
+    title: "Macau",
+    body: "Resorts, ferry terminals, casino malls, and Senado Square routes usually give travelers stronger seated-toilet odds than side-street facilities.",
   },
 ];
 
@@ -68,6 +155,26 @@ const faqs = [
     question: "Do public toilets in China have toilet paper?",
     answer:
       "Some modern venues do, but tourists should still carry tissues and sanitizer because public toilet supplies vary by city, venue type, and time of day.",
+  },
+  {
+    question: "Are public toilets in China free?",
+    answer:
+      "Many public toilets in China are free, especially in malls, airports, rail stations, museums, and modern city facilities. Some older or privately managed facilities may still involve a small fee or purchase expectation.",
+  },
+  {
+    question: "Are public toilets in China clean?",
+    answer:
+      "Cleanliness varies a lot. Modern indoor venues are usually more predictable, while small street-side public toilets and busy scenic-area restrooms can vary by maintenance cycle and crowd level.",
+  },
+  {
+    question: "What should tourists carry for toilets in China?",
+    answer:
+      "Carry tissues, hand sanitizer, and a little patience for mixed stall layouts. If you need a seated toilet, plan around modern indoor venues and use a focused toilet finder when outside.",
+  },
+  {
+    question: "Are toilets in Hong Kong and Macau different from mainland China?",
+    answer:
+      "Hong Kong and Macau are usually easier for English-speaking travelers, especially around malls, transit hubs, resorts, and attractions. Western Toilet Map keeps both destinations in the China travel coverage.",
   },
   {
     question: "What app can help me find toilets in China?",
@@ -182,6 +289,20 @@ function ToiletsInChinaPage() {
       </section>
 
       <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          Direct answer: public toilets in China
+        </h2>
+        <div className="mt-4 grid gap-3">
+          {directAnswers.map((item) => (
+            <article key={item.title} className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-extrabold text-brand-dark">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section id="public-toilets-in-china" className="px-6 mt-8">
         <h2 className="text-base font-extrabold text-brand-dark">What to expect</h2>
         <div className="mt-3 space-y-3">
           {quickRules.map((rule) => (
@@ -189,6 +310,24 @@ function ToiletsInChinaPage() {
               <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
               <p>{rule}</p>
             </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          Public toilet realities tourists should know
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Public toilets in China are not one single experience. The right expectation depends on
+          the venue type, city, crowd level, and how urgently you need a seated stall.
+        </p>
+        <div className="mt-4 grid gap-3">
+          {publicToiletExpectations.map((item) => (
+            <article key={item.title} className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-extrabold text-brand-dark">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+            </article>
           ))}
         </div>
       </section>
@@ -209,6 +348,30 @@ function ToiletsInChinaPage() {
             </article>
           ))}
         </div>
+      </section>
+
+      <section id="toilet-paper" className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          Toilet paper, soap, and what to carry
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          The most common China bathroom surprise is not the existence of squat toilets. It is the
+          small supply gap that appears when you are already outside.
+        </p>
+        <div className="mt-4 grid gap-3">
+          {supplies.map((item) => (
+            <article key={item.title} className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-extrabold text-brand-dark">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+            </article>
+          ))}
+        </div>
+        <Link
+          to="/china-bathroom-tips"
+          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-background px-4 py-3 text-sm font-bold text-primary hover:bg-primary/10"
+        >
+          Read the China bathroom tips checklist
+        </Link>
       </section>
 
       <section className="px-6 mt-8">
@@ -245,7 +408,7 @@ function ToiletsInChinaPage() {
         </div>
       </section>
 
-      <section className="px-6 mt-8">
+      <section id="near-me" className="px-6 mt-8">
         <h2 className="text-base font-extrabold text-brand-dark">When to use a toilet finder</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           A guide helps you understand the pattern. A toilet finder helps when the next decision has
@@ -265,6 +428,24 @@ function ToiletsInChinaPage() {
         >
           Open the China toilet finder
         </Link>
+      </section>
+
+      <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          How to choose the best nearby option
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          When every minute matters, prioritize the option with the highest chance of a suitable
+          stall, not simply the closest map pin.
+        </p>
+        <div className="mt-4 grid gap-3">
+          {venueDecisionGuide.map((item) => (
+            <article key={item.situation} className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-extrabold text-brand-dark">{item.situation}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.move}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section id="bathroom-tips" className="px-6 mt-8">
@@ -294,6 +475,24 @@ function ToiletsInChinaPage() {
         >
           Read China bathroom tips
         </Link>
+      </section>
+
+      <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          Mainland China, Hong Kong, and Macau patterns
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Many travelers combine mainland China with Hong Kong or Macau. Keep all three in the same
+          practical bathroom plan, but adjust expectations by destination.
+        </p>
+        <div className="mt-4 grid gap-3">
+          {regionPatterns.map((item) => (
+            <article key={item.title} className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-extrabold text-brand-dark">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
       <CityGuideLinks intro="Start with the destination page for your China route, then use live search when you need the closest seated-toilet candidate." />
