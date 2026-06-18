@@ -4,7 +4,7 @@ import { AppShell } from "@/components/AppShell";
 import { ToiletCard } from "@/components/ToiletCard";
 import { MapPreview } from "@/components/MapPreview";
 import { SeoReviewNote } from "@/components/SeoReviewNote";
-import { getCityBySlug } from "@/lib/cities";
+import { getCityBySlug, type City } from "@/lib/cities";
 import { getCuratedCityToilets } from "@/lib/curated-city-toilets";
 import { useT } from "@/lib/i18n";
 import { SEO_LAST_REVIEWED_ISO, SITE_URL } from "@/lib/site";
@@ -18,9 +18,61 @@ export const Route = createFileRoute("/$city/public-toilets")({
   head: ({ params, loaderData }) => {
     if (!loaderData) return { meta: [] };
     const { city } = loaderData;
-    const title = `Public Toilets in ${city.name} — Western Restrooms | Western Toilet Map`;
-    const description = `Curated seated-toilet candidates in ${city.name}, ${city.country}, focused on malls, hotels, and traveler-friendly venues.`;
+    const title = `Public Toilets in ${city.name} - Western Toilet Map for Tourists`;
+    const description = `Find public toilets and western seated-toilet candidates in ${city.name}. See traveler-friendly malls, hotels, neighborhoods, and live nearby search options.`;
     const url = `${SITE_URL}/${params.city}/public-toilets`;
+    const curatedToilets = getCuratedCityToilets(params.city, city.name);
+    const graph: Array<Record<string, unknown>> = [
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+          { "@type": "ListItem", position: 2, name: city.name, item: url },
+        ],
+      },
+      {
+        "@type": "WebPage",
+        "@id": url,
+        name: title,
+        description,
+        url,
+        dateModified: SEO_LAST_REVIEWED_ISO,
+      },
+      {
+        "@type": "FAQPage",
+        mainEntity: getCitySeoFaqs(city).map((faq) => ({
+          "@type": "Question",
+          name: faq.question,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: faq.answer,
+          },
+        })),
+      },
+    ];
+
+    if (curatedToilets.length > 0) {
+      graph.push({
+        "@type": "ItemList",
+        "@id": `${url}#curated-venues`,
+        name: `Seated-toilet candidate venues in ${city.name}`,
+        itemListElement: curatedToilets.slice(0, 8).map((toilet, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          item: {
+            "@type": "Place",
+            name: toilet.name,
+            address: `${toilet.address}, ${city.name}`,
+            geo: {
+              "@type": "GeoCoordinates",
+              latitude: toilet.lat,
+              longitude: toilet.lng,
+            },
+          },
+        })),
+      });
+    }
+
     return {
       meta: [
         { title },
@@ -36,34 +88,7 @@ export const Route = createFileRoute("/$city/public-toilets")({
           type: "application/ld+json",
           children: JSON.stringify({
             "@context": "https://schema.org",
-            "@graph": [
-              {
-                "@type": "BreadcrumbList",
-                itemListElement: [
-                  { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
-                  { "@type": "ListItem", position: 2, name: city.name, item: url },
-                ],
-              },
-              {
-                "@type": "WebPage",
-                "@id": url,
-                name: title,
-                description,
-                url,
-                dateModified: SEO_LAST_REVIEWED_ISO,
-              },
-              {
-                "@type": "FAQPage",
-                mainEntity: getCitySeoFaqs(city.name).map((faq) => ({
-                  "@type": "Question",
-                  name: faq.question,
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: faq.answer,
-                  },
-                })),
-              },
-            ],
+            "@graph": graph,
           }),
         },
       ],
@@ -108,7 +133,9 @@ function CityPage() {
   const { t } = useT();
   const { city } = Route.useLoaderData();
   const toilets = getCuratedCityToilets(city.slug, city.name);
-  const faqs = getCitySeoFaqs(city.name);
+  const faqs = getCitySeoFaqs(city);
+  const firstNeighborhoods = city.neighborhoods.slice(0, 3).join(", ");
+  const citySearchCards = getCitySearchCards(city, toilets.length);
 
   return (
     <AppShell>
@@ -196,6 +223,25 @@ function CityPage() {
         </ul>
       </section>
 
+      <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          Where to find western toilets in {city.name}
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          For a western toilet in {city.name}, start around {firstNeighborhoods}. The most reliable
+          public-toilet plan is to choose modern indoor venues first, then use live search if you
+          need a current-location result.
+        </p>
+        <div className="mt-4 grid gap-3">
+          {citySearchCards.map((card) => (
+            <article key={card.title} className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-extrabold text-brand-dark">{card.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{card.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="px-6 mt-8 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -227,6 +273,38 @@ function CityPage() {
             </Link>
           </div>
         )}
+      </section>
+
+      <section className="px-6 mt-10">
+        <h2 className="text-base font-extrabold text-brand-dark mb-3">
+          Public toilet map vs live search in {city.name}
+        </h2>
+        <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
+          <p>
+            This city page is a planning page: it shows neighborhoods and curated venue candidates
+            where seated toilets are more likely. It is useful before you leave a hotel, station, or
+            attraction.
+          </p>
+          <p>
+            The home search is the emergency mode: allow location, pull nearby China-local results,
+            and open navigation when you need the closest practical option.
+          </p>
+        </div>
+        <div className="mt-4 grid gap-2">
+          <Link
+            to="/"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-extrabold text-primary-foreground shadow-brand transition active:scale-[0.98]"
+          >
+            <Search className="size-4" aria-hidden />
+            Search live toilets near me
+          </Link>
+          <Link
+            to="/western-toilet-china"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-center text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            Read the western toilet guide
+          </Link>
+        </div>
       </section>
 
       <section className="px-6 mt-10">
@@ -276,6 +354,18 @@ function CityPage() {
           >
             Toilets in China guide
           </Link>
+          <Link
+            to="/bathroom-app-china"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            Bathroom app for China
+          </Link>
+          <Link
+            to="/china-public-toilet-app"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            China public toilet app
+          </Link>
         </div>
       </section>
 
@@ -286,7 +376,30 @@ function CityPage() {
   );
 }
 
-function getCitySeoFaqs(cityName: string) {
+function getCitySearchCards(city: City, venueCount: number) {
+  return [
+    {
+      title: "Best first checks",
+      body: `In ${city.name}, large malls, hotel lobbies, transport hubs, museums, and bigger cafes are usually stronger seated-toilet candidates than small standalone public toilets.`,
+    },
+    {
+      title: "Curated planning list",
+      body:
+        venueCount > 0
+          ? `This page currently highlights ${venueCount} curated ${city.name} venue candidates for trip planning. Use live search for real-time nearby choices.`
+          : `This page highlights ${city.name} search areas first. Use live search to pull nearby AMap candidates from your current location.`,
+    },
+    {
+      title: "Navigation handoff",
+      body: "After you choose a candidate, Western Toilet Map is designed to hand off to Apple Maps, Google Maps, or AMap depending on what works best on your phone.",
+    },
+  ];
+}
+
+function getCitySeoFaqs(city: City) {
+  const cityName = city.name;
+  const neighborhoods = city.neighborhoods.slice(0, 3).join(", ");
+
   return [
     {
       question: `Where can I find a western toilet in ${cityName}?`,
@@ -299,6 +412,14 @@ function getCitySeoFaqs(cityName: string) {
     {
       question: `Can Western Toilet Map navigate me to a toilet in ${cityName}?`,
       answer: `Yes. Use the live search on the Western Toilet Map home page to get nearby candidates, then start navigation with Apple Maps, Google Maps, or AMap depending on what works best on your phone.`,
+    },
+    {
+      question: `Which areas of ${cityName} are best for public toilets?`,
+      answer: `Start around ${neighborhoods}. These areas have stronger odds because they include traveler routes, malls, hotels, transport nodes, or larger commercial venues.`,
+    },
+    {
+      question: `What is the best toilet app for ${cityName}?`,
+      answer: `Western Toilet Map works as an English-first web app for ${cityName}: it focuses on nearby seated-toilet candidates instead of broad city browsing, then hands off to your preferred navigation app.`,
     },
   ];
 }
