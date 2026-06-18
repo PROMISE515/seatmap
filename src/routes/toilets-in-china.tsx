@@ -17,6 +17,36 @@ const quickRules = [
   "Use Western Toilet Map when you need the nearest seated-toilet candidate instead of general bathroom advice.",
 ];
 
+const toiletTypes = [
+  {
+    title: "Squat toilets",
+    body: "Still common in older public toilets, smaller venues, parks, and some scenic-area facilities. They may be the only option in a smaller restroom.",
+  },
+  {
+    title: "Western seated toilets",
+    body: "More likely in airports, rail hubs, premium malls, hotels, newer museums, larger cafes, and modern commercial buildings.",
+  },
+  {
+    title: "Accessible stalls",
+    body: "Accessible stalls can be a useful clue because they are often seated, but availability and signage vary by venue.",
+  },
+];
+
+const searchMoments = [
+  {
+    title: "Planning before a day route",
+    body: "Check malls, rail stations, museums, and hotel districts near your planned route before you leave.",
+  },
+  {
+    title: "Already outside and urgent",
+    body: "Skip broad guide reading. Use the toilet finder, choose the nearest practical candidate, and navigate.",
+  },
+  {
+    title: "Traveling with family or accessibility needs",
+    body: "Prioritize seated-toilet candidates and modern venues before long walks, queues, or scenic-area visits.",
+  },
+];
+
 const cityLinks = [
   { label: "Shanghai", to: "/shanghai/public-toilets" },
   { label: "Beijing", to: "/beijing/public-toilets" },
@@ -41,6 +71,16 @@ const faqs = [
     question: "Can Google Maps reliably find toilets in China?",
     answer:
       "Google Maps can be limited in mainland China. Western Toilet Map uses China-local place data and keeps the experience focused on fast toilet discovery and navigation options.",
+  },
+  {
+    question: "Do public toilets in China have toilet paper?",
+    answer:
+      "Some modern venues do, but tourists should still carry tissues and sanitizer because public toilet supplies vary by city, venue type, and time of day.",
+  },
+  {
+    question: "What app can help me find toilets in China?",
+    answer:
+      "Western Toilet Map works as an English-first web app for finding nearby seated-toilet candidates in China, then opening navigation in Apple Maps, Google Maps, or AMap.",
   },
 ];
 
@@ -163,6 +203,24 @@ function ToiletsInChinaPage() {
 
       <section className="px-6 mt-8">
         <h2 className="text-base font-extrabold text-brand-dark">
+          Squat toilets vs western toilets in China
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          The most useful China toilet distinction for tourists is not public versus private. It is
+          whether the restroom is likely to have a seated stall when you need one.
+        </p>
+        <div className="mt-4 grid gap-3">
+          {toiletTypes.map((item) => (
+            <article key={item.title} className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-extrabold text-brand-dark">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
           Best places to find a western toilet
         </h2>
         <div className="mt-4 grid gap-3">
@@ -193,6 +251,28 @@ function ToiletsInChinaPage() {
             </article>
           ))}
         </div>
+      </section>
+
+      <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">When to use a toilet finder</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          A guide helps you understand the pattern. A toilet finder helps when the next decision has
+          to be made in seconds.
+        </p>
+        <div className="mt-4 grid gap-3">
+          {searchMoments.map((moment) => (
+            <article key={moment.title} className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-extrabold text-brand-dark">{moment.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{moment.body}</p>
+            </article>
+          ))}
+        </div>
+        <Link
+          to="/toilet-finder-china"
+          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-background px-4 py-3 text-sm font-bold text-primary hover:bg-primary/10"
+        >
+          Open the China toilet finder
+        </Link>
       </section>
 
       <section id="bathroom-tips" className="px-6 mt-8">
@@ -266,6 +346,12 @@ function ToiletsInChinaPage() {
             className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
           >
             Bathroom app for China
+          </Link>
+          <Link
+            to="/china-public-toilet-app"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            China public toilet app
           </Link>
         </div>
       </section>

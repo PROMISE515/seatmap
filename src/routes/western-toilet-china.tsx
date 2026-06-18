@@ -30,6 +30,28 @@ const bestPlaces = [
   },
 ];
 
+const reliabilitySignals = [
+  {
+    title: "Modern indoor venue",
+    body: "Newer buildings are more likely to have seated stalls, accessible stalls, cleaner sinks, and clearer restroom signs.",
+  },
+  {
+    title: "International visitor flow",
+    body: "Airports, high-speed rail hubs, hotels, museums, and premium shopping areas are stronger bets because they serve mixed traveler needs.",
+  },
+  {
+    title: "Multiple restroom options",
+    body: "A large venue with several floors or connected buildings gives you a better backup path if the first restroom is crowded or squat-only.",
+  },
+];
+
+const weakerPlaces = [
+  "Small street-side public toilets in older neighborhoods.",
+  "Tiny local restaurants without a modern mall or hotel nearby.",
+  "Older scenic-area restrooms during peak tourist hours.",
+  "Remote rest stops where signage and supplies may vary.",
+];
+
 const cityLinks = [
   { label: "Hong Kong", to: "/hong-kong/public-toilets" },
   { label: "Macau", to: "/macau/public-toilets" },
@@ -40,6 +62,11 @@ const cityLinks = [
 ];
 
 const faqs = [
+  {
+    question: "What does western toilet mean in China?",
+    answer:
+      "For most foreign travelers, a western toilet means a seated toilet rather than a squat toilet. In China, both types can exist in the same venue, so the safest plan is to search for modern indoor venues first.",
+  },
   {
     question: "Are western toilets common in China?",
     answer:
@@ -54,6 +81,11 @@ const faqs = [
     question: "Can I avoid squat toilets completely in China?",
     answer:
       "You can avoid many squat toilets by planning around modern indoor venues, but availability still varies. A focused toilet finder gives you a faster backup when you are already outside.",
+  },
+  {
+    question: "How do I find western toilets near me in China?",
+    answer:
+      "Open Western Toilet Map, allow location, and choose a nearby candidate. The web app is designed for fast seated-toilet search and then hands off to Apple Maps, Google Maps, or AMap for navigation.",
   },
 ];
 
@@ -201,6 +233,41 @@ function WesternToiletChinaPage() {
       </section>
 
       <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          What "western toilet" usually means
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          In China travel discussions, "western toilet" usually means a seated toilet. It does not
+          guarantee a private room, toilet paper, soap, or the same layout you expect at home. The
+          useful question is simpler: where is the nearest venue where a seated stall is likely?
+        </p>
+        <div className="mt-4 grid gap-3">
+          {reliabilitySignals.map((item) => (
+            <article key={item.title} className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-extrabold text-brand-dark">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">Places to treat as lower odds</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          These places can still have a seated toilet, but they are weaker emergency bets if you do
+          not have time to compare options.
+        </p>
+        <div className="mt-3 space-y-3">
+          {weakerPlaces.map((place) => (
+            <div key={place} className="flex gap-2 text-sm leading-relaxed text-foreground">
+              <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+              <p>{place}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="px-6 mt-8">
         <h2 className="text-base font-extrabold text-brand-dark">City guides</h2>
         <div className="mt-3 grid grid-cols-2 gap-2">
           {cityLinks.map((city) => (
@@ -230,6 +297,18 @@ function WesternToiletChinaPage() {
             className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
           >
             Squat toilets in China
+          </Link>
+          <Link
+            to="/bathroom-app-china"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            Bathroom app for China
+          </Link>
+          <Link
+            to="/china-public-toilet-app"
+            className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-foreground hover:border-primary/40"
+          >
+            China public toilet app
           </Link>
         </div>
       </section>
