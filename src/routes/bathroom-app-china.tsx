@@ -39,6 +39,36 @@ const appChoiceRows = [
   },
 ];
 
+const appComparisonRows = [
+  {
+    app: "Western Toilet Map",
+    bestFor: "A fast seated-toilet decision",
+    note: "Best when you are already out in the city and need a nearby western-style toilet candidate, not a full travel-planning map.",
+  },
+  {
+    app: "AMap / Gaode",
+    bestFor: "Local walking navigation",
+    note: "Best after you choose a destination because mainland China routing and local POI coverage can be stronger.",
+  },
+  {
+    app: "Apple Maps or Google Maps",
+    bestFor: "Familiar navigation handoff",
+    note: "Useful for travelers who prefer a familiar map interface, especially when their device and network setup already work well.",
+  },
+  {
+    app: "Generic toilet finder apps",
+    bestFor: "Broad restroom browsing",
+    note: "Can be useful in other countries, but often do not focus on the China-specific seated-vs-squat toilet problem.",
+  },
+];
+
+const planningMoments = [
+  "Before leaving a hotel or rail station for a long walking route.",
+  "Before visiting an older attraction, park, night market, or scenic area.",
+  "When traveling with kids, older relatives, luggage, or accessibility needs.",
+  "When moving between mainland China, Hong Kong, and Macau where map behavior can differ.",
+];
+
 const faqs = [
   {
     question: "What is a good bathroom app for China travel?",
@@ -54,6 +84,21 @@ const faqs = [
     question: "Is the first Western Toilet Map search free?",
     answer:
       "Western Toilet Map is designed with emergency access in mind: travelers can search once for free, then choose a travel pass for unlimited trip access.",
+  },
+  {
+    question: "What is the best toilet app in China for tourists?",
+    answer:
+      "There is no single best app for every moment. Western Toilet Map is best for the seated-toilet decision, while AMap, Apple Maps, or Google Maps can be better for the final walking route.",
+  },
+  {
+    question: "Does Western Toilet Map work for Hong Kong and Macau?",
+    answer:
+      "Western Toilet Map keeps Hong Kong and Macau in the travel coverage set, but navigation handoff and local map behavior may differ from mainland China.",
+  },
+  {
+    question: "Can any bathroom app guarantee toilet type or cleanliness?",
+    answer:
+      "No. A bathroom app can reduce uncertainty by prioritizing stronger venue candidates, but travelers should still verify signs, venue access, and the actual stall type when they arrive.",
   },
 ];
 
@@ -222,6 +267,59 @@ function BathroomAppChinaPage() {
               </p>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">
+          Which bathroom app should you use in China?
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          The right app depends on the job. Western Toilet Map is the decision layer for finding a
+          likely seated toilet. A navigation app is the routing layer after you choose where to go.
+        </p>
+        <div className="mt-4 overflow-hidden rounded-xl border border-border bg-card">
+          {appComparisonRows.map((row, index) => (
+            <article key={row.app} className={`p-4 ${index > 0 ? "border-t border-border" : ""}`}>
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="text-sm font-extrabold text-brand-dark">{row.app}</h3>
+                <span className="shrink-0 rounded-full bg-primary/10 px-2 py-1 text-[10px] font-extrabold uppercase tracking-wider text-primary">
+                  {row.bestFor}
+                </span>
+              </div>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{row.note}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="px-6 mt-8">
+        <h2 className="text-base font-extrabold text-brand-dark">Plan before these moments</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          A bathroom app is most useful before the search becomes urgent. These are the moments
+          where checking a seated-toilet option early can save real travel stress.
+        </p>
+        <div className="mt-3 space-y-3">
+          {planningMoments.map((moment) => (
+            <div key={moment} className="flex gap-2 text-sm leading-relaxed text-foreground">
+              <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+              <p>{moment}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="px-6 mt-8">
+        <div className="rounded-xl border border-border bg-card p-4">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="size-4 text-primary" aria-hidden />
+            <h2 className="text-sm font-extrabold text-brand-dark">Important limitation</h2>
+          </div>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            No toilet app can guarantee every stall type, opening condition, or cleanliness level in
+            China. The practical goal is to reduce uncertainty quickly by choosing stronger nearby
+            candidates and handing off to navigation.
+          </p>
         </div>
       </section>
 
